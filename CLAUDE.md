@@ -24,6 +24,7 @@ Le due ragioni per cui l'app esiste: **la validazione dei conflitti mentre si co
 
 - **Frontend**: Nuxt 4 (Vue), SPA statica (`ssr: false`, build con `nuxt generate`)
 - **Linguaggio**: TypeScript in componenti e composables; SCSS per gli asset di stile
+- **i18n**: `@nuxtjs/i18n` (`strategy: 'no_prefix'`, niente routing per lingua) — solo italiano attivo, ma nessun testo hardcoded nei template: tutte le stringhe passano da `i18n/locales/*.json` via `$t()`/`useI18n()`, pronto per aggiungere lingue senza toccare i componenti
 - **Shell desktop**: Tauri 2 (Rust + WebView2 su Windows)
 - **Database**: SQLite locale via `tauri-plugin-sql` — nessun backend remoto, app a singolo utilizzatore
 - **PDF**: `jsPDF` + `jspdf-autotable` lato client, salvataggio via `tauri-plugin-dialog` + `tauri-plugin-fs`

@@ -1,8 +1,11 @@
 import type { FormSubmitEvent } from '@nuxt/ui'
-import { teacherFormSchema, type TeacherFormSchema } from './teacherFormHelper'
+import { createTeacherFormSchema, type TeacherFormSchema } from './teacherFormHelper'
 
 export function useTeacherForm() {
+  const { t } = useI18n()
   const { addTeacher } = useTeachers()
+
+  const schema = createTeacherFormSchema(t)
 
   const state = reactive<Partial<TeacherFormSchema>>({
     first_name: '',
@@ -16,7 +19,7 @@ export function useTeacherForm() {
   }
 
   return {
-    schema: teacherFormSchema,
+    schema,
     state,
     onSubmit
   }

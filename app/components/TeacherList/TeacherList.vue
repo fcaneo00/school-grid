@@ -20,6 +20,6 @@ const { teachers, loading, error, deleteTeacher } = useTeacherList()
       </li>
     </ul>
 
-    <p v-if="loading" class="text-muted">Caricamento…</p>
+    <p v-if="loading" class="text-muted">{{ $t('teachers.list.loading') }}</p>
   </div>
 </template>

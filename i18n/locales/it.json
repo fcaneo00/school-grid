@@ -1,0 +1,14 @@
+{
+  "teachers": {
+    "title": "Docenti",
+    "form": {
+      "firstName": "Nome",
+      "lastName": "Cognome",
+      "submit": "Aggiungi",
+      "required": "Obbligatorio"
+    },
+    "list": {
+      "loading": "Caricamento…"
+    }
+  }
+}

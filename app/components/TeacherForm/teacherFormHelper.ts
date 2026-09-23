@@ -1,8 +1,10 @@
 import * as z from 'zod'
 
-export const teacherFormSchema = z.object({
-  first_name: z.string().min(1, 'Obbligatorio'),
-  last_name: z.string().min(1, 'Obbligatorio')
-})
+export function createTeacherFormSchema(t: (key: string) => string) {
+  return z.object({
+    first_name: z.string().min(1, t('teachers.form.required')),
+    last_name: z.string().min(1, t('teachers.form.required'))
+  })
+}
 
-export type TeacherFormSchema = z.output<typeof teacherFormSchema>
+export type TeacherFormSchema = z.output<ReturnType<typeof createTeacherFormSchema>>
