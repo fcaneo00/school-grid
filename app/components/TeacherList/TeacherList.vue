@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useTeacherList } from './useTeacherList'
 
+const { t } = useI18n()
 const { teachers, loading, error, deleteTeacher } = useTeacherList()
 </script>
 
@@ -20,6 +21,6 @@ const { teachers, loading, error, deleteTeacher } = useTeacherList()
       </li>
     </ul>
 
-    <p v-if="loading" class="text-muted">{{ $t('teachers.list.loading') }}</p>
+    <p v-if="loading" class="text-muted">{{ t('general.loading') }}</p>
   </div>
 </template>

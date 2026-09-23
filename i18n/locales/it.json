@@ -1,14 +1,27 @@
 {
+  "general": {
+    "loading": "Caricamento…"
+  },
+  "form": {
+    "submit": "Aggiungi",
+    "required": "Obbligatorio"
+  },
+  "nav": {
+    "teachers": "Docenti",
+    "schoolClasses": "Classi"
+  },
   "teachers": {
     "title": "Docenti",
     "form": {
       "firstName": "Nome",
-      "lastName": "Cognome",
-      "submit": "Aggiungi",
-      "required": "Obbligatorio"
-    },
-    "list": {
-      "loading": "Caricamento…"
+      "lastName": "Cognome"
+    }
+  },
+  "schoolClasses": {
+    "title": "Classi",
+    "form": {
+      "name": "Nome",
+      "section": "Sezione"
     }
   }
 }
