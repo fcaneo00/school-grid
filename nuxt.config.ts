@@ -5,5 +5,6 @@ export default defineNuxtConfig({
   modules: ['@nuxt/ui'],
   css: ['~/assets/css/main.css', '~/assets/scss/main.scss'],
   ssr: false,
-  devServer: { port: 3001 }
+  devServer: { port: 3001 },
+  components: [{ path: '~/components', pathPrefix: false, extensions: ['vue'] }]
 })
