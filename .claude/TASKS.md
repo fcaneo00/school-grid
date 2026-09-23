@@ -22,4 +22,16 @@ Solo italiano attivo per ora, ma nessun testo hardcoded nei template — pronto 
 - [x] `UApp :locale` collegato al locale Nuxt UI (`@nuxt/ui/locale`) per la localizzazione interna dei componenti (date, calendari, ecc.)
 - [x] Convertire i testi hardcoded esistenti (`TeacherForm.vue`, `TeacherList.vue`, `pages/index.vue`) a chiavi di traduzione
 - [x] Messaggi di validazione zod (`teacherFormHelper.ts`) anch'essi tradotti, non hardcoded — lo schema diventa una funzione che riceve `t`
-- [ ] Verifica: `npm run tauri dev`, testi tutti visibili in italiano, nessuna stringa mancante
+- [ ] Verifica: `npm run tauri dev`, testi tutti visibili in italiano, nessuna stringa mancante (da fare insieme alla verifica di Classi qui sotto)
+
+## Classi (school_class)
+
+Stesso pattern di Docenti: composable dati condiviso + componente form/lista per-cartella. In più: prima pagina aggiuntiva, quindi serve una navigazione minima tra Docenti e Classi (finora c'era solo `/`, senza modo di raggiungere una seconda pagina in una finestra desktop senza barra indirizzi).
+
+- [x] `useSchoolClasses.ts` in `app/composables/` — stesso layer dati di `useTeachers` (fetch/add/update/delete su `school_class`)
+- [x] `app/components/SchoolClassForm/` — `SchoolClassForm.vue`, `useSchoolClassForm.ts`, `schoolClassFormHelper.ts` (schema zod: `name`, `section`)
+- [x] `app/components/SchoolClassList/` — `SchoolClassList.vue`, `useSchoolClassList.ts`
+- [x] `app/pages/classes.vue`
+- [x] Navigazione minima tra `/` (Docenti) e `/classes` (Classi) — `UNavigationMenu` in `app.vue`, items statici con `$t()`
+- [x] Chiavi di traduzione in `i18n/locales/it.json` (titolo, form, lista, voci nav) — stessa struttura di `teachers`
+- [ ] Verifica: `npm run tauri dev`, aggiungere/eliminare una classe, navigare tra le due pagine, testi in italiano
