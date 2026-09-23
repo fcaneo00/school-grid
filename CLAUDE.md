@@ -65,7 +65,7 @@ Regole di validazione in fase di inserimento:
 | Nome progetto | `school-grid` *(per adesso — provvisorio)* |
 | Tabelle DB | `teacher` · `school_class` · `subject` · `assignment` · `preference` · `schedule_entry` |
 | Composables | `useTeachers` · `useSchoolClasses` · `useSubjects` · `useAssignments` · `usePreferences` · `useSchedule` |
-| Tauri identifier | `com.<dominio>.school-grid` *(dominio ancora da fissare)* |
+| Tauri identifier | `com.school-grid.app` *(provvisorio — dominio ancora da fissare)* |
 
 ## Principi di lavoro (il faro)
 
@@ -86,9 +86,11 @@ Regole:
 
 Per un progetto di queste dimensioni non serve separare specs/docs/backlog in cartelle diverse: **tutto vive in questo `CLAUDE.md`**, aggiornato ad ogni decisione architetturale — è quello che abbiamo fatto finora in chat. Se il progetto crescesse davvero, si scorporerà in una cartella `docs/` quando (e solo quando) diventerà scomodo tenerlo qui dentro.
 
+La checklist di lavoro in corso vive invece in [`.claude/TASKS.md`](.claude/TASKS.md), per non far lievitare questo file con lo stato di avanzamento. Lavoriamo diretti su `main`, niente branch/PR per adesso.
+
 ## Planning Workflow
 
-Per modifiche piccole si implementa direttamente. Per una feature corposa (es. la UI della griglia trascinabile, l'esportazione PDF) si scrive prima una checklist breve qui sotto "Stato attuale", poi si implementa spuntando via via.
+Per modifiche piccole si implementa direttamente. Per una feature corposa (es. la UI della griglia trascinabile, l'esportazione PDF) si scrive prima una checklist breve in `.claude/TASKS.md`, poi si implementa spuntando via via.
 
 ## Regole di ingaggio operative
 
