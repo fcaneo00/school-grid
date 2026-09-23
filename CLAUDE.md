@@ -25,6 +25,7 @@ Le due ragioni per cui l'app esiste: **la validazione dei conflitti mentre si co
 - **Frontend**: Nuxt 4 (Vue), SPA statica (`ssr: false`, build con `nuxt generate`)
 - **Linguaggio**: TypeScript in componenti e composables; SCSS per gli asset di stile
 - **i18n**: `@nuxtjs/i18n` (`strategy: 'no_prefix'`, niente routing per lingua) — solo italiano attivo, ma nessun testo hardcoded nei template: tutte le stringhe passano da `i18n/locales/*.json` via `$t()`/`useI18n()`, pronto per aggiungere lingue senza toccare i componenti
+- **Lint**: `@nuxt/eslint` (JS/TS/Vue) — `vue/block-order` (script→template→style) e `vue/attributes-order` forzati a `error` in `eslint.config.mjs`, resto ai default del modulo
 - **Shell desktop**: Tauri 2 (Rust + WebView2 su Windows)
 - **Database**: SQLite locale via `tauri-plugin-sql` — nessun backend remoto, app a singolo utilizzatore
 - **PDF**: `jsPDF` + `jspdf-autotable` lato client, salvataggio via `tauri-plugin-dialog` + `tauri-plugin-fs`
@@ -36,6 +37,8 @@ npm run dev           # dev server Nuxt nel browser, senza Tauri
 npm run tauri dev     # finestra nativa + dev server Nuxt, plugin disponibili
 npm run generate      # build statica Nuxt (.output/public)
 npm run tauri build   # eseguibile finale
+npm run lint          # ESLint (@nuxt/eslint) su tutto il progetto
+npm run lint:fix      # come sopra, applica le correzioni automatiche
 ```
 
 ⚠️ **`npm run dev` da solo non basta per testare sql/dialog/fs**: quei plugin esistono solo dentro il processo Tauri. Per lavorare su quella parte serve sempre `npm run tauri dev`.
