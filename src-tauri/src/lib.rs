@@ -1,11 +1,11 @@
 use tauri_plugin_sql::{Migration, MigrationKind};
 
 fn migrations() -> Vec<Migration> {
-  vec![Migration {
-    version: 1,
-    description: "create_initial_schema",
-    kind: MigrationKind::Up,
-    sql: "
+    vec![Migration {
+        version: 1,
+        description: "create_initial_schema",
+        kind: MigrationKind::Up,
+        sql: "
       CREATE TABLE teacher (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         first_name TEXT NOT NULL,
@@ -48,29 +48,29 @@ fn migrations() -> Vec<Migration> {
       CREATE INDEX idx_assignment_teacher ON assignment(teacher_id);
       CREATE INDEX idx_assignment_school_class ON assignment(school_class_id);
     ",
-  }]
+    }]
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-  tauri::Builder::default()
-    .setup(|app| {
-      if cfg!(debug_assertions) {
-        app.handle().plugin(
-          tauri_plugin_log::Builder::default()
-            .level(log::LevelFilter::Info)
-            .build(),
-        )?;
-      }
-      Ok(())
-    })
-    .plugin(
-      tauri_plugin_sql::Builder::default()
-        .add_migrations("sqlite:school-grid.db", migrations())
-        .build(),
-    )
-    .plugin(tauri_plugin_dialog::init())
-    .plugin(tauri_plugin_fs::init())
-    .run(tauri::generate_context!())
-    .expect("error while running tauri application");
+    tauri::Builder::default()
+        .setup(|app| {
+            if cfg!(debug_assertions) {
+                app.handle().plugin(
+                    tauri_plugin_log::Builder::default()
+                        .level(log::LevelFilter::Info)
+                        .build(),
+                )?;
+            }
+            Ok(())
+        })
+        .plugin(
+            tauri_plugin_sql::Builder::default()
+                .add_migrations("sqlite:school-grid.db", migrations())
+                .build(),
+        )
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
 }
