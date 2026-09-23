@@ -23,6 +23,7 @@ Le due ragioni per cui l'app esiste: **la validazione dei conflitti mentre si co
 ### Stack
 
 - **Frontend**: Nuxt 4 (Vue), SPA statica (`ssr: false`, build con `nuxt generate`)
+- **Linguaggio**: TypeScript in componenti e composables; SCSS per gli asset di stile
 - **Shell desktop**: Tauri 2 (Rust + WebView2 su Windows)
 - **Database**: SQLite locale via `tauri-plugin-sql` — nessun backend remoto, app a singolo utilizzatore
 - **PDF**: `jsPDF` + `jspdf-autotable` lato client, salvataggio via `tauri-plugin-dialog` + `tauri-plugin-fs`
@@ -61,10 +62,10 @@ Regole di validazione in fase di inserimento:
 
 | Cosa | Nome |
 |---|---|
-| Nome progetto | *(provvisorio — da confermare)* |
+| Nome progetto | `school-grid` *(per adesso — provvisorio)* |
 | Tabelle DB | `teacher` · `school_class` · `subject` · `assignment` · `preference` · `schedule_entry` |
 | Composables | `useTeachers` · `useSchoolClasses` · `useSubjects` · `useAssignments` · `usePreferences` · `useSchedule` |
-| Tauri identifier | `com.<dominio>.<nome-progetto>` *(da fissare insieme al nome)* |
+| Tauri identifier | `com.<dominio>.school-grid` *(dominio ancora da fissare)* |
 
 ## Principi di lavoro (il faro)
 
