@@ -1,0 +1,97 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+**School Grid** — applicazione desktop per la creazione manuale dell'orario scolastico settimanale, ad uso di un dirigente scolastico o di una persona incaricata (es. un docente delegato). Gestisce classi, docenti, materie e le cattedre (le assegnazioni docente-classe-materia con il relativo monte ore), e produce un PDF settimanale pronto per la distribuzione.
+
+> **È uno strumento di costruzione assistita, non un motore di generazione automatica.**
+> L'app segnala i conflitti — docente doppio, classe doppia, giorno libero non rispettato — ma la decisione di dove mettere ogni ora resta sempre di chi costruisce l'orario. Ogni volta che una scelta di progetto sembra "manca l'automazione", è perché protegge questa linea.
+
+Le due ragioni per cui l'app esiste: **la validazione dei conflitti mentre si costruisce** l'orario, e **l'esportazione PDF** finale. Nessuna delle due è un dettaglio di contorno.
+
+### Struttura
+
+| Cartella | Cosa |
+|---|---|
+| `app/` | sorgente Nuxt 4 — pages, components, composables, layouts, `app.vue` |
+| `public/` | asset statici |
+| `server/` | Nitro — non eseguito in produzione (l'output è statico) |
+| `src-tauri/` | progetto Rust/Tauri — comandi nativi, plugin, configurazione |
+
+### Stack
+
+- **Frontend**: Nuxt 4 (Vue), SPA statica (`ssr: false`, build con `nuxt generate`)
+- **Shell desktop**: Tauri 2 (Rust + WebView2 su Windows)
+- **Database**: SQLite locale via `tauri-plugin-sql` — nessun backend remoto, app a singolo utilizzatore
+- **PDF**: `jsPDF` + `jspdf-autotable` lato client, salvataggio via `tauri-plugin-dialog` + `tauri-plugin-fs`
+
+### Comandi
+
+```bash
+npm run dev           # dev server Nuxt nel browser, senza Tauri
+npm run tauri dev     # finestra nativa + dev server Nuxt, plugin disponibili
+npm run generate      # build statica Nuxt (.output/public)
+npm run tauri build   # eseguibile finale
+```
+
+⚠️ **`npm run dev` da solo non basta per testare sql/dialog/fs**: quei plugin esistono solo dentro il processo Tauri. Per lavorare su quella parte serve sempre `npm run tauri dev`.
+
+### Modello dati
+
+Nomi delle tabelle in inglese (`school_class` invece di `class`, riservata in JS/TS).
+
+| Tabella | Campi |
+|---|---|
+| `teacher` | `id` · `first_name` · `last_name` |
+| `school_class` | `id` · `name` · `section` |
+| `subject` | `id` · `name` |
+| `assignment` | `id` · `teacher_id` FK · `school_class_id` FK · `subject_id` FK · `weekly_hours` — la "cattedra" |
+| `preference` | `id` · `teacher_id` FK · `day_off` — opzionale |
+| `schedule_entry` | `id` · `assignment_id` FK · `day` · `hour_slot` — lo slot occupato in griglia |
+
+Regole di validazione in fase di inserimento:
+1. **Docente doppio** — stesso `teacher_id` già occupato in quel `day`+`hour_slot` su un'altra classe → blocco.
+2. **Classe doppia** — la `school_class` ha già un'altra `schedule_entry` in quel `day`+`hour_slot` → blocco.
+3. **Giorno libero** — il `day` coincide col `day_off` del docente → avviso, non blocco.
+4. **Monte ore** — conteggio ore assegnate vs `weekly_hours` dell'assignment, per segnalare cattedre incomplete o sovra-assegnate.
+
+### I nomi
+
+| Cosa | Nome |
+|---|---|
+| Nome progetto | *(provvisorio — da confermare)* |
+| Tabelle DB | `teacher` · `school_class` · `subject` · `assignment` · `preference` · `schedule_entry` |
+| Composables | `useTeachers` · `useSchoolClasses` · `useSubjects` · `useAssignments` · `usePreferences` · `useSchedule` |
+| Tauri identifier | `com.<dominio>.<nome-progetto>` *(da fissare insieme al nome)* |
+
+## Principi di lavoro (il faro)
+
+Facciamo una cosa piccola che deve restare semplice — ed è lì che sta la difficoltà. Niente cerimonie enterprise (non servono per un'app desktop mono-utente), ma l'asticella resta l'eccellenza: codice leggibile, che chiunque — anche tu fra sei mesi — può ribaltare senza paura.
+
+Due fallimenti, stesso peso:
+- **Over-engineering** — astrazioni per un solo caso d'uso, pattern pensati per una scala che qui non esiste. Se una complessità non previene un problema concreto, non entra.
+- **Sciatteria** — validazioni saltate, workaround che tamponano il sintomo invece di risolvere la causa, copia-incolla al posto del refactor.
+
+Regole:
+1. **Right-size** — la complessità si paga solo dove protegge dati reali (es. l'integrità dell'orario). Il resto, semplice.
+2. **No workaround** — un fix va alla causa, non al sintomo.
+3. **Niente yes-man** — se una scelta è sbagliata o rischiosa, dillo, con l'alternativa.
+4. **Dillo se è una cavolata** — contesta la richiesta se non ha senso, non eseguire in silenzio.
+5. **Onestà > adulazione** — se qualcosa non va, si dice, con l'output alla mano.
+
+## Le case dei fatti
+
+Per un progetto di queste dimensioni non serve separare specs/docs/backlog in cartelle diverse: **tutto vive in questo `CLAUDE.md`**, aggiornato ad ogni decisione architetturale — è quello che abbiamo fatto finora in chat. Se il progetto crescesse davvero, si scorporerà in una cartella `docs/` quando (e solo quando) diventerà scomodo tenerlo qui dentro.
+
+## Planning Workflow
+
+Per modifiche piccole si implementa direttamente. Per una feature corposa (es. la UI della griglia trascinabile, l'esportazione PDF) si scrive prima una checklist breve qui sotto "Stato attuale", poi si implementa spuntando via via.
+
+## Regole di ingaggio operative
+
+- Quando scrivi un piano o della documentazione, salvalo subito su file — non limitarti a mostrarlo in chat.
+- Non iniziare a implementare o eseguire codice finché non viene chiesto esplicitamente. Se presenti un piano, aspetta conferma prima di agire.
+- Non estendere lo scope oltre quanto chiesto. Idee in più, se ci sono, si accennano in fondo senza svilupparle.
+- Se una richiesta non è chiara (specialmente se in italiano o specifica del dominio scolastico), chiedi chiarimenti invece di indovinare.
