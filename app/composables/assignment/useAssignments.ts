@@ -57,15 +57,31 @@ export function useAssignments() {
     }
   }
 
-  async function addAssignment(assignment: Omit<Assignment, 'id'>) {
+  async function insertAssignment(assignment: Omit<Assignment, 'id'>) {
     const db = await getDb()
     const result = await db.execute(
       'INSERT INTO assignment (teacher_id, school_class_id, weekly_hours) VALUES ($1, $2, $3)',
       [assignment.teacher_id, assignment.school_class_id, assignment.weekly_hours]
     )
+    return result.lastInsertId
+  }
+
+  async function addAssignments(teacherId: number, items: Omit<Assignment, 'id' | 'teacher_id'>[]) {
+    const ids: (number | undefined)[] = []
+    for (const item of items) {
+      ids.push(await insertAssignment({ ...item, teacher_id: teacherId }))
+    }
     await fetchAssignments()
-    const created = assignments.value.find((a) => a.id === result.lastInsertId)
-    notify.success(t('general.added'), created ? displayName(created) : '')
+    if (items.length === 1) {
+      const created = assignments.value.find((a) => a.id === ids[0])
+      notify.success(t('general.added'), created ? displayName(created) : '')
+      return
+    }
+    const names = assignments.value
+      .filter((a) => ids.includes(a.id))
+      .map((a) => displayName(a))
+      .join(', ')
+    notify.success(t('general.addedBatch', { count: items.length }), names)
   }
 
   async function updateAssignment(id: number, assignment: Omit<Assignment, 'id'>) {
@@ -100,7 +116,7 @@ export function useAssignments() {
     assignments,
     loading,
     fetchAssignments,
-    addAssignment,
+    addAssignments,
     updateAssignment,
     deleteAssignment
   }

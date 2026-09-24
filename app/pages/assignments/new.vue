@@ -8,6 +8,6 @@ const { t } = useI18n()
       <UButton icon="i-lucide-arrow-left" variant="ghost" color="neutral" :aria-label="t('general.back')" to="/assignments" />
       <h1 class="text-xl font-semibold">{{ t('assignments.addButton') }}</h1>
     </div>
-    <AssignmentForm />
+    <AssignmentBatchForm />
   </div>
 </template>

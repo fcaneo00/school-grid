@@ -1,12 +1,9 @@
 import type { FormSubmitEvent } from '@nuxt/ui'
 
-export function useAssignmentForm(id?: number) {
+export function useAssignmentForm(id: number) {
   const { t } = useI18n()
-  const { assignments, fetchAssignments, addAssignment, updateAssignment } = useAssignments()
+  const { assignments, fetchAssignments, updateAssignment } = useAssignments()
   const { fetchOptions, teacherOptions, schoolClassOptions } = useAssignmentOptions()
-
-  const isEditing = computed(() => id !== undefined)
-  const submitLabel = computed(() => isEditing.value ? t('table.save') : t('form.submit'))
 
   const schema = createAssignmentFormSchema(t)
 
@@ -18,7 +15,6 @@ export function useAssignmentForm(id?: number) {
 
   onMounted(async () => {
     fetchOptions()
-    if (id === undefined) return
     await fetchAssignments()
     const assignment = assignments.value.find((assignment) => assignment.id === id)
     if (!assignment) return
@@ -28,19 +24,13 @@ export function useAssignmentForm(id?: number) {
   })
 
   async function onSubmit(event: FormSubmitEvent<AssignmentFormSchema>) {
-    if (id === undefined) {
-      await addAssignment(event.data)
-    } else {
-      await updateAssignment(id, event.data)
-    }
+    await updateAssignment(id, event.data)
     await navigateTo('/assignments')
   }
 
   return {
     schema,
     state,
-    isEditing,
-    submitLabel,
     teacherOptions,
     schoolClassOptions,
     onSubmit

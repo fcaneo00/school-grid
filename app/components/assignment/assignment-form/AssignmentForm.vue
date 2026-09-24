@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { useAssignmentForm } from './useAssignmentForm'
 
-const props = defineProps<{ id?: number }>()
+const props = defineProps<{ id: number }>()
 
 const { t } = useI18n()
-const { schema, state, submitLabel, teacherOptions, schoolClassOptions, onSubmit } = useAssignmentForm(props.id)
+const { schema, state, teacherOptions, schoolClassOptions, onSubmit } = useAssignmentForm(props.id)
 </script>
 
 <template>
@@ -18,6 +18,6 @@ const { schema, state, submitLabel, teacherOptions, schoolClassOptions, onSubmit
     <UFormField name="weekly_hours" :label="t('assignments.form.weeklyHours')">
       <UInputNumber v-model="state.weekly_hours" :min="1" class="w-full" />
     </UFormField>
-    <UButton type="submit" :label="submitLabel" />
+    <UButton type="submit" :label="t('table.save')" />
   </UForm>
 </template>

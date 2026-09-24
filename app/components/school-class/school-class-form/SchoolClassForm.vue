@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { useSchoolClassForm } from './useSchoolClassForm'
 
-const props = defineProps<{ id?: number }>()
+const props = defineProps<{ id: number }>()
 
 const { t } = useI18n()
-const { schema, state, submitLabel, sectionOptions, studyTrackOptions, onSubmit } = useSchoolClassForm(props.id)
+const { schema, state, sectionOptions, studyTrackOptions, onSubmit } = useSchoolClassForm(props.id)
 </script>
 
 <template>
@@ -18,6 +18,6 @@ const { schema, state, submitLabel, sectionOptions, studyTrackOptions, onSubmit 
     <UFormField name="study_track_id" :label="t('schoolClasses.form.studyTrack')">
       <USelect v-model="state.study_track_id" :items="studyTrackOptions" class="w-full" />
     </UFormField>
-    <UButton type="submit" :label="submitLabel" />
+    <UButton type="submit" :label="t('table.save')" />
   </UForm>
 </template>

@@ -3,6 +3,7 @@
     "loading": "Caricamento…",
     "back": "Torna indietro",
     "added": "Aggiunto",
+    "addedBatch": "{count} elementi aggiunti",
     "updated": "Modificato",
     "deleted": "Eliminato",
     "errorTitle": "Si è verificato un errore",
@@ -16,7 +17,9 @@
   },
   "form": {
     "submit": "Aggiungi",
-    "required": "Obbligatorio"
+    "required": "Obbligatorio",
+    "addRow": "Aggiungi",
+    "removeRow": "Rimuovi"
   },
   "table": {
     "actions": "Azioni",

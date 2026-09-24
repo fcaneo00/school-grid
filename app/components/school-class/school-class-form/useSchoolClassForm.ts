@@ -1,13 +1,10 @@
 import type { FormSubmitEvent } from '@nuxt/ui'
 
-export function useSchoolClassForm(id?: number) {
+export function useSchoolClassForm(id: number) {
   const { t } = useI18n()
-  const { schoolClasses, fetchSchoolClasses, addSchoolClass, updateSchoolClass } = useSchoolClasses()
+  const { schoolClasses, fetchSchoolClasses, updateSchoolClass } = useSchoolClasses()
   const { sections, fetchSections } = useSections()
   const { studyTracks, fetchStudyTracks } = useStudyTracks()
-
-  const isEditing = computed(() => id !== undefined)
-  const submitLabel = computed(() => isEditing.value ? t('table.save') : t('form.submit'))
 
   const schema = createSchoolClassFormSchema(t)
 
@@ -34,7 +31,6 @@ export function useSchoolClassForm(id?: number) {
   onMounted(async () => {
     fetchSections()
     fetchStudyTracks()
-    if (id === undefined) return
     await fetchSchoolClasses()
     const schoolClass = schoolClasses.value.find((schoolClass) => schoolClass.id === id)
     if (!schoolClass) return
@@ -44,19 +40,13 @@ export function useSchoolClassForm(id?: number) {
   })
 
   async function onSubmit(event: FormSubmitEvent<SchoolClassFormSchema>) {
-    if (id === undefined) {
-      await addSchoolClass(event.data)
-    } else {
-      await updateSchoolClass(id, event.data)
-    }
+    await updateSchoolClass(id, event.data)
     await navigateTo('/school-classes')
   }
 
   return {
     schema,
     state,
-    isEditing,
-    submitLabel,
     sectionOptions,
     studyTrackOptions,
     onSubmit

@@ -41,15 +41,31 @@ export function useSchoolClasses() {
     }
   }
 
-  async function addSchoolClass(schoolClass: Omit<SchoolClass, 'id'>) {
+  async function insertSchoolClass(schoolClass: Omit<SchoolClass, 'id'>) {
     const db = await getDb()
     const result = await db.execute(
       'INSERT INTO school_class (year, section_id, study_track_id) VALUES ($1, $2, $3)',
       [schoolClass.year, schoolClass.section_id, schoolClass.study_track_id]
     )
+    return result.lastInsertId
+  }
+
+  async function addSchoolClasses(items: Omit<SchoolClass, 'id'>[]) {
+    const ids: (number | undefined)[] = []
+    for (const item of items) {
+      ids.push(await insertSchoolClass(item))
+    }
     await fetchSchoolClasses()
-    const created = schoolClasses.value.find((c) => c.id === result.lastInsertId)
-    notify.success(t('general.added'), created ? formatSchoolClassName(created) : '')
+    if (items.length === 1) {
+      const created = schoolClasses.value.find((c) => c.id === ids[0])
+      notify.success(t('general.added'), created ? formatSchoolClassName(created) : '')
+      return
+    }
+    const names = schoolClasses.value
+      .filter((c) => ids.includes(c.id))
+      .map((c) => formatSchoolClassName(c))
+      .join(', ')
+    notify.success(t('general.addedBatch', { count: items.length }), names)
   }
 
   async function updateSchoolClass(id: number, schoolClass: Omit<SchoolClass, 'id'>) {
@@ -91,7 +107,7 @@ export function useSchoolClasses() {
     schoolClasses,
     loading,
     fetchSchoolClasses,
-    addSchoolClass,
+    addSchoolClasses,
     updateSchoolClass,
     deleteSchoolClass
   }

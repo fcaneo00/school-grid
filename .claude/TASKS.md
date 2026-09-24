@@ -287,3 +287,24 @@ Corregge la decisione precedente ("al massimo uno") - un docente può avere più
 - [x] `useTeacherTable.ts` - colonna con i giorni liberi concatenati e tradotti; filtro `teachers/index.vue` invariato nella forma (select singola: "il docente ha questo giorno tra i suoi liberi", via `.includes()` invece di uguaglianza)
 - [x] Aggiornare CLAUDE.md (riga `preference`: da "al massimo una riga per docente" a "più righe per docente")
 - [ ] Verifica: `npm run tauri dev` - selezionare più giorni liberi per un docente, la tabella li mostra tutti, il filtro funziona, eliminare un docente con più giorni liberi non fallisce per FK
+
+## Aggiunta in massa: Classi e Cattedre
+
+Il processo di aggiunta a un record per volta è tedioso quando si inseriscono tante classi/cattedre simili (es. tutte le classi della sezione A, o tutte le classi assegnate a un docente). Il form "Aggiungi" (solo quello - "Modifica" resta un singolo record) diventa un elenco ripetibile di righe: parte con 1 riga come oggi (nessun click in più per il caso comune di un solo inserimento), un pulsante "+ Aggiungi" ne appende altre, il submit inserisce tutte le righe in un colpo solo con un'unica notifica riassuntiva invece di N notifiche separate.
+
+Pattern tecnico: `UForm` supporta nativamente liste annidate (`nested` prop + `name="items.N"` + `UForm` figlio con proprio schema) - ogni riga si autovalida, il form padre aspetta tutte le righe prima di inviare. Niente libreria esterna, è già documentato in Nuxt UI.
+
+Il form di modifica (`[id]/edit.vue`) non cambia: resta un singolo record con lo stesso componente/composable di sempre. Solo il form di creazione cambia forma, quindi si separa in un componente/composable dedicato invece di sovraccaricare quello esistente con due modalità molto diverse (riga singola vs elenco).
+
+**Classi**: ogni riga ha anno/sezione/corso di studio (gli stessi 3 campi di sempre). "+ Aggiungi classe" copia sezione e corso di studio dall'ultima riga e incrementa l'anno di 1 (se ≤5) - così per "1A, 2A, 3A Scientifico" si clicca + due volte e non si cambia altro. Nessun campo condiviso a livello di form: ogni riga resta indipendente (si può comunque cambiare sezione/corso in una riga specifica se serve).
+
+**Cattedre**: il docente si sceglie *una volta sola* in cima al form (campo condiviso, non ripetuto per riga - è esplicitamente il caso d'uso richiesto: "per un docente voglio aggiungere più classi"). Ogni riga ha solo classe e ore settimanali.
+
+- [x] `useSchoolClasses.ts` - `addSchoolClass` sostituito da `addSchoolClasses(items[])` (unico entry point, anche per una singola riga): `insertSchoolClass` privato condiviso, un solo `fetchSchoolClasses()` e un solo toast alla fine (per 1 riga stesso messaggio di prima, per più righe titolo `general.addedBatch` con conteggio e descrizione coi nomi delle classi separati da virgola)
+- [x] `useAssignments.ts` - stesso pattern: `addAssignment` sostituito da `addAssignments(teacherId, items[])`
+- [x] Nuovo `useSchoolClassBatchForm.ts` + `SchoolClassBatchForm.vue` (create-only, sostituisce `SchoolClassForm` in `new.vue`): `state.items: Partial<SchoolClassFormSchema>[]`, parte con 1 riga, `addRow()`/`removeRow(index)` (cestino nascosto se resta 1 sola riga), ogni riga è un `UForm` annidato (`nested` + `name="items.N"`, niente `:state` proprio - eredita dal genitore, non passavo `:state` sulla nested form nel primo tentativo e TypeScript l'ha bloccato subito) col già esistente `createSchoolClassFormSchema`
+- [x] Nuovo `useAssignmentBatchForm.ts` + `AssignmentBatchForm.vue` (create-only, sostituisce `AssignmentForm` in `new.vue`): `teacher_id` in cima (nuovo `createAssignmentTeacherFormSchema`, solo questo campo), righe classe+ore con nuovo `createAssignmentItemFormSchema` (senza `teacher_id`) - entrambi aggiunti a `assignmentFormHelper.ts` accanto allo schema esistente
+- [x] `SchoolClassForm.vue`/`useSchoolClassForm.ts` e `AssignmentForm.vue`/`useAssignmentForm.ts` esistenti ridotti a edit-only (`id: number` obbligatorio, non più opzionale) - restano usati solo da `[id]/edit.vue`
+- [x] `pages/school-classes/new.vue`/`pages/assignments/new.vue` - renderizzano i nuovi componenti Batch invece dei Form esistenti
+- [x] Chiavi i18n: `form.addRow`, `form.removeRow`, `general.addedBatch`
+- [ ] Verifica: `npm run tauri dev` - aggiungere una sola classe/cattedra funziona come prima (0 click in più), aggiungere 3 classi della stessa sezione con anni diversi in un solo submit, aggiungere 2 cattedre per lo stesso docente in un solo submit, rimuovere una riga funziona, non si può rimuovere l'ultima riga rimasta
