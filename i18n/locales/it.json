@@ -27,7 +27,8 @@
     "teachers": "Docenti",
     "schoolClasses": "Classi",
     "subjects": "Materie",
-    "studyTracks": "Corsi di studio"
+    "studyTracks": "Corsi di studio",
+    "assignments": "Cattedre"
   },
   "teachers": {
     "title": "Docenti",
@@ -63,6 +64,18 @@
     "editTitle": "Modifica corso di studio",
     "form": {
       "name": "Nome"
+    }
+  },
+  "assignments": {
+    "title": "Cattedre",
+    "addButton": "Aggiungi cattedra",
+    "editTitle": "Modifica cattedra",
+    "form": {
+      "teacher": "Docente",
+      "schoolClass": "Classe",
+      "subject": "Materia",
+      "weeklyHours": "Ore settimanali",
+      "weeklyHoursInvalid": "Deve essere un numero intero positivo"
     }
   }
 }

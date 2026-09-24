@@ -12,6 +12,7 @@ export interface SchoolClassWithDetails extends SchoolClass {
 export function useSchoolClasses() {
   const { t } = useI18n()
   const notify = useNotification()
+  const { bySchoolClass } = useAssignmentUsages()
   const schoolClasses = useState<SchoolClassWithDetails[]>('school-classes', () => [])
   const loading = useState('school-classes-loading', () => false)
 
@@ -72,7 +73,14 @@ export function useSchoolClasses() {
         notify.error(t('general.errorTitle'), String(e))
         return
       }
-      notify.error(t('general.deleteBlockedTitle', { name }), t('general.deleteBlockedGeneric'))
+      const usages = await bySchoolClass(id)
+      const usagesText = usages
+        .map((assignment) => `${assignment.subject_name} - ${assignment.teacher_last_name} ${assignment.teacher_first_name}`)
+        .join(', ')
+      notify.error(
+        t('general.deleteBlockedTitle', { name }),
+        t('general.deleteBlockedDescription', { usages: usagesText })
+      )
     }
   }
 

@@ -7,6 +7,7 @@ export interface Teacher {
 export function useTeachers() {
   const { t } = useI18n()
   const notify = useNotification()
+  const { byTeacher } = useAssignmentUsages()
   const teachers = useState<Teacher[]>('teachers', () => [])
   const loading = useState('teachers-loading', () => false)
 
@@ -61,7 +62,18 @@ export function useTeachers() {
         notify.error(t('general.errorTitle'), String(e))
         return
       }
-      notify.error(t('general.deleteBlockedTitle', { name }), t('general.deleteBlockedGeneric'))
+      const usages = await byTeacher(id)
+      const usagesText = usages
+        .map((assignment) => `${assignment.subject_name} (${formatSchoolClassName({
+          year: assignment.school_class_year,
+          section: assignment.school_class_section,
+          study_track_name: assignment.school_class_study_track_name
+        })})`)
+        .join(', ')
+      notify.error(
+        t('general.deleteBlockedTitle', { name }),
+        t('general.deleteBlockedDescription', { usages: usagesText })
+      )
     }
   }
 

@@ -6,6 +6,7 @@ export interface Subject {
 export function useSubjects() {
   const { t } = useI18n()
   const notify = useNotification()
+  const { bySubject } = useAssignmentUsages()
   const subjects = useState<Subject[]>('subjects', () => [])
   const loading = useState('subjects-loading', () => false)
 
@@ -48,7 +49,18 @@ export function useSubjects() {
         notify.error(t('general.errorTitle'), String(e))
         return
       }
-      notify.error(t('general.deleteBlockedTitle', { name }), t('general.deleteBlockedGeneric'))
+      const usages = await bySubject(id)
+      const usagesText = usages
+        .map((assignment) => `${assignment.teacher_last_name} ${assignment.teacher_first_name} (${formatSchoolClassName({
+          year: assignment.school_class_year,
+          section: assignment.school_class_section,
+          study_track_name: assignment.school_class_study_track_name
+        })})`)
+        .join(', ')
+      notify.error(
+        t('general.deleteBlockedTitle', { name }),
+        t('general.deleteBlockedDescription', { usages: usagesText })
+      )
     }
   }
 
