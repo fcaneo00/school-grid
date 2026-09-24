@@ -2,7 +2,7 @@
 const { t } = useI18n()
 
 const navItems = computed(() => [
-  { label: t('nav.teachers'), to: '/' },
+  { label: t('nav.teachers'), to: '/teachers' },
   { label: t('nav.schoolClasses'), to: '/classes' }
 ])
 </script>

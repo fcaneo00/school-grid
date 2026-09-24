@@ -29,6 +29,8 @@
   },
   "teachers": {
     "title": "Docenti",
+    "addButton": "Aggiungi docente",
+    "editTitle": "Modifica docente",
     "form": {
       "firstName": "Nome",
       "lastName": "Cognome"
