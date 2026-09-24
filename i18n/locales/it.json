@@ -24,12 +24,29 @@
     "filters": "Filtri"
   },
   "nav": {
+    "registry": "Anagrafica",
+    "schedule": "Tabella orario",
+    "pdfExport": "Esporta PDF",
+    "comingSoon": "In arrivo",
     "teachers": "Docenti",
     "schoolClasses": "Classi",
     "subjects": "Materie",
     "studyTracks": "Corsi di studio",
     "sections": "Sezioni",
     "assignments": "Cattedre"
+  },
+  "home": {
+    "title": "School Grid",
+    "subtitle": "Da dove vuoi partire?",
+    "registryTitle": "Anagrafica",
+    "registryDescription": "Docenti, classi, sezioni, corsi di studio, materie e cattedre: i dati su cui si costruisce tutto il resto.",
+    "scheduleTitle": "Tabella orario",
+    "scheduleDescription": "Costruisci la griglia settimanale trascinando le cattedre negli slot, con i conflitti segnalati in tempo reale.",
+    "pdfExportTitle": "Esporta PDF",
+    "pdfExportDescription": "Genera il PDF dell'orario, pronto da stampare e distribuire."
+  },
+  "registry": {
+    "title": "Anagrafica"
   },
   "teachers": {
     "title": "Docenti",

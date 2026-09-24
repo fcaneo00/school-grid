@@ -6,7 +6,10 @@ const { filters } = useStudyTrackFilters()
 <template>
   <div class="space-y-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-xl font-semibold">{{ t('studyTracks.title') }}</h1>
+      <div class="flex items-center gap-2">
+        <UButton icon="i-lucide-arrow-left" variant="ghost" color="neutral" :aria-label="t('general.back')" to="/registry" />
+        <h1 class="text-xl font-semibold">{{ t('studyTracks.title') }}</h1>
+      </div>
       <div class="flex gap-2">
         <UPopover>
           <UButton :label="t('table.filters')" icon="i-lucide-filter" color="neutral" variant="outline" />

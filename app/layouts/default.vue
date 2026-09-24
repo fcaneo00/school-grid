@@ -2,18 +2,21 @@
 const { t } = useI18n()
 
 const navItems = computed(() => [
-  { label: t('nav.teachers'), to: '/teachers' },
-  { label: t('nav.sections'), to: '/sections' },
-  { label: t('nav.studyTracks'), to: '/study-tracks' },
-  { label: t('nav.schoolClasses'), to: '/school-classes' },
-  { label: t('nav.subjects'), to: '/subjects' },
-  { label: t('nav.assignments'), to: '/assignments' }
+  { label: t('nav.registry'), icon: 'i-lucide-clipboard-edit', to: '/registry' },
+  { label: t('nav.schedule'), icon: 'i-lucide-calendar-days', badge: t('nav.comingSoon'), disabled: true },
+  { label: t('nav.pdfExport'), icon: 'i-lucide-file-down', badge: t('nav.comingSoon'), disabled: true }
 ])
 </script>
 
 <template>
   <div>
-    <UNavigationMenu :as="'header'" :items="navItems" class="border-b border-default px-4" />
+    <header class="flex items-center gap-4 border-b border-default px-4">
+      <NuxtLink to="/" class="text-lg font-semibold shrink-0">
+        {{ t('home.title') }}
+      </NuxtLink>
+      <UNavigationMenu :items="navItems" class="flex-1" />
+      <UColorModeButton />
+    </header>
     <UContainer :as="'main'">
       <div class="container mx-auto p-6">
         <slot />
