@@ -4,10 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**School Grid** — applicazione desktop per la creazione manuale dell'orario scolastico settimanale, ad uso di un dirigente scolastico o di una persona incaricata (es. un docente delegato). Gestisce classi, docenti, materie e le cattedre (le assegnazioni docente-classe-materia con il relativo monte ore), e produce un PDF settimanale pronto per la distribuzione.
+**School Grid** - applicazione desktop per la creazione manuale dell'orario scolastico settimanale, ad uso di un dirigente scolastico o di una persona incaricata (es. un docente delegato). Gestisce classi, docenti, materie e le cattedre (le assegnazioni docente-classe-materia con il relativo monte ore), e produce un PDF settimanale pronto per la distribuzione.
 
 > **È uno strumento di costruzione assistita, non un motore di generazione automatica.**
-> L'app segnala i conflitti — docente doppio, classe doppia, giorno libero non rispettato — ma la decisione di dove mettere ogni ora resta sempre di chi costruisce l'orario. Ogni volta che una scelta di progetto sembra "manca l'automazione", è perché protegge questa linea.
+> L'app segnala i conflitti - docente doppio, classe doppia, giorno libero non rispettato - ma la decisione di dove mettere ogni ora resta sempre di chi costruisce l'orario. Ogni volta che una scelta di progetto sembra "manca l'automazione", è perché protegge questa linea.
 
 Le due ragioni per cui l'app esiste: **la validazione dei conflitti mentre si costruisce** l'orario, e **l'esportazione PDF** finale. Nessuna delle due è un dettaglio di contorno.
 
@@ -15,19 +15,19 @@ Le due ragioni per cui l'app esiste: **la validazione dei conflitti mentre si co
 
 | Cartella | Cosa |
 |---|---|
-| `app/` | sorgente Nuxt 4 — pages, components, composables, layouts, `app.vue` |
+| `app/` | sorgente Nuxt 4 - pages, components, composables, layouts, `app.vue` |
 | `public/` | asset statici |
-| `server/` | Nitro — non eseguito in produzione (l'output è statico) |
-| `src-tauri/` | progetto Rust/Tauri — comandi nativi, plugin, configurazione |
+| `server/` | Nitro - non eseguito in produzione (l'output è statico) |
+| `src-tauri/` | progetto Rust/Tauri - comandi nativi, plugin, configurazione |
 
 ### Stack
 
 - **Frontend**: Nuxt 4 (Vue), SPA statica (`ssr: false`, build con `nuxt generate`)
 - **Linguaggio**: TypeScript in componenti e composables; SCSS per gli asset di stile
-- **i18n**: `@nuxtjs/i18n` (`strategy: 'no_prefix'`, niente routing per lingua) — solo italiano attivo, ma nessun testo hardcoded nei template: tutte le stringhe passano da `i18n/locales/*.json` via `$t()`/`useI18n()`, pronto per aggiungere lingue senza toccare i componenti
-- **Lint**: `@nuxt/eslint` (JS/TS/Vue) + `cargo clippy`/`fmt` (Rust) — `vue/block-order` (script→template→style) e `vue/attributes-order` forzati a `error` in `eslint.config.mjs`, resto ai default del modulo
+- **i18n**: `@nuxtjs/i18n` (`strategy: 'no_prefix'`, niente routing per lingua) - solo italiano attivo, ma nessun testo hardcoded nei template: tutte le stringhe passano da `i18n/locales/*.json` via `$t()`/`useI18n()`, pronto per aggiungere lingue senza toccare i componenti
+- **Lint**: `@nuxt/eslint` (JS/TS/Vue) + `cargo clippy`/`fmt` (Rust) - `vue/block-order` (script→template→style) e `vue/attributes-order` forzati a `error` in `eslint.config.mjs`, resto ai default del modulo
 - **Shell desktop**: Tauri 2 (Rust + WebView2 su Windows)
-- **Database**: SQLite locale via `tauri-plugin-sql` — nessun backend remoto, app a singolo utilizzatore
+- **Database**: SQLite locale via `tauri-plugin-sql` - nessun backend remoto, app a singolo utilizzatore
 - **PDF**: `jsPDF` + `jspdf-autotable` lato client, salvataggio via `tauri-plugin-dialog` + `tauri-plugin-fs`
 
 ### Comandi
@@ -52,47 +52,47 @@ Nomi delle tabelle in inglese (`school_class` invece di `class`, riservata in JS
 | Tabella | Campi |
 |---|---|
 | `teacher` | `id` · `first_name` · `last_name` |
-| `school_class` | `id` · `year` (1-5) · `section_id` FK · `study_track_id` FK (nullable) — stesso anno+sezione può ripetersi su corsi diversi (es. 1A Scientifico ≠ 1A Linguistico), `study_track` disambigua. Colonna `year` ancora TEXT (affinità ereditata dalla migrazione v1/v2, cambiarla richiederebbe ricostruire la tabella e con essa il vincolo FK di `assignment` — non vale la pena per un intero 1-5): letta con `CAST(year AS INTEGER)` così il livello applicativo la tratta sempre come numero. `section_id` è nullable anche a livello SQL per lo stesso motivo (impossibile imporre `NOT NULL` senza ricostruire la tabella), ma è sempre obbligatorio a livello applicativo (zod) |
+| `school_class` | `id` · `year` (1-5) · `section_id` FK · `study_track_id` FK (nullable) - stesso anno+sezione può ripetersi su corsi diversi (es. 1A Scientifico ≠ 1A Linguistico), `study_track` disambigua. Colonna `year` ancora TEXT (affinità ereditata dalla migrazione v1/v2, cambiarla richiederebbe ricostruire la tabella e con essa il vincolo FK di `assignment` - non vale la pena per un intero 1-5): letta con `CAST(year AS INTEGER)` così il livello applicativo la tratta sempre come numero. `section_id` è nullable anche a livello SQL per lo stesso motivo (impossibile imporre `NOT NULL` senza ricostruire la tabella), ma è sempre obbligatorio a livello applicativo (zod) |
 | `subject` | `id` · `name` |
-| `study_track` | `id` · `name` — il corso di studio (es. "Scientifico", "Linguistico"), entità propria e non testo libero: serve per contare/raggruppare/validare in modo affidabile, in vista del PDF |
-| `section` | `id` · `name` — la sezione (es. "A", "B"), entità propria per lo stesso motivo di `study_track`: testo libero avrebbe permesso incoerenze ("a" vs "A") che spezzano i raggruppamenti |
-| `assignment` | `id` · `teacher_id` FK · `school_class_id` FK · `subject_id` FK · `weekly_hours` — la "cattedra" |
-| `preference` | `id` · `teacher_id` FK · `day_off` — opzionale |
-| `schedule_entry` | `id` · `assignment_id` FK · `day` · `hour_slot` — lo slot occupato in griglia |
+| `study_track` | `id` · `name` - il corso di studio (es. "Scientifico", "Linguistico"), entità propria e non testo libero: serve per contare/raggruppare/validare in modo affidabile, in vista del PDF |
+| `section` | `id` · `name` - la sezione (es. "A", "B"), entità propria per lo stesso motivo di `study_track`: testo libero avrebbe permesso incoerenze ("a" vs "A") che spezzano i raggruppamenti |
+| `assignment` | `id` · `teacher_id` FK · `school_class_id` FK · `subject_id` FK · `weekly_hours` - la "cattedra" |
+| `preference` | `id` · `teacher_id` FK · `day_off` - opzionale |
+| `schedule_entry` | `id` · `assignment_id` FK · `day` · `hour_slot` - lo slot occupato in griglia |
 
 Regole di validazione in fase di inserimento:
-1. **Docente doppio** — stesso `teacher_id` già occupato in quel `day`+`hour_slot` su un'altra classe → blocco.
-2. **Classe doppia** — la `school_class` ha già un'altra `schedule_entry` in quel `day`+`hour_slot` → blocco.
-3. **Giorno libero** — il `day` coincide col `day_off` del docente → avviso, non blocco.
-4. **Monte ore** — conteggio ore assegnate vs `weekly_hours` dell'assignment, per segnalare cattedre incomplete o sovra-assegnate.
+1. **Docente doppio** - stesso `teacher_id` già occupato in quel `day`+`hour_slot` su un'altra classe → blocco.
+2. **Classe doppia** - la `school_class` ha già un'altra `schedule_entry` in quel `day`+`hour_slot` → blocco.
+3. **Giorno libero** - il `day` coincide col `day_off` del docente → avviso, non blocco.
+4. **Monte ore** - conteggio ore assegnate vs `weekly_hours` dell'assignment, per segnalare cattedre incomplete o sovra-assegnate.
 
 ### I nomi
 
 | Cosa | Nome |
 |---|---|
-| Nome progetto | `school-grid` *(per adesso — provvisorio)* |
+| Nome progetto | `school-grid` *(per adesso - provvisorio)* |
 | Tabelle DB | `teacher` · `school_class` · `subject` · `study_track` · `section` · `assignment` · `preference` · `schedule_entry` |
 | Composables | `useTeachers` · `useSchoolClasses` · `useSubjects` · `useStudyTracks` · `useSections` · `useAssignments` · `usePreferences` · `useSchedule` |
-| Tauri identifier | `com.school-grid.app` *(provvisorio — dominio ancora da fissare)* |
+| Tauri identifier | `com.school-grid.app` *(provvisorio - dominio ancora da fissare)* |
 
 ## Principi di lavoro (il faro)
 
-Facciamo una cosa piccola che deve restare semplice — ed è lì che sta la difficoltà. Niente cerimonie enterprise (non servono per un'app desktop mono-utente), ma l'asticella resta l'eccellenza: codice leggibile, che chiunque — anche tu fra sei mesi — può ribaltare senza paura.
+Facciamo una cosa piccola che deve restare semplice - ed è lì che sta la difficoltà. Niente cerimonie enterprise (non servono per un'app desktop mono-utente), ma l'asticella resta l'eccellenza: codice leggibile, che chiunque - anche tu fra sei mesi - può ribaltare senza paura.
 
 Due fallimenti, stesso peso:
-- **Over-engineering** — astrazioni per un solo caso d'uso, pattern pensati per una scala che qui non esiste. Se una complessità non previene un problema concreto, non entra.
-- **Sciatteria** — validazioni saltate, workaround che tamponano il sintomo invece di risolvere la causa, copia-incolla al posto del refactor.
+- **Over-engineering** - astrazioni per un solo caso d'uso, pattern pensati per una scala che qui non esiste. Se una complessità non previene un problema concreto, non entra.
+- **Sciatteria** - validazioni saltate, workaround che tamponano il sintomo invece di risolvere la causa, copia-incolla al posto del refactor.
 
 Regole:
-1. **Right-size** — la complessità si paga solo dove protegge dati reali (es. l'integrità dell'orario). Il resto, semplice.
-2. **No workaround** — un fix va alla causa, non al sintomo.
-3. **Niente yes-man** — se una scelta è sbagliata o rischiosa, dillo, con l'alternativa.
-4. **Dillo se è una cavolata** — contesta la richiesta se non ha senso, non eseguire in silenzio.
-5. **Onestà > adulazione** — se qualcosa non va, si dice, con l'output alla mano.
+1. **Right-size** - la complessità si paga solo dove protegge dati reali (es. l'integrità dell'orario). Il resto, semplice.
+2. **No workaround** - un fix va alla causa, non al sintomo.
+3. **Niente yes-man** - se una scelta è sbagliata o rischiosa, dillo, con l'alternativa.
+4. **Dillo se è una cavolata** - contesta la richiesta se non ha senso, non eseguire in silenzio.
+5. **Onestà > adulazione** - se qualcosa non va, si dice, con l'output alla mano.
 
 ## Le case dei fatti
 
-Per un progetto di queste dimensioni non serve separare specs/docs/backlog in cartelle diverse: **tutto vive in questo `CLAUDE.md`**, aggiornato ad ogni decisione architetturale — è quello che abbiamo fatto finora in chat. Se il progetto crescesse davvero, si scorporerà in una cartella `docs/` quando (e solo quando) diventerà scomodo tenerlo qui dentro.
+Per un progetto di queste dimensioni non serve separare specs/docs/backlog in cartelle diverse: **tutto vive in questo `CLAUDE.md`**, aggiornato ad ogni decisione architetturale - è quello che abbiamo fatto finora in chat. Se il progetto crescesse davvero, si scorporerà in una cartella `docs/` quando (e solo quando) diventerà scomodo tenerlo qui dentro.
 
 La checklist di lavoro in corso vive invece in [`.claude/TASKS.md`](.claude/TASKS.md), per non far lievitare questo file con lo stato di avanzamento. Lavoriamo diretti su `main`, niente branch/PR per adesso.
 
@@ -102,7 +102,10 @@ Per modifiche piccole si implementa direttamente. Per una feature corposa (es. l
 
 ## Regole di ingaggio operative
 
-- Quando scrivi un piano o della documentazione, salvalo subito su file — non limitarti a mostrarlo in chat.
+- Quando scrivi un piano o della documentazione, salvalo subito su file - non limitarti a mostrarlo in chat.
 - Non iniziare a implementare o eseguire codice finché non viene chiesto esplicitamente. Se presenti un piano, aspetta conferma prima di agire.
 - Non estendere lo scope oltre quanto chiesto. Idee in più, se ci sono, si accennano in fondo senza svilupparle.
 - Se una richiesta non è chiara (specialmente se in italiano o specifica del dominio scolastico), chiedi chiarimenti invece di indovinare.
+- Controlla `.claude/skills/` prima di lavorare con una tecnologia del progetto - le skill vengono aggiunte progressivamente, non procedere a memoria se ce n'è una disponibile.
+- Niente commenti nel codice - il codice si autodocumenta con nomi chiari; l'unica eccezione è JSDoc dove serve documentare un'API pubblica.
+- Niente em dash (—) nella prosa che si legge (documentazione, messaggi di commit, ecc.) - usa il trattino semplice `-`.
