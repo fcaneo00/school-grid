@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { useTeacherForm } from './useTeacherForm'
 
-const props = defineProps<{ id?: number }>()
+interface TeacherFormProps {
+  id?: number
+}
+
+const props = defineProps<TeacherFormProps>()
 
 const { t } = useI18n()
 const { schema, state, submitLabel, dayOffOptions, onSubmit } = useTeacherForm(props.id)

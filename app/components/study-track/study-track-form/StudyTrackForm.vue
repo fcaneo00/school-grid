@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { useStudyTrackForm } from './useStudyTrackForm'
 
-const props = defineProps<{ id?: number }>()
+interface StudyTrackFormProps {
+  id?: number
+}
+
+const props = defineProps<StudyTrackFormProps>()
 
 const { t } = useI18n()
 const { schema, state, submitLabel, onSubmit } = useStudyTrackForm(props.id)

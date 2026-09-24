@@ -1,9 +1,11 @@
 <script setup lang="ts">
+interface ClearableInputProps {
+  placeholder?: string
+}
+
 const model = defineModel<string>({ default: '' })
 
-defineProps<{
-  placeholder?: string
-}>()
+defineProps<ClearableInputProps>()
 </script>
 
 <template>

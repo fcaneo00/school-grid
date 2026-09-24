@@ -110,3 +110,4 @@ Per modifiche piccole si implementa direttamente. Per una feature corposa (es. l
 - Controlla `.claude/skills/` prima di lavorare con una tecnologia del progetto - le skill vengono aggiunte progressivamente, non procedere a memoria se ce n'è una disponibile.
 - Niente commenti nel codice - il codice si autodocumenta con nomi chiari; l'unica eccezione è JSDoc dove serve documentare un'API pubblica.
 - Niente em dash (—) nella prosa che si legge (documentazione, messaggi di commit, ecc.) - usa il trattino semplice `-`.
+- Le props dei componenti si dichiarano come interface nominata (`interface NomeComponenteProps { ... }`) seguita da `defineProps<NomeComponenteProps>()`, mai `defineProps<{ ... }>()` inline - così l'interfaccia è riutilizzabile altrove (es. nei test Vitest in arrivo).

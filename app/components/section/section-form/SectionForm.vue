@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { useSectionForm } from './useSectionForm'
 
-const props = defineProps<{ id?: number }>()
+interface SectionFormProps {
+  id?: number
+}
+
+const props = defineProps<SectionFormProps>()
 
 const { t } = useI18n()
 const { schema, state, submitLabel, onSubmit } = useSectionForm(props.id)

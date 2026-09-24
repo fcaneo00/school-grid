@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { useAssignmentForm } from './useAssignmentForm'
 
-const props = defineProps<{ id: number }>()
+interface AssignmentFormProps {
+  id: number
+}
+
+const props = defineProps<AssignmentFormProps>()
 
 const { t } = useI18n()
 const { schema, state, teacherOptions, schoolClassOptions, onSubmit } = useAssignmentForm(props.id)

@@ -1,11 +1,13 @@
 <script setup lang="ts">
-const model = defineModel<number | undefined>({ default: undefined })
-
-defineProps<{
+interface ClearableInputNumberProps {
   placeholder?: string
   min?: number
   max?: number
-}>()
+}
+
+const model = defineModel<number | undefined>({ default: undefined })
+
+defineProps<ClearableInputNumberProps>()
 </script>
 
 <template>
