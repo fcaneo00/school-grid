@@ -53,7 +53,7 @@ export function useSubjects() {
       const usagesText = usages
         .map((assignment) => `${assignment.teacher_last_name} ${assignment.teacher_first_name} (${formatSchoolClassName({
           year: assignment.school_class_year,
-          section: assignment.school_class_section,
+          section_name: assignment.school_class_section_name,
           study_track_name: assignment.school_class_study_track_name
         })})`)
         .join(', ')

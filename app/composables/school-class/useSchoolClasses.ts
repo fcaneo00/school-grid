@@ -1,11 +1,12 @@
 export interface SchoolClass {
   id: number
   year: number
-  section: string
+  section_id: number | null
   study_track_id: number | null
 }
 
 export interface SchoolClassWithDetails extends SchoolClass {
+  section_name: string | null
   study_track_name: string | null
 }
 
@@ -24,12 +25,14 @@ export function useSchoolClasses() {
         SELECT
           school_class.id,
           CAST(school_class.year AS INTEGER) AS year,
-          school_class.section,
+          school_class.section_id,
           school_class.study_track_id,
+          section.name AS section_name,
           study_track.name AS study_track_name
         FROM school_class
+        LEFT JOIN section ON section.id = school_class.section_id
         LEFT JOIN study_track ON study_track.id = school_class.study_track_id
-        ORDER BY school_class.year, school_class.section
+        ORDER BY school_class.year, section.name
       `)
     } catch (e) {
       notify.error(t('general.errorTitle'), String(e))
@@ -41,8 +44,8 @@ export function useSchoolClasses() {
   async function addSchoolClass(schoolClass: Omit<SchoolClass, 'id'>) {
     const db = await getDb()
     const result = await db.execute(
-      'INSERT INTO school_class (year, section, study_track_id) VALUES ($1, $2, $3)',
-      [schoolClass.year, schoolClass.section, schoolClass.study_track_id]
+      'INSERT INTO school_class (year, section_id, study_track_id) VALUES ($1, $2, $3)',
+      [schoolClass.year, schoolClass.section_id, schoolClass.study_track_id]
     )
     await fetchSchoolClasses()
     const created = schoolClasses.value.find((c) => c.id === result.lastInsertId)
@@ -52,8 +55,8 @@ export function useSchoolClasses() {
   async function updateSchoolClass(id: number, schoolClass: Omit<SchoolClass, 'id'>) {
     const db = await getDb()
     await db.execute(
-      'UPDATE school_class SET year = $1, section = $2, study_track_id = $3 WHERE id = $4',
-      [schoolClass.year, schoolClass.section, schoolClass.study_track_id, id]
+      'UPDATE school_class SET year = $1, section_id = $2, study_track_id = $3 WHERE id = $4',
+      [schoolClass.year, schoolClass.section_id, schoolClass.study_track_id, id]
     )
     await fetchSchoolClasses()
     const updated = schoolClasses.value.find((c) => c.id === id)

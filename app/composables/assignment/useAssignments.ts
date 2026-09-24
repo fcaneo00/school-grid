@@ -10,7 +10,7 @@ export interface AssignmentWithDetails extends Assignment {
   teacher_first_name: string
   teacher_last_name: string
   school_class_year: number
-  school_class_section: string
+  school_class_section_name: string | null
   school_class_study_track_name: string | null
   subject_name: string
 }
@@ -24,7 +24,7 @@ export function useAssignments() {
   function displayName(assignment: AssignmentWithDetails) {
     const schoolClassName = formatSchoolClassName({
       year: assignment.school_class_year,
-      section: assignment.school_class_section,
+      section_name: assignment.school_class_section_name,
       study_track_name: assignment.school_class_study_track_name
     })
     return `${assignment.teacher_last_name} ${assignment.teacher_first_name} - ${assignment.subject_name} (${schoolClassName})`
@@ -44,12 +44,13 @@ export function useAssignments() {
           teacher.first_name AS teacher_first_name,
           teacher.last_name AS teacher_last_name,
           CAST(school_class.year AS INTEGER) AS school_class_year,
-          school_class.section AS school_class_section,
+          section.name AS school_class_section_name,
           study_track.name AS school_class_study_track_name,
           subject.name AS subject_name
         FROM assignment
         JOIN teacher ON teacher.id = assignment.teacher_id
         JOIN school_class ON school_class.id = assignment.school_class_id
+        LEFT JOIN section ON section.id = school_class.section_id
         LEFT JOIN study_track ON study_track.id = school_class.study_track_id
         JOIN subject ON subject.id = assignment.subject_id
         ORDER BY teacher.last_name, teacher.first_name

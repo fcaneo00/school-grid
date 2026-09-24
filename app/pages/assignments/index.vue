@@ -15,7 +15,7 @@ const { filters } = useAssignmentFilters()
               <ClearableInput v-model="filters.teacher" :placeholder="t('assignments.form.teacher')" />
               <ClearableInput v-model="filters.schoolClass" :placeholder="t('assignments.form.schoolClass')" />
               <ClearableInput v-model="filters.subject" :placeholder="t('assignments.form.subject')" />
-              <ClearableInput v-model="filters.weeklyHours" :placeholder="t('assignments.form.weeklyHours')" />
+              <ClearableInputNumber v-model="filters.weeklyHours" :placeholder="t('assignments.form.weeklyHours')" :min="1" />
             </div>
           </template>
         </UPopover>

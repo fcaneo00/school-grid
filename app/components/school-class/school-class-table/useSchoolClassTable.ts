@@ -21,15 +21,15 @@ export function useSchoolClassTable() {
 
   const filteredSchoolClasses = computed(() =>
     schoolClasses.value.filter((schoolClass) =>
-      String(schoolClass.year).includes(filters.value.year) &&
-      schoolClass.section.toLowerCase().includes(filters.value.section.toLowerCase()) &&
+      (filters.value.year === undefined || schoolClass.year === filters.value.year) &&
+      (schoolClass.section_name ?? '').toLowerCase().includes(filters.value.section_name.toLowerCase()) &&
       (schoolClass.study_track_name ?? '').toLowerCase().includes(filters.value.study_track_name.toLowerCase())
     )
   )
 
   const columns: TableColumn<SchoolClassWithDetails>[] = [
     { accessorKey: 'year', header: t('schoolClasses.form.year') },
-    { accessorKey: 'section', header: t('schoolClasses.form.section') },
+    { accessorKey: 'section_name', header: t('schoolClasses.form.section') },
     { accessorKey: 'study_track_name', header: t('schoolClasses.form.studyTrack') },
     { id: 'actions', header: t('table.actions') }
   ]

@@ -191,3 +191,30 @@ Il testo libero `study_track` non basta: serve poter contare/raggruppare/validar
 - [x] Aggiornare CLAUDE.md (Struttura tabelle + tabella "I nomi" se serve)
 - [x] `year` diventato numero intero (1-5) invece di testo libero — decisione presa a valle, direttamente su `SchoolClassForm.vue` (`UInputNumber` con `:min="1" :max="5"`, coerente col dominio: l'anno scolastico è sempre 1-5). Colonna DB resta TEXT (cambiarne l'affinità richiederebbe ricostruire `school_class`, che è genitore FK di `assignment` — SQLite blocca il `DROP TABLE` dentro la transazione della migrazione, verificato con test Python dedicato prima di scartare l'opzione): lettura via `CAST(year AS INTEGER)` in tutte le query (`useSchoolClasses.ts`, `useAssignments.ts`), scrittura invariata (l'affinità TEXT converte comunque il numero in ingresso). `schoolClassFormHelper.ts` con `z.number().int().min(1).max(5)`, nuova chiave i18n `schoolClasses.form.yearInvalid`
 - [ ] Verifica: `npm run tauri dev` — la migrazione v3 si applica senza errori sui dati di test già presenti, creare/eliminare un corso di studio, la select in Classi si popola, il blocco eliminazione funziona se un corso è ancora usato, il campo Anno accetta solo 1-5
+
+## Sezione: da testo a entità vera
+
+Stesso ragionamento di `study_track`: `section` (es. "A", "B") è testo libero su `school_class`, quindi soggetto a incoerenze (maiuscole/minuscole, spazi) che spezzerebbero raggruppamenti che dovrebbero coincidere — problema uguale in vista del PDF. Diventa un'entità **Sezioni**, stesso pattern minimale già rodato 5 volte (solo `name`).
+
+**Migrazione v4** (verificata a mano con SQLite prima di scriverla in Rust, stesso approccio di v3): crea `section` (id, name), popola con i valori distinti già presenti in `school_class.section`, aggiunge `school_class.section_id` FK, lo valorizza per corrispondenza testuale, droppa la vecchia colonna testo. A differenza di `study_track_id`, `section` era `NOT NULL` fin dalla v1 (nessuna classe di test con sezione vuota) quindi non ci si aspetta `section_id NULL` dopo il backfill — ma la colonna resta comunque nullable a livello SQL (stesso motivo già accettato per `study_track_id`: imporre `NOT NULL` richiederebbe ricostruire `school_class`, bloccato dal vincolo FK di `assignment` dentro la transazione della migrazione). Il vincolo "sempre presente" resta quindi a livello applicativo (zod), come già per `teacher_id`/`subject_id` nelle Cattedre.
+
+- [x] Migrazione v4 in `src-tauri/src/lib.rs` + indice su `school_class(section_id)`
+- [x] Nuova entità **Sezioni**, stesso pattern di Corsi di studio (solo `name`):
+  - [x] `app/composables/section/useSections.ts` — CRUD, blocco eliminazione se un `school_class` la referenzia ancora
+  - [x] `app/composables/section/useSectionFilters.ts`
+  - [x] `app/utils/sectionFormHelper.ts`
+  - [x] `app/components/section/section-form/`, `app/components/section/section-table/`
+  - [x] `app/pages/sections/index.vue`, `new.vue`, `[id]/edit.vue`
+  - [x] Voce di navigazione + chiavi i18n (`sections.*`, `nav.sections`)
+- [x] `school_class` da testo a FK:
+  - [x] `SchoolClass`/`SchoolClassWithDetails` — `section: string` → `section_id: number | null` (raw) + `section_name: string | null` (via JOIN)
+  - [x] `useSchoolClasses.ts` — query con `LEFT JOIN section` aggiuntivo, insert/update con `section_id`
+  - [x] `schoolClassFormHelper.ts` — `section_id` invece di `section` testo
+  - [x] `SchoolClassForm.vue`/`useSchoolClassForm.ts` — il campo diventa una `USelect` con le opzioni da `useSections()`
+  - [x] `useSchoolClassTable.ts`/`SchoolClassTable.vue` — colonna e filtro leggono `section_name`
+  - [x] `schoolClassDisplay.ts` (`formatSchoolClassName`) — `section: string` → `section_name: string | null` (mai vuoto in pratica ma tipizzato coerente con `study_track_name`)
+- [x] Propagare fino alle Cattedre (stesso giro già fatto per `study_track`):
+  - [x] `useAssignments.ts` — `AssignmentWithDetails.school_class_section` → `school_class_section_name`, query con `LEFT JOIN section` aggiuntivo tramite `school_class.section_id`
+  - [x] `useAssignmentOptions.ts` (nessuna modifica: usa già `formatSchoolClassName(schoolClass)` genericamente), `useAssignmentTable.ts` (`schoolClassNameOf`), `useTeachers.ts`/`useSubjects.ts` (testo "dove viene usato"), `useStudyTracks.ts` (stesso testo "dove viene usato" per il blocco eliminazione di un corso di studio)
+- [x] Aggiornare CLAUDE.md (Struttura tabelle + tabella "I nomi")
+- [ ] Verifica: `npm run tauri dev` — la migrazione v4 si applica senza errori sui dati di test già presenti, creare/eliminare una sezione, la select in Classi si popola, il blocco eliminazione funziona se una sezione è ancora usata

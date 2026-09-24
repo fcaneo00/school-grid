@@ -83,6 +83,30 @@ fn migrations() -> Vec<Migration> {
       CREATE INDEX idx_school_class_study_track ON school_class(study_track_id);
     ",
         },
+        Migration {
+            version: 4,
+            description: "section_as_entity",
+            kind: MigrationKind::Up,
+            sql: "
+      CREATE TABLE section (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE
+      );
+
+      INSERT INTO section (name)
+      SELECT DISTINCT section FROM school_class WHERE section != '';
+
+      ALTER TABLE school_class ADD COLUMN section_id INTEGER REFERENCES section(id);
+
+      UPDATE school_class
+      SET section_id = (SELECT id FROM section WHERE section.name = school_class.section)
+      WHERE section != '';
+
+      ALTER TABLE school_class DROP COLUMN section;
+
+      CREATE INDEX idx_school_class_section ON school_class(section_id);
+    ",
+        },
     ]
 }
 

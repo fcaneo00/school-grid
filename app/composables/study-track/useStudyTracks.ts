@@ -52,7 +52,7 @@ export function useStudyTracks() {
       await fetchSchoolClasses()
       const usagesText = schoolClasses.value
         .filter((schoolClass) => schoolClass.study_track_id === id)
-        .map((schoolClass) => `${schoolClass.year}${schoolClass.section}`)
+        .map((schoolClass) => `${schoolClass.year}${schoolClass.section_name ?? ''}`)
         .join(', ')
       notify.error(
         t('general.deleteBlockedTitle', { name }),

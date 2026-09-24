@@ -12,13 +12,13 @@ const { filters } = useSchoolClassFilters()
           <UButton :label="t('table.filters')" icon="i-lucide-filter" color="neutral" variant="outline" />
           <template #content>
             <div class="p-4 space-y-2 w-64">
-              <ClearableInput v-model="filters.year" :placeholder="t('schoolClasses.form.year')" />
-              <ClearableInput v-model="filters.section" :placeholder="t('schoolClasses.form.section')" />
+              <ClearableInputNumber v-model="filters.year" :placeholder="t('schoolClasses.form.year')" :min="1" :max="5" />
+              <ClearableInput v-model="filters.section_name" :placeholder="t('schoolClasses.form.section')" />
               <ClearableInput v-model="filters.study_track_name" :placeholder="t('schoolClasses.form.studyTrack')" />
             </div>
           </template>
         </UPopover>
-        <UButton :label="t('schoolClasses.addButton')" to="/classes/new" />
+        <UButton :label="t('schoolClasses.addButton')" to="/school-classes/new" />
       </div>
     </div>
     <SchoolClassTable />

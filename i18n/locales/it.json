@@ -28,6 +28,7 @@
     "schoolClasses": "Classi",
     "subjects": "Materie",
     "studyTracks": "Corsi di studio",
+    "sections": "Sezioni",
     "assignments": "Cattedre"
   },
   "teachers": {
@@ -62,6 +63,14 @@
     "title": "Corsi di studio",
     "addButton": "Aggiungi corso di studio",
     "editTitle": "Modifica corso di studio",
+    "form": {
+      "name": "Nome"
+    }
+  },
+  "sections": {
+    "title": "Sezioni",
+    "addButton": "Aggiungi sezione",
+    "editTitle": "Modifica sezione",
     "form": {
       "name": "Nome"
     }

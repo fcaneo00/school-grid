@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { useSchoolClassTable } from './useSchoolClassTable'
+import { useSectionTable } from './useSectionTable'
 
-const { schoolClasses, loading, columns, handleDelete } = useSchoolClassTable()
+const { sections, loading, columns, handleDelete } = useSectionTable()
 </script>
 
 <template>
   <div class="space-y-2">
-    <UTable :data="schoolClasses" :columns="columns" :loading="loading">
+    <UTable :data="sections" :columns="columns" :loading="loading">
       <template #actions-cell="{ row }">
         <UButton
           icon="i-lucide-pencil"
           color="neutral"
           variant="ghost"
-          :to="`/school-classes/${row.original.id}/edit`"
+          :to="`/sections/${row.original.id}/edit`"
         />
         <UButton
           icon="i-lucide-trash"

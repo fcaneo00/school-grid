@@ -12,7 +12,7 @@ export function useAssignmentTable() {
   function schoolClassNameOf(assignment: AssignmentWithDetails) {
     return formatSchoolClassName({
       year: assignment.school_class_year,
-      section: assignment.school_class_section,
+      section_name: assignment.school_class_section_name,
       study_track_name: assignment.school_class_study_track_name
     })
   }
@@ -33,7 +33,7 @@ export function useAssignmentTable() {
       `${assignment.teacher_last_name} ${assignment.teacher_first_name}`.toLowerCase().includes(filters.value.teacher.toLowerCase()) &&
       schoolClassNameOf(assignment).toLowerCase().includes(filters.value.schoolClass.toLowerCase()) &&
       assignment.subject_name.toLowerCase().includes(filters.value.subject.toLowerCase()) &&
-      String(assignment.weekly_hours).includes(filters.value.weeklyHours)
+      (filters.value.weeklyHours === undefined || assignment.weekly_hours === filters.value.weeklyHours)
     )
   )
 

@@ -52,9 +52,10 @@ Nomi delle tabelle in inglese (`school_class` invece di `class`, riservata in JS
 | Tabella | Campi |
 |---|---|
 | `teacher` | `id` · `first_name` · `last_name` |
-| `school_class` | `id` · `year` (1-5) · `section` · `study_track_id` FK (nullable) — stesso anno+sezione può ripetersi su corsi diversi (es. 1A Scientifico ≠ 1A Linguistico), `study_track` disambigua. Colonna `year` ancora TEXT (affinità ereditata dalla migrazione v1/v2, cambiarla richiederebbe ricostruire la tabella e con essa il vincolo FK di `assignment` — non vale la pena per un intero 1-5): letta con `CAST(year AS INTEGER)` così il livello applicativo la tratta sempre come numero |
+| `school_class` | `id` · `year` (1-5) · `section_id` FK · `study_track_id` FK (nullable) — stesso anno+sezione può ripetersi su corsi diversi (es. 1A Scientifico ≠ 1A Linguistico), `study_track` disambigua. Colonna `year` ancora TEXT (affinità ereditata dalla migrazione v1/v2, cambiarla richiederebbe ricostruire la tabella e con essa il vincolo FK di `assignment` — non vale la pena per un intero 1-5): letta con `CAST(year AS INTEGER)` così il livello applicativo la tratta sempre come numero. `section_id` è nullable anche a livello SQL per lo stesso motivo (impossibile imporre `NOT NULL` senza ricostruire la tabella), ma è sempre obbligatorio a livello applicativo (zod) |
 | `subject` | `id` · `name` |
 | `study_track` | `id` · `name` — il corso di studio (es. "Scientifico", "Linguistico"), entità propria e non testo libero: serve per contare/raggruppare/validare in modo affidabile, in vista del PDF |
+| `section` | `id` · `name` — la sezione (es. "A", "B"), entità propria per lo stesso motivo di `study_track`: testo libero avrebbe permesso incoerenze ("a" vs "A") che spezzano i raggruppamenti |
 | `assignment` | `id` · `teacher_id` FK · `school_class_id` FK · `subject_id` FK · `weekly_hours` — la "cattedra" |
 | `preference` | `id` · `teacher_id` FK · `day_off` — opzionale |
 | `schedule_entry` | `id` · `assignment_id` FK · `day` · `hour_slot` — lo slot occupato in griglia |
@@ -70,8 +71,8 @@ Regole di validazione in fase di inserimento:
 | Cosa | Nome |
 |---|---|
 | Nome progetto | `school-grid` *(per adesso — provvisorio)* |
-| Tabelle DB | `teacher` · `school_class` · `subject` · `study_track` · `assignment` · `preference` · `schedule_entry` |
-| Composables | `useTeachers` · `useSchoolClasses` · `useSubjects` · `useStudyTracks` · `useAssignments` · `usePreferences` · `useSchedule` |
+| Tabelle DB | `teacher` · `school_class` · `subject` · `study_track` · `section` · `assignment` · `preference` · `schedule_entry` |
+| Composables | `useTeachers` · `useSchoolClasses` · `useSubjects` · `useStudyTracks` · `useSections` · `useAssignments` · `usePreferences` · `useSchedule` |
 | Tauri identifier | `com.school-grid.app` *(provvisorio — dominio ancora da fissare)* |
 
 ## Principi di lavoro (il faro)

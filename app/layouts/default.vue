@@ -3,9 +3,10 @@ const { t } = useI18n()
 
 const navItems = computed(() => [
   { label: t('nav.teachers'), to: '/teachers' },
-  { label: t('nav.schoolClasses'), to: '/classes' },
-  { label: t('nav.subjects'), to: '/subjects' },
+  { label: t('nav.sections'), to: '/sections' },
   { label: t('nav.studyTracks'), to: '/study-tracks' },
+  { label: t('nav.schoolClasses'), to: '/school-classes' },
+  { label: t('nav.subjects'), to: '/subjects' },
   { label: t('nav.assignments'), to: '/assignments' }
 ])
 </script>

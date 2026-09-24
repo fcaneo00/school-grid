@@ -3,7 +3,7 @@ export function useAssignmentFilters() {
     teacher: '',
     schoolClass: '',
     subject: '',
-    weeklyHours: ''
+    weeklyHours: undefined as number | undefined
   }))
 
   return { filters }
