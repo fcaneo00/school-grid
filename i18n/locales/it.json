@@ -48,13 +48,24 @@
   "registry": {
     "title": "Anagrafica"
   },
+  "weekdays": {
+    "monday": "Lunedì",
+    "tuesday": "Martedì",
+    "wednesday": "Mercoledì",
+    "thursday": "Giovedì",
+    "friday": "Venerdì",
+    "saturday": "Sabato"
+  },
   "teachers": {
     "title": "Docenti",
     "addButton": "Aggiungi docente",
     "editTitle": "Modifica docente",
     "form": {
       "firstName": "Nome",
-      "lastName": "Cognome"
+      "lastName": "Cognome",
+      "dayOff": "Giorno libero",
+      "noDayOff": "Nessuno",
+      "allDayOff": "Tutti"
     }
   },
   "schoolClasses": {

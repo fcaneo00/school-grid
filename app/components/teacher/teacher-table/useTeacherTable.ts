@@ -1,5 +1,5 @@
 import type { TableColumn } from '@nuxt/ui'
-import type { Teacher } from '~/composables/teacher/useTeachers'
+import type { TeacherWithDetails } from '~/composables/teacher/useTeachers'
 
 export function useTeacherTable() {
   const { t } = useI18n()
@@ -9,7 +9,7 @@ export function useTeacherTable() {
 
   onMounted(fetchTeachers)
 
-  async function handleDelete(teacher: Teacher) {
+  async function handleDelete(teacher: TeacherWithDetails) {
     const confirmed = await confirmDialog({
       title: t('general.confirmDeleteTitle'),
       description: t('general.confirmDeleteDescription', { name: `${teacher.last_name} ${teacher.first_name}` })
@@ -22,13 +22,19 @@ export function useTeacherTable() {
   const filteredTeachers = computed(() =>
     teachers.value.filter((teacher) =>
       teacher.first_name.toLowerCase().includes(filters.value.first_name.toLowerCase()) &&
-      teacher.last_name.toLowerCase().includes(filters.value.last_name.toLowerCase())
+      teacher.last_name.toLowerCase().includes(filters.value.last_name.toLowerCase()) &&
+      (filters.value.day_off === null || teacher.day_off.includes(filters.value.day_off))
     )
   )
 
-  const columns: TableColumn<Teacher>[] = [
+  const columns: TableColumn<TeacherWithDetails>[] = [
     { accessorKey: 'first_name', header: t('teachers.form.firstName') },
     { accessorKey: 'last_name', header: t('teachers.form.lastName') },
+    {
+      id: 'day_off',
+      header: t('teachers.form.dayOff'),
+      cell: ({ row }) => row.original.day_off.map((day) => t(`weekdays.${day}`)).join(', ')
+    },
     { id: 'actions', header: t('table.actions') }
   ]
 

@@ -4,7 +4,7 @@ import { useTeacherForm } from './useTeacherForm'
 const props = defineProps<{ id?: number }>()
 
 const { t } = useI18n()
-const { schema, state, submitLabel, onSubmit } = useTeacherForm(props.id)
+const { schema, state, submitLabel, dayOffOptions, onSubmit } = useTeacherForm(props.id)
 </script>
 
 <template>
@@ -14,6 +14,9 @@ const { schema, state, submitLabel, onSubmit } = useTeacherForm(props.id)
     </UFormField>
     <UFormField name="last_name" :label="t('teachers.form.lastName')">
       <UInput v-model="state.last_name" class="w-full" />
+    </UFormField>
+    <UFormField name="day_off" :label="t('teachers.form.dayOff')">
+      <USelect v-model="state.day_off" :items="dayOffOptions" multiple :placeholder="t('teachers.form.noDayOff')" class="w-full" />
     </UFormField>
     <UButton type="submit" :label="submitLabel" />
   </UForm>

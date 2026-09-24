@@ -1,14 +1,20 @@
 <script setup lang="ts">
-definePageMeta({ alias: '/' })
-
 const { t } = useI18n()
 const { filters } = useTeacherFilters()
+
+const dayOffFilterOptions = computed(() => [
+  { label: t('teachers.form.allDayOff'), value: null },
+  ...WEEKDAY_VALUES.map((day) => ({ label: t(`weekdays.${day}`), value: day }))
+])
 </script>
 
 <template>
   <div class="space-y-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-xl font-semibold">{{ t('teachers.title') }}</h1>
+      <div class="flex items-center gap-2">
+        <UButton icon="i-lucide-arrow-left" variant="ghost" color="neutral" :aria-label="t('general.back')" to="/registry" />
+        <h1 class="text-xl font-semibold">{{ t('teachers.title') }}</h1>
+      </div>
       <div class="flex gap-2">
         <UPopover>
           <UButton :label="t('table.filters')" icon="i-lucide-filter" color="neutral" variant="outline" />
@@ -16,6 +22,7 @@ const { filters } = useTeacherFilters()
             <div class="p-4 space-y-2 w-64">
               <ClearableInput v-model="filters.first_name" :placeholder="t('teachers.form.firstName')" />
               <ClearableInput v-model="filters.last_name" :placeholder="t('teachers.form.lastName')" />
+              <USelect v-model="filters.day_off" :items="dayOffFilterOptions" :placeholder="t('teachers.form.dayOff')" class="w-full" />
             </div>
           </template>
         </UPopover>
