@@ -25,7 +25,8 @@
   },
   "nav": {
     "teachers": "Docenti",
-    "schoolClasses": "Classi"
+    "schoolClasses": "Classi",
+    "studyTracks": "Corsi di studio"
   },
   "teachers": {
     "title": "Docenti",
@@ -38,9 +39,21 @@
   },
   "schoolClasses": {
     "title": "Classi",
+    "addButton": "Aggiungi classe",
+    "editTitle": "Modifica classe",
     "form": {
-      "name": "Nome",
-      "section": "Sezione"
+      "year": "Anno",
+      "yearInvalid": "Deve essere tra 1 e 5",
+      "section": "Sezione",
+      "studyTrack": "Corso di studio"
+    }
+  },
+  "studyTracks": {
+    "title": "Corsi di studio",
+    "addButton": "Aggiungi corso di studio",
+    "editTitle": "Modifica corso di studio",
+    "form": {
+      "name": "Nome"
     }
   }
 }

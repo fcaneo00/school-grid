@@ -1,11 +1,12 @@
 use tauri_plugin_sql::{Migration, MigrationKind};
 
 fn migrations() -> Vec<Migration> {
-    vec![Migration {
-        version: 1,
-        description: "create_initial_schema",
-        kind: MigrationKind::Up,
-        sql: "
+    vec![
+        Migration {
+            version: 1,
+            description: "create_initial_schema",
+            kind: MigrationKind::Up,
+            sql: "
       CREATE TABLE teacher (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         first_name TEXT NOT NULL,
@@ -48,7 +49,41 @@ fn migrations() -> Vec<Migration> {
       CREATE INDEX idx_assignment_teacher ON assignment(teacher_id);
       CREATE INDEX idx_assignment_school_class ON assignment(school_class_id);
     ",
-    }]
+        },
+        Migration {
+            version: 2,
+            description: "school_class_year_and_study_track",
+            kind: MigrationKind::Up,
+            sql: "
+      ALTER TABLE school_class RENAME COLUMN name TO year;
+      ALTER TABLE school_class ADD COLUMN study_track TEXT NOT NULL DEFAULT '';
+    ",
+        },
+        Migration {
+            version: 3,
+            description: "study_track_as_entity",
+            kind: MigrationKind::Up,
+            sql: "
+      CREATE TABLE study_track (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE
+      );
+
+      INSERT INTO study_track (name)
+      SELECT DISTINCT study_track FROM school_class WHERE study_track != '';
+
+      ALTER TABLE school_class ADD COLUMN study_track_id INTEGER REFERENCES study_track(id);
+
+      UPDATE school_class
+      SET study_track_id = (SELECT id FROM study_track WHERE study_track.name = school_class.study_track)
+      WHERE study_track != '';
+
+      ALTER TABLE school_class DROP COLUMN study_track;
+
+      CREATE INDEX idx_school_class_study_track ON school_class(study_track_id);
+    ",
+        },
+    ]
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
