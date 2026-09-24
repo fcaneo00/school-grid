@@ -26,6 +26,7 @@
   "nav": {
     "teachers": "Docenti",
     "schoolClasses": "Classi",
+    "subjects": "Materie",
     "studyTracks": "Corsi di studio"
   },
   "teachers": {
@@ -46,6 +47,14 @@
       "yearInvalid": "Deve essere tra 1 e 5",
       "section": "Sezione",
       "studyTrack": "Corso di studio"
+    }
+  },
+  "subjects": {
+    "title": "Materie",
+    "addButton": "Aggiungi materia",
+    "editTitle": "Modifica materia",
+    "form": {
+      "name": "Nome"
     }
   },
   "studyTracks": {
