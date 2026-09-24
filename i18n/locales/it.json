@@ -1,10 +1,27 @@
 {
   "general": {
-    "loading": "Caricamento…"
+    "loading": "Caricamento…",
+    "back": "Torna indietro",
+    "added": "Aggiunto",
+    "updated": "Modificato",
+    "deleted": "Eliminato",
+    "errorTitle": "Si è verificato un errore",
+    "deleteBlockedTitle": "Impossibile eliminare \"{name}\"",
+    "deleteBlockedDescription": "È ancora usato in: {usages}",
+    "deleteBlockedGeneric": "È ancora collegato ad altri elementi dell'orario",
+    "cancel": "Annulla",
+    "confirm": "Conferma",
+    "confirmDeleteTitle": "Confermi l'eliminazione?",
+    "confirmDeleteDescription": "Stai per eliminare \"{name}\". L'operazione non è reversibile."
   },
   "form": {
     "submit": "Aggiungi",
     "required": "Obbligatorio"
+  },
+  "table": {
+    "actions": "Azioni",
+    "save": "Salva",
+    "filters": "Filtri"
   },
   "nav": {
     "teachers": "Docenti",

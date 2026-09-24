@@ -7,6 +7,9 @@ export default defineNuxtConfig({
   ssr: false,
   devServer: { port: 3001 },
   components: [{ path: '~/components', pathPrefix: false, extensions: ['vue'] }],
+  imports: {
+    dirs: ['composables', 'composables/**']
+  },
   i18n: {
     strategy: 'no_prefix',
     defaultLocale: 'it',
