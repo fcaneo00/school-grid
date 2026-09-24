@@ -40,8 +40,10 @@ export function useSchoolClassForm(id: number) {
   })
 
   async function onSubmit(event: FormSubmitEvent<SchoolClassFormSchema>) {
-    await updateSchoolClass(id, event.data)
-    await navigateTo('/school-classes')
+    const success = await updateSchoolClass(id, event.data)
+    if (success) {
+      await navigateTo('/school-classes')
+    }
   }
 
   return {

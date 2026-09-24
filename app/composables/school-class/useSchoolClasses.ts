@@ -52,31 +52,52 @@ export function useSchoolClasses() {
 
   async function addSchoolClasses(items: Omit<SchoolClass, 'id'>[]) {
     const ids: (number | undefined)[] = []
-    for (const item of items) {
-      ids.push(await insertSchoolClass(item))
+    try {
+      for (const item of items) {
+        ids.push(await insertSchoolClass(item))
+      }
+    } catch (e) {
+      await fetchSchoolClasses()
+      if (isUniqueConstraintError(e)) {
+        notify.error(t('schoolClasses.duplicateTitle'), t('schoolClasses.duplicateDescription'))
+      } else {
+        notify.error(t('general.errorTitle'), String(e))
+      }
+      return false
     }
     await fetchSchoolClasses()
     if (items.length === 1) {
       const created = schoolClasses.value.find((c) => c.id === ids[0])
       notify.success(t('general.added'), created ? formatSchoolClassName(created) : '')
-      return
+      return true
     }
     const names = schoolClasses.value
       .filter((c) => ids.includes(c.id))
       .map((c) => formatSchoolClassName(c))
       .join(', ')
     notify.success(t('general.addedBatch', { count: items.length }), names)
+    return true
   }
 
   async function updateSchoolClass(id: number, schoolClass: Omit<SchoolClass, 'id'>) {
     const db = await getDb()
-    await db.execute(
-      'UPDATE school_class SET year = $1, section_id = $2, study_track_id = $3 WHERE id = $4',
-      [schoolClass.year, schoolClass.section_id, schoolClass.study_track_id, id]
-    )
+    try {
+      await db.execute(
+        'UPDATE school_class SET year = $1, section_id = $2, study_track_id = $3 WHERE id = $4',
+        [schoolClass.year, schoolClass.section_id, schoolClass.study_track_id, id]
+      )
+    } catch (e) {
+      if (isUniqueConstraintError(e)) {
+        notify.error(t('schoolClasses.duplicateTitle'), t('schoolClasses.duplicateDescription'))
+      } else {
+        notify.error(t('general.errorTitle'), String(e))
+      }
+      return false
+    }
     await fetchSchoolClasses()
     const updated = schoolClasses.value.find((c) => c.id === id)
     notify.success(t('general.updated'), updated ? formatSchoolClassName(updated) : '')
+    return true
   }
 
   async function deleteSchoolClass(id: number) {

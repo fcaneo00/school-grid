@@ -47,8 +47,10 @@ export function useSchoolClassBatchForm() {
   }
 
   async function onSubmit() {
-    await addSchoolClasses(state.items as SchoolClassFormSchema[])
-    await navigateTo('/school-classes')
+    const success = await addSchoolClasses(state.items as SchoolClassFormSchema[])
+    if (success) {
+      await navigateTo('/school-classes')
+    }
   }
 
   return {

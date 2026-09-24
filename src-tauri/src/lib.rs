@@ -116,6 +116,42 @@ fn migrations() -> Vec<Migration> {
       DROP TABLE subject;
     ",
         },
+        Migration {
+            version: 6,
+            description: "school_class_unique",
+            kind: MigrationKind::Up,
+            sql: "
+      CREATE TEMP TABLE school_class_dup AS
+      SELECT MIN(id) AS keeper_id, year, section_id, study_track_id
+      FROM school_class
+      WHERE section_id IS NOT NULL AND study_track_id IS NOT NULL
+      GROUP BY year, section_id, study_track_id
+      HAVING COUNT(*) > 1;
+
+      UPDATE assignment
+      SET school_class_id = (
+        SELECT d.keeper_id FROM school_class_dup d
+        JOIN school_class sc ON sc.year = d.year AND sc.section_id = d.section_id AND sc.study_track_id = d.study_track_id
+        WHERE sc.id = assignment.school_class_id
+      )
+      WHERE school_class_id IN (
+        SELECT sc.id FROM school_class sc
+        JOIN school_class_dup d ON sc.year = d.year AND sc.section_id = d.section_id AND sc.study_track_id = d.study_track_id
+        WHERE sc.id != d.keeper_id
+      );
+
+      DELETE FROM school_class
+      WHERE id IN (
+        SELECT sc.id FROM school_class sc
+        JOIN school_class_dup d ON sc.year = d.year AND sc.section_id = d.section_id AND sc.study_track_id = d.study_track_id
+        WHERE sc.id != d.keeper_id
+      );
+
+      DROP TABLE school_class_dup;
+
+      CREATE UNIQUE INDEX idx_school_class_unique ON school_class(year, section_id, study_track_id);
+    ",
+        },
     ]
 }
 

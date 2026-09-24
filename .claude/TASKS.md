@@ -317,3 +317,18 @@ Il pulsante di submit diceva "Aggiungi" in creazione e "Salva" in modifica - ste
 - [x] `useTeacherForm.ts`/`useSectionForm.ts`/`useStudyTrackForm.ts` - rimossi `isEditing`/`submitLabel` (il testo del bottone non dipende più dalla modalità, non serviva più il computed)
 - [x] Aggiunto `<UButton :label="t('general.cancel')" color="neutral" variant="outline" to="/...">` di fianco al submit in tutti e 7 i form (Docenti, Sezioni, Corsi di studio, Classi singolo+batch, Cattedre singolo+batch) - stessa destinazione della freccia indietro della pagina
 - [ ] Verifica: `npm run tauri dev` - ogni form (le 5 entità, creazione e modifica) mostra "Salva" + "Annulla", Annulla riporta alla lista senza salvare
+
+## Fix: classi duplicate (stesso anno+sezione+corso di studio)
+
+Bug grave scoperto dall'utente: nulla impediva di creare due classi identiche (es. due 1A Scientifico) - lo schema aveva `study_track_id` proprio per distinguere due classi con lo stesso anno+sezione (1A Scientifico ≠ 1A Linguistico), ma non c'era alcun vincolo che impedisse di creare due volte *la stessa identica combinazione*.
+
+**Migrazione v6** (verificata a mano con SQLite prima di scriverla in Rust, incluso uno scenario con una cattedra che referenzia uno dei due duplicati): deduplica le classi già esistenti con lo stesso `(year, section_id, study_track_id)` non-null (tiene la riga con id più basso, ripunta le eventuali cattedre dei duplicati rimossi verso la riga tenuta, poi cancella i duplicati), poi aggiunge `CREATE UNIQUE INDEX ... ON school_class(year, section_id, study_track_id)`. Le righe legacy con `section_id`/`study_track_id` `NULL` restano escluse dal vincolo (semantica SQL: `NULL` non è mai considerato uguale a un altro `NULL`) e dalla deduplica - coerente con la scelta già presa di lasciarle "da sistemare a mano".
+
+Limite noto accettato: `db.execute()` di `tauri-plugin-sql` non garantisce che chiamate sequenziali (`BEGIN`/`INSERT`/`COMMIT`) restino sulla stessa connessione del pool sqlx - avvolgere in una vera transazione l'inserimento a righe multiple del form batch non è affidabile con questo plugin, quindi *non* è stato fatto. In pratica: se una riga a metà di un inserimento in massa viola il vincolo, le righe precedenti restano comunque salvate (il form mostra l'errore e non naviga via, ma non riporta indietro quanto già inserito).
+
+- [x] Migrazione v6 in `src-tauri/src/lib.rs`
+- [x] `app/utils/dbErrors.ts` - nuovo `isUniqueConstraintError()`, stesso pattern di `isForeignKeyError()`
+- [x] `useSchoolClasses.ts` - `addSchoolClasses`/`updateSchoolClass` catturano il vincolo univoco, mostrano un errore dedicato (`schoolClasses.duplicateTitle`/`duplicateDescription`) invece del messaggio SQL grezzo, e ritornano `boolean` (successo/fallimento)
+- [x] `useSchoolClassForm.ts`/`useSchoolClassBatchForm.ts` - `onSubmit` naviga via dalla pagina solo se l'operazione è andata a buon fine, altrimenti resta sul form con l'errore visibile
+- [x] Aggiornato CLAUDE.md (riga `school_class` nel modello dati)
+- [ ] Verifica: `npm run tauri dev` - creare due classi identiche (stesso anno/sezione/corso) mostra l'errore invece di crearle entrambe, sia in creazione singola che in modifica; se ci sono già duplicati nel DB di test la migrazione li unisce senza errori all'avvio
