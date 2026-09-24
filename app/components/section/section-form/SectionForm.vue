@@ -8,7 +8,7 @@ interface SectionFormProps {
 const props = defineProps<SectionFormProps>()
 
 const { t } = useI18n()
-const { schema, state, submitLabel, onSubmit } = useSectionForm(props.id)
+const { schema, state, onSubmit } = useSectionForm(props.id)
 </script>
 
 <template>
@@ -16,6 +16,9 @@ const { schema, state, submitLabel, onSubmit } = useSectionForm(props.id)
     <UFormField name="name" :label="t('sections.form.name')">
       <UInput v-model="state.name" class="w-full" />
     </UFormField>
-    <UButton type="submit" :label="submitLabel" />
+    <div class="flex gap-2">
+      <UButton type="submit" :label="t('table.save')" />
+      <UButton :label="t('general.cancel')" color="neutral" variant="outline" to="/sections" />
+    </div>
   </UForm>
 </template>

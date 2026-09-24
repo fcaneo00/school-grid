@@ -8,7 +8,7 @@ interface TeacherFormProps {
 const props = defineProps<TeacherFormProps>()
 
 const { t } = useI18n()
-const { schema, state, submitLabel, dayOffOptions, onSubmit } = useTeacherForm(props.id)
+const { schema, state, dayOffOptions, onSubmit } = useTeacherForm(props.id)
 </script>
 
 <template>
@@ -22,6 +22,9 @@ const { schema, state, submitLabel, dayOffOptions, onSubmit } = useTeacherForm(p
     <UFormField name="day_off" :label="t('teachers.form.dayOff')">
       <USelect v-model="state.day_off" :items="dayOffOptions" multiple :placeholder="t('teachers.form.noDayOff')" class="w-full" />
     </UFormField>
-    <UButton type="submit" :label="submitLabel" />
+    <div class="flex gap-2">
+      <UButton type="submit" :label="t('table.save')" />
+      <UButton :label="t('general.cancel')" color="neutral" variant="outline" to="/teachers" />
+    </div>
   </UForm>
 </template>

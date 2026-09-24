@@ -5,9 +5,6 @@ export function useTeacherForm(id?: number) {
   const { teachers, fetchTeachers, addTeacher, updateTeacher } = useTeachers()
   const { saveDayOffs } = useTeacherPreference()
 
-  const isEditing = computed(() => id !== undefined)
-  const submitLabel = computed(() => isEditing.value ? t('table.save') : t('form.submit'))
-
   const schema = createTeacherFormSchema(t)
 
   const dayOffOptions = computed(() =>
@@ -47,8 +44,6 @@ export function useTeacherForm(id?: number) {
   return {
     schema,
     state,
-    isEditing,
-    submitLabel,
     dayOffOptions,
     onSubmit
   }

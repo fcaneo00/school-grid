@@ -22,6 +22,9 @@ const { schema, state, teacherOptions, schoolClassOptions, onSubmit } = useAssig
     <UFormField name="weekly_hours" :label="t('assignments.form.weeklyHours')">
       <UInputNumber v-model="state.weekly_hours" :min="1" class="w-full" />
     </UFormField>
-    <UButton type="submit" :label="t('table.save')" />
+    <div class="flex gap-2">
+      <UButton type="submit" :label="t('table.save')" />
+      <UButton :label="t('general.cancel')" color="neutral" variant="outline" to="/assignments" />
+    </div>
   </UForm>
 </template>

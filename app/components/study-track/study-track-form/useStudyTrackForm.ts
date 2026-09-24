@@ -4,9 +4,6 @@ export function useStudyTrackForm(id?: number) {
   const { t } = useI18n()
   const { studyTracks, fetchStudyTracks, addStudyTrack, updateStudyTrack } = useStudyTracks()
 
-  const isEditing = computed(() => id !== undefined)
-  const submitLabel = computed(() => isEditing.value ? t('table.save') : t('form.submit'))
-
   const schema = createStudyTrackFormSchema(t)
 
   const state = reactive<Partial<StudyTrackFormSchema>>({
@@ -33,8 +30,6 @@ export function useStudyTrackForm(id?: number) {
   return {
     schema,
     state,
-    isEditing,
-    submitLabel,
     onSubmit
   }
 }

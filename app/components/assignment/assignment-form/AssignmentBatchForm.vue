@@ -30,8 +30,9 @@ const { schema, itemSchema, state, teacherOptions, schoolClassOptions, addRow, r
       />
     </div>
     <UButton :label="t('form.addRow')" icon="i-lucide-plus" color="neutral" variant="outline" @click="addRow" />
-    <div>
-      <UButton type="submit" :label="t('form.submit')" />
+    <div class="flex gap-2">
+      <UButton type="submit" :label="t('table.save')" />
+      <UButton :label="t('general.cancel')" color="neutral" variant="outline" to="/assignments" />
     </div>
   </UForm>
 </template>

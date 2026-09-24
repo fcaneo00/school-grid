@@ -16,7 +16,6 @@
     "confirmDeleteDescription": "Stai per eliminare \"{name}\". L'operazione non è reversibile."
   },
   "form": {
-    "submit": "Aggiungi",
     "required": "Obbligatorio",
     "addRow": "Aggiungi",
     "removeRow": "Rimuovi"

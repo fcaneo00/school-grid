@@ -4,9 +4,6 @@ export function useSectionForm(id?: number) {
   const { t } = useI18n()
   const { sections, fetchSections, addSection, updateSection } = useSections()
 
-  const isEditing = computed(() => id !== undefined)
-  const submitLabel = computed(() => isEditing.value ? t('table.save') : t('form.submit'))
-
   const schema = createSectionFormSchema(t)
 
   const state = reactive<Partial<SectionFormSchema>>({
@@ -33,8 +30,6 @@ export function useSectionForm(id?: number) {
   return {
     schema,
     state,
-    isEditing,
-    submitLabel,
     onSubmit
   }
 }

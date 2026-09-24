@@ -8,7 +8,7 @@ interface StudyTrackFormProps {
 const props = defineProps<StudyTrackFormProps>()
 
 const { t } = useI18n()
-const { schema, state, submitLabel, onSubmit } = useStudyTrackForm(props.id)
+const { schema, state, onSubmit } = useStudyTrackForm(props.id)
 </script>
 
 <template>
@@ -16,6 +16,9 @@ const { schema, state, submitLabel, onSubmit } = useStudyTrackForm(props.id)
     <UFormField name="name" :label="t('studyTracks.form.name')">
       <UInput v-model="state.name" class="w-full" />
     </UFormField>
-    <UButton type="submit" :label="submitLabel" />
+    <div class="flex gap-2">
+      <UButton type="submit" :label="t('table.save')" />
+      <UButton :label="t('general.cancel')" color="neutral" variant="outline" to="/study-tracks" />
+    </div>
   </UForm>
 </template>

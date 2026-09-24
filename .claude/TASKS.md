@@ -308,3 +308,12 @@ Il form di modifica (`[id]/edit.vue`) non cambia: resta un singolo record con lo
 - [x] `pages/school-classes/new.vue`/`pages/assignments/new.vue` - renderizzano i nuovi componenti Batch invece dei Form esistenti
 - [x] Chiavi i18n: `form.addRow`, `form.removeRow`, `general.addedBatch`
 - [ ] Verifica: `npm run tauri dev` - aggiungere una sola classe/cattedra funziona come prima (0 click in più), aggiungere 3 classi della stessa sezione con anni diversi in un solo submit, aggiungere 2 cattedre per lo stesso docente in un solo submit, rimuovere una riga funziona, non si può rimuovere l'ultima riga rimasta
+
+## Uniformare i pulsanti dei form: Salva + Annulla
+
+Il pulsante di submit diceva "Aggiungi" in creazione e "Salva" in modifica - stesso form, testo diverso senza un vero motivo. Diventa sempre "Salva". Aggiunto anche un pulsante "Annulla" di fianco (oltre alla freccia indietro già presente in cima alla pagina) che riporta alla lista - la freccia in alto da sola non è un affordance sufficiente per annullare un form a metà compilazione.
+
+- [x] Rimossa la chiave i18n `form.submit` ("Aggiungi", ormai identica a `table.save`) - tutti i pulsanti di submit usano `table.save`
+- [x] `useTeacherForm.ts`/`useSectionForm.ts`/`useStudyTrackForm.ts` - rimossi `isEditing`/`submitLabel` (il testo del bottone non dipende più dalla modalità, non serviva più il computed)
+- [x] Aggiunto `<UButton :label="t('general.cancel')" color="neutral" variant="outline" to="/...">` di fianco al submit in tutti e 7 i form (Docenti, Sezioni, Corsi di studio, Classi singolo+batch, Cattedre singolo+batch) - stessa destinazione della freccia indietro della pagina
+- [ ] Verifica: `npm run tauri dev` - ogni form (le 5 entità, creazione e modifica) mostra "Salva" + "Annulla", Annulla riporta alla lista senza salvare
