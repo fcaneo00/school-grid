@@ -2,7 +2,6 @@ export interface Assignment {
   id: number
   teacher_id: number
   school_class_id: number
-  subject_id: number
   weekly_hours: number
 }
 
@@ -12,7 +11,6 @@ export interface AssignmentWithDetails extends Assignment {
   school_class_year: number
   school_class_section_name: string | null
   school_class_study_track_name: string | null
-  subject_name: string
 }
 
 export function useAssignments() {
@@ -27,7 +25,7 @@ export function useAssignments() {
       section_name: assignment.school_class_section_name,
       study_track_name: assignment.school_class_study_track_name
     })
-    return `${assignment.teacher_last_name} ${assignment.teacher_first_name} - ${assignment.subject_name} (${schoolClassName})`
+    return `${assignment.teacher_last_name} ${assignment.teacher_first_name} (${schoolClassName})`
   }
 
   async function fetchAssignments() {
@@ -39,20 +37,17 @@ export function useAssignments() {
           assignment.id,
           assignment.teacher_id,
           assignment.school_class_id,
-          assignment.subject_id,
           assignment.weekly_hours,
           teacher.first_name AS teacher_first_name,
           teacher.last_name AS teacher_last_name,
           CAST(school_class.year AS INTEGER) AS school_class_year,
           section.name AS school_class_section_name,
-          study_track.name AS school_class_study_track_name,
-          subject.name AS subject_name
+          study_track.name AS school_class_study_track_name
         FROM assignment
         JOIN teacher ON teacher.id = assignment.teacher_id
         JOIN school_class ON school_class.id = assignment.school_class_id
         LEFT JOIN section ON section.id = school_class.section_id
         LEFT JOIN study_track ON study_track.id = school_class.study_track_id
-        JOIN subject ON subject.id = assignment.subject_id
         ORDER BY teacher.last_name, teacher.first_name
       `)
     } catch (e) {
@@ -65,8 +60,8 @@ export function useAssignments() {
   async function addAssignment(assignment: Omit<Assignment, 'id'>) {
     const db = await getDb()
     const result = await db.execute(
-      'INSERT INTO assignment (teacher_id, school_class_id, subject_id, weekly_hours) VALUES ($1, $2, $3, $4)',
-      [assignment.teacher_id, assignment.school_class_id, assignment.subject_id, assignment.weekly_hours]
+      'INSERT INTO assignment (teacher_id, school_class_id, weekly_hours) VALUES ($1, $2, $3)',
+      [assignment.teacher_id, assignment.school_class_id, assignment.weekly_hours]
     )
     await fetchAssignments()
     const created = assignments.value.find((a) => a.id === result.lastInsertId)
@@ -76,8 +71,8 @@ export function useAssignments() {
   async function updateAssignment(id: number, assignment: Omit<Assignment, 'id'>) {
     const db = await getDb()
     await db.execute(
-      'UPDATE assignment SET teacher_id = $1, school_class_id = $2, subject_id = $3, weekly_hours = $4 WHERE id = $5',
-      [assignment.teacher_id, assignment.school_class_id, assignment.subject_id, assignment.weekly_hours, id]
+      'UPDATE assignment SET teacher_id = $1, school_class_id = $2, weekly_hours = $3 WHERE id = $4',
+      [assignment.teacher_id, assignment.school_class_id, assignment.weekly_hours, id]
     )
     await fetchAssignments()
     const updated = assignments.value.find((a) => a.id === id)

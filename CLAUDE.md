@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**School Grid** - applicazione desktop per la creazione manuale dell'orario scolastico settimanale, ad uso di un dirigente scolastico o di una persona incaricata (es. un docente delegato). Gestisce classi, docenti, materie e le cattedre (le assegnazioni docente-classe-materia con il relativo monte ore), e produce un PDF settimanale pronto per la distribuzione.
+**School Grid** - applicazione desktop per la creazione manuale dell'orario scolastico settimanale, ad uso di un dirigente scolastico o di una persona incaricata (es. un docente delegato). Gestisce classi, docenti e le cattedre (le assegnazioni docente-classe con il relativo monte ore), e produce un PDF settimanale pronto per la distribuzione.
 
 > **È uno strumento di costruzione assistita, non un motore di generazione automatica.**
 > L'app segnala i conflitti - docente doppio, classe doppia, giorno libero non rispettato - ma la decisione di dove mettere ogni ora resta sempre di chi costruisce l'orario. Ogni volta che una scelta di progetto sembra "manca l'automazione", è perché protegge questa linea.
@@ -53,11 +53,10 @@ Nomi delle tabelle in inglese (`school_class` invece di `class`, riservata in JS
 |---|---|
 | `teacher` | `id` · `first_name` · `last_name` |
 | `school_class` | `id` · `year` (1-5) · `section_id` FK · `study_track_id` FK (nullable) - stesso anno+sezione può ripetersi su corsi diversi (es. 1A Scientifico ≠ 1A Linguistico), `study_track` disambigua. Colonna `year` ancora TEXT (affinità ereditata dalla migrazione v1/v2, cambiarla richiederebbe ricostruire la tabella e con essa il vincolo FK di `assignment` - non vale la pena per un intero 1-5): letta con `CAST(year AS INTEGER)` così il livello applicativo la tratta sempre come numero. `section_id` è nullable anche a livello SQL per lo stesso motivo (impossibile imporre `NOT NULL` senza ricostruire la tabella), ma è sempre obbligatorio a livello applicativo (zod) |
-| `subject` | `id` · `name` |
 | `study_track` | `id` · `name` - il corso di studio (es. "Scientifico", "Linguistico"), entità propria e non testo libero: serve per contare/raggruppare/validare in modo affidabile, in vista del PDF |
 | `section` | `id` · `name` - la sezione (es. "A", "B"), entità propria per lo stesso motivo di `study_track`: testo libero avrebbe permesso incoerenze ("a" vs "A") che spezzano i raggruppamenti |
-| `assignment` | `id` · `teacher_id` FK · `school_class_id` FK · `subject_id` FK · `weekly_hours` - la "cattedra" |
-| `preference` | `id` · `teacher_id` FK · `day_off` - opzionale |
+| `assignment` | `id` · `teacher_id` FK · `school_class_id` FK · `weekly_hours` - la "cattedra": docente + classe + ore settimanali, senza materia (rimossa in v5 - vedi nota sotto) |
+| `preference` | `id` · `teacher_id` FK · `day_off` - opzionale, **più righe per docente** (un docente può avere più giorni di riposo). Valori di `day_off` da un vocabolario fisso lunedì-sabato (`app/utils/weekdays.ts`, `WEEKDAY_VALUES`), non un'entità come `study_track`/`section` - i giorni della settimana non sono qualcosa che l'utente gestisce. Gestita dal form Docente stesso (select multipla), non ha una pagina propria |
 | `schedule_entry` | `id` · `assignment_id` FK · `day` · `hour_slot` - lo slot occupato in griglia |
 
 Regole di validazione in fase di inserimento:
@@ -66,13 +65,15 @@ Regole di validazione in fase di inserimento:
 3. **Giorno libero** - il `day` coincide col `day_off` del docente → avviso, non blocco.
 4. **Monte ore** - conteggio ore assegnate vs `weekly_hours` dell'assignment, per segnalare cattedre incomplete o sovra-assegnate.
 
+**Nota - `subject`/Materie rimossa (migrazione v5)**: decisione dell'utente, la cattedra non ha più bisogno della materia perché si sa già a prescindere quante ore un docente deve fare in una classe. Compromesso segnalato e accettato: un docente non può più avere due incarichi distinti sulla stessa classe (es. Italiano + Storia con ore diverse) - sarebbero due righe `assignment` indistinguibili, e nel PDF finale ogni slot mostra solo il nome del docente, non cosa insegna in quel momento.
+
 ### I nomi
 
 | Cosa | Nome |
 |---|---|
 | Nome progetto | `school-grid` *(per adesso - provvisorio)* |
-| Tabelle DB | `teacher` · `school_class` · `subject` · `study_track` · `section` · `assignment` · `preference` · `schedule_entry` |
-| Composables | `useTeachers` · `useSchoolClasses` · `useSubjects` · `useStudyTracks` · `useSections` · `useAssignments` · `usePreferences` · `useSchedule` |
+| Tabelle DB | `teacher` · `school_class` · `study_track` · `section` · `assignment` · `preference` · `schedule_entry` |
+| Composables | `useTeachers` · `useSchoolClasses` · `useStudyTracks` · `useSections` · `useAssignments` · `useTeacherPreference` · `useSchedule` |
 | Tauri identifier | `com.school-grid.app` *(provvisorio - dominio ancora da fissare)* |
 
 ## Principi di lavoro (il faro)

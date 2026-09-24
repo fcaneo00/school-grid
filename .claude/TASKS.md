@@ -218,3 +218,72 @@ Stesso ragionamento di `study_track`: `section` (es. "A", "B") è testo libero s
   - [x] `useAssignmentOptions.ts` (nessuna modifica: usa già `formatSchoolClassName(schoolClass)` genericamente), `useAssignmentTable.ts` (`schoolClassNameOf`), `useTeachers.ts`/`useSubjects.ts` (testo "dove viene usato"), `useStudyTracks.ts` (stesso testo "dove viene usato" per il blocco eliminazione di un corso di studio)
 - [x] Aggiornare CLAUDE.md (Struttura tabelle + tabella "I nomi")
 - [ ] Verifica: `npm run tauri dev` — la migrazione v4 si applica senza errori sui dati di test già presenti, creare/eliminare una sezione, la select in Classi si popola, il blocco eliminazione funziona se una sezione è ancora usata
+
+## Home page, Anagrafica come macro-area, tema chiaro/scuro
+
+Finora il menu in alto elencava tutte le 6 entità sullo stesso piano. Ora che il progetto ha più di un'area (Anagrafica oggi, Tabella orario ed Esportazione PDF in arrivo), serve un punto di ingresso che le presenti come scelte di pari livello - non solo un elenco piatto di tabelle.
+
+Decisioni confermate:
+- `/` diventa una vera home page con 3 card grandi (Anagrafica, Tabella orario, Esporta PDF), non più alias di `/teachers`
+- Tabella orario ed Esporta PDF non esistono ancora: card/voci di menu visibili ma disabilitate, con badge "In arrivo" - la struttura è pronta, si abilitano quando la feature esiste
+- Le 6 entità restano alle URL attuali (`/teachers`, `/school-classes`, ecc.) - nessun nesting delle route, solo una nuova pagina hub `/registry` che le presenta come card
+- Il menu in alto si riduce a 3 voci (Anagrafica, Tabella orario, Esporta PDF) invece delle 6 attuali, più un titolo/logo a sinistra che porta alla home e il pulsante tema a destra
+- Tema chiaro/scuro: `@nuxt/ui` registra già `@nuxt/color-mode` in automatico, basta `UColorModeButton` - nessuna dipendenza o configurazione nuova
+
+- [x] `app/pages/index.vue` - vera home page, 3 `UPageCard` in `UPageGrid` (Anagrafica abilitata, Tabella orario/Esporta PDF disabilitate con badge)
+- [x] Rimuovere `definePageMeta({ alias: '/' })` da `app/pages/teachers/index.vue`
+- [x] `app/pages/registry/index.vue` - hub Anagrafica, 6 `UPageCard` verso le entità esistenti (icona + titolo, riuso delle chiavi i18n `teachers.title`/`schoolClasses.title`/ecc. già esistenti)
+- [x] `app/layouts/default.vue` - riscritto: titolo/logo "School Grid" a sinistra (link a `/`), `UNavigationMenu` con le 3 macro-aree (Tabella orario/Esporta PDF con `disabled: true` e `badge`), `UColorModeButton` a destra
+- [x] Chiavi i18n: `nav.registry`/`nav.schedule`/`nav.pdfExport`/`nav.comingSoon`, `home.*` (titolo/descrizione delle 3 card), `registry.title`
+- [x] Coerenza titolo+indietro a ogni livello: le pagine indice delle 6 entità (`/teachers`, `/school-classes`, ecc.) non avevano un pulsante indietro proprio — si usciva solo ricliccando "Anagrafica" nel menu in alto. Aggiunto lo stesso pattern icona+aria-label già usato in `new.vue`/`[id]/edit.vue`, verso `/registry`
+- [ ] Verifica: `npm run tauri dev` - `/` mostra la home, Anagrafica porta all'hub e da lì alle 6 entità, Tabella orario/Esporta PDF non sono cliccabili, il pulsante tema cambia chiaro/scuro e resta coerente su tutte le pagine, ogni pagina indice/hub ha un pulsante indietro funzionante
+
+## Preferenze (giorno libero del docente)
+
+Prossima dipendenza prima della griglia orario: la regola "giorno libero non rispettato" (avviso, non blocco) non ha senso senza sapere quale sia il giorno libero di ciascun docente. La tabella `preference` esiste già dalla migrazione v1 (`id`, `teacher_id` FK, `day_off`).
+
+Decisioni confermate:
+- Un docente ha **al massimo un** giorno libero, non una lista - niente entità/pagina CRUD a parte, il campo vive direttamente nel form Docente (select opzionale, "Nessuno" incluso)
+- Giorni selezionabili: lunedì-sabato (settimana scolastica a 6 giorni) - lista fissa hardcoded, non una entità come Sezioni/Corsi di studio: i giorni della settimana non sono un vocabolario che l'utente gestisce
+- `preference.day_off` resta il valore di riferimento anche per `schedule_entry.day` quando costruiremo la griglia: stesso vocabolario, stessi valori (`monday`..`saturday`), etichette tradotte via `weekdays.*`
+- Eliminare un docente elimina anche la sua eventuale riga in `preference` (è un attributo suo, non un uso incrociato come le Cattedre) - niente blocco FK da gestire qui
+
+- [x] `app/utils/weekdays.ts` - costante `WEEKDAY_VALUES` (`monday`..`saturday`)
+- [x] Chiavi i18n: `weekdays.monday`..`weekdays.saturday`, `teachers.form.dayOff`, `teachers.form.noDayOff`, `teachers.form.allDayOff` (voce "Tutti" nel filtro)
+- [x] `app/composables/teacher/useTeacherPreference.ts` (nuovo, condiviso) - `saveDayOff(teacherId, dayOff | null)` (upsert/delete), `deleteDayOff(teacherId)`
+- [x] `useTeachers.ts` - `TeacherWithDetails` con `day_off: string | null` via `LEFT JOIN preference`; `addTeacher` ritorna l'id creato (serve per salvare la preferenza al primo submit); `deleteTeacher` cancella prima la riga in `preference`
+- [x] `useTeacherForm.ts`/`TeacherForm.vue` - select "Giorno libero" (con opzione "Nessuno"), salvata via `useTeacherPreference` dopo l'add/update del docente
+- [x] `useTeacherTable.ts`/`TeacherTable.vue` - colonna "Giorno libero"; `useTeacherFilters.ts`/pagina `teachers/index.vue` - filtro a `USelect` (non `ClearableInput`, è un vocabolario chiuso non testo libero)
+- [x] Aggiornato CLAUDE.md (riga `preference` nel modello dati, `useTeacherPreference` nella tabella "I nomi")
+- [ ] Verifica: `npm run tauri dev` - impostare/rimuovere il giorno libero di un docente, la colonna in tabella si aggiorna, eliminare un docente con giorno libero impostato non fallisce per FK
+
+## Rimozione Materie: la cattedra non ha più bisogno della materia
+
+Decisione: `assignment` (cattedra) diventa solo docente + classe + ore settimanali. Motivazione dell'utente: si sa già a prescindere dalla materia quante ore un docente deve fare in una classe.
+
+Segnalato il compromesso prima di procedere: senza materia, un docente non può più avere due incarichi distinti sulla stessa classe (es. Italiano + Storia con ore diverse) - le due righe sarebbero indistinguibili in tabella, e nel PDF finale ogni slot mostrerà solo il nome del docente, non cosa insegna. Confermata la rimozione comunque.
+
+- [x] Migrazione v5 in `src-tauri/src/lib.rs`: `ALTER TABLE assignment DROP COLUMN subject_id; DROP TABLE subject;` - verificato con test Python prima di scriverla: `DROP COLUMN` diretto funziona anche su una colonna con FK (SQLite moderno), non serve ricostruire la tabella come per `year`/`section_id`
+- [x] Rimuovere l'intera entità Materie: `app/composables/subject/`, `app/components/subject/`, `app/pages/subjects/`, `app/utils/subjectFormHelper.ts`
+- [x] `useAssignments.ts` - `Assignment`/`AssignmentWithDetails` senza `subject_id`/`subject_name`, query senza `JOIN subject`, `displayName()` senza materia
+- [x] `useAssignmentOptions.ts` - via `subjectOptions`/`fetchSubjects`
+- [x] `useAssignmentUsages.ts` - via `bySubject` (nessun altro consumer)
+- [x] `assignmentFormHelper.ts`/`AssignmentForm.vue`/`useAssignmentForm.ts` - via il campo materia
+- [x] `useAssignmentTable.ts`/`AssignmentTable.vue`/`useAssignmentFilters.ts`/`assignments/index.vue` - via colonna/filtro materia
+- [x] `useSchoolClasses.ts`/`useTeachers.ts` - messaggio "dove viene usato" nel blocco eliminazione, via `subject_name`
+- [x] `registry/index.vue` - via card Materie
+- [x] i18n: via blocco `subjects.*`, `assignments.form.subject`, `nav.subjects`
+- [x] Aggiornare CLAUDE.md (Project Overview + Modello dati: `assignment` senza `subject_id`, via riga `subject`, nota sul compromesso accettato; tabella "I nomi" via `useSubjects`)
+- [ ] Verifica: `npm run tauri dev` - la migrazione v5 si applica senza errori sui dati di test già presenti, creare/modificare una cattedra senza materia, l'Anagrafica non mostra più Materie
+
+## Preferenze: più giorni liberi per docente
+
+Corregge la decisione precedente ("al massimo uno") - un docente può avere più giorni di riposo. Buona notizia: la tabella `preference` supporta già più righe per docente dal giorno 0 della migrazione v1, il vincolo "al massimo uno" era solo applicativo (form + composable), non nello schema.
+
+- [x] `useTeacherPreference.ts` - `saveDayOff` → `saveDayOffs(teacherId, dayOffs: Weekday[])`: sostituisce tutte le righe (delete di tutte + insert per ogni giorno selezionato) - niente diffing, il set è troppo piccolo (max 6) per giustificarlo
+- [x] `useTeachers.ts` - `TeacherWithDetails.day_off: string | null` → `day_off: Weekday[]`; il `LEFT JOIN preference` produrrebbe righe duplicate per docente con più giorni, quindi due query separate (docenti + tutte le preferenze) aggregate in JS invece del JOIN
+- [x] `teacherFormHelper.ts` - `day_off: z.enum(WEEKDAY_VALUES).nullable()` → `day_off: z.array(z.enum(WEEKDAY_VALUES))`
+- [x] `useTeacherForm.ts`/`TeacherForm.vue` - `USelect` con prop `multiple`, default `[]` invece di `null`
+- [x] `useTeacherTable.ts` - colonna con i giorni liberi concatenati e tradotti; filtro `teachers/index.vue` invariato nella forma (select singola: "il docente ha questo giorno tra i suoi liberi", via `.includes()` invece di uguaglianza)
+- [x] Aggiornare CLAUDE.md (riga `preference`: da "al massimo una riga per docente" a "più righe per docente")
+- [ ] Verifica: `npm run tauri dev` - selezionare più giorni liberi per un docente, la tabella li mostra tutti, il filtro funziona, eliminare un docente con più giorni liberi non fallisce per FK

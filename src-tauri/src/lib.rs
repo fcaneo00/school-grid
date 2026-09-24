@@ -107,6 +107,15 @@ fn migrations() -> Vec<Migration> {
       CREATE INDEX idx_school_class_section ON school_class(section_id);
     ",
         },
+        Migration {
+            version: 5,
+            description: "drop_subject",
+            kind: MigrationKind::Up,
+            sql: "
+      ALTER TABLE assignment DROP COLUMN subject_id;
+      DROP TABLE subject;
+    ",
+        },
     ]
 }
 

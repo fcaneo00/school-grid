@@ -30,7 +30,6 @@
     "comingSoon": "In arrivo",
     "teachers": "Docenti",
     "schoolClasses": "Classi",
-    "subjects": "Materie",
     "studyTracks": "Corsi di studio",
     "sections": "Sezioni",
     "assignments": "Cattedre"
@@ -39,7 +38,7 @@
     "title": "School Grid",
     "subtitle": "Da dove vuoi partire?",
     "registryTitle": "Anagrafica",
-    "registryDescription": "Docenti, classi, sezioni, corsi di studio, materie e cattedre: i dati su cui si costruisce tutto il resto.",
+    "registryDescription": "Docenti, classi, sezioni, corsi di studio e cattedre: i dati su cui si costruisce tutto il resto.",
     "scheduleTitle": "Tabella orario",
     "scheduleDescription": "Costruisci la griglia settimanale trascinando le cattedre negli slot, con i conflitti segnalati in tempo reale.",
     "pdfExportTitle": "Esporta PDF",
@@ -79,14 +78,6 @@
       "studyTrack": "Corso di studio"
     }
   },
-  "subjects": {
-    "title": "Materie",
-    "addButton": "Aggiungi materia",
-    "editTitle": "Modifica materia",
-    "form": {
-      "name": "Nome"
-    }
-  },
   "studyTracks": {
     "title": "Corsi di studio",
     "addButton": "Aggiungi corso di studio",
@@ -110,7 +101,6 @@
     "form": {
       "teacher": "Docente",
       "schoolClass": "Classe",
-      "subject": "Materia",
       "weeklyHours": "Ore settimanali",
       "weeklyHoursInvalid": "Deve essere un numero intero positivo"
     }

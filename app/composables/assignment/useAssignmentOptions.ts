@@ -1,12 +1,10 @@
 export function useAssignmentOptions() {
   const { teachers, fetchTeachers } = useTeachers()
   const { schoolClasses, fetchSchoolClasses } = useSchoolClasses()
-  const { subjects, fetchSubjects } = useSubjects()
 
   function fetchOptions() {
     fetchTeachers()
     fetchSchoolClasses()
-    fetchSubjects()
   }
 
   const teacherOptions = computed(() =>
@@ -23,17 +21,9 @@ export function useAssignmentOptions() {
     }))
   )
 
-  const subjectOptions = computed(() =>
-    subjects.value.map((subject) => ({
-      label: subject.name,
-      value: subject.id
-    }))
-  )
-
   return {
     fetchOptions,
     teacherOptions,
-    schoolClassOptions,
-    subjectOptions
+    schoolClassOptions
   }
 }

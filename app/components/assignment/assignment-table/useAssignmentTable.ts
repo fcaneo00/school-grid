@@ -18,7 +18,7 @@ export function useAssignmentTable() {
   }
 
   async function handleDelete(assignment: AssignmentWithDetails) {
-    const name = `${assignment.teacher_last_name} ${assignment.teacher_first_name} - ${assignment.subject_name} (${schoolClassNameOf(assignment)})`
+    const name = `${assignment.teacher_last_name} ${assignment.teacher_first_name} (${schoolClassNameOf(assignment)})`
     const confirmed = await confirmDialog({
       title: t('general.confirmDeleteTitle'),
       description: t('general.confirmDeleteDescription', { name })
@@ -32,7 +32,6 @@ export function useAssignmentTable() {
     assignments.value.filter((assignment) =>
       `${assignment.teacher_last_name} ${assignment.teacher_first_name}`.toLowerCase().includes(filters.value.teacher.toLowerCase()) &&
       schoolClassNameOf(assignment).toLowerCase().includes(filters.value.schoolClass.toLowerCase()) &&
-      assignment.subject_name.toLowerCase().includes(filters.value.subject.toLowerCase()) &&
       (filters.value.weeklyHours === undefined || assignment.weekly_hours === filters.value.weeklyHours)
     )
   )
@@ -48,7 +47,6 @@ export function useAssignmentTable() {
       header: t('assignments.form.schoolClass'),
       cell: ({ row }) => schoolClassNameOf(row.original)
     },
-    { accessorKey: 'subject_name', header: t('assignments.form.subject') },
     { accessorKey: 'weekly_hours', header: t('assignments.form.weeklyHours') },
     { id: 'actions', header: t('table.actions') }
   ]

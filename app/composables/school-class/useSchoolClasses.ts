@@ -78,7 +78,7 @@ export function useSchoolClasses() {
       }
       const usages = await bySchoolClass(id)
       const usagesText = usages
-        .map((assignment) => `${assignment.subject_name} - ${assignment.teacher_last_name} ${assignment.teacher_first_name}`)
+        .map((assignment) => `${assignment.teacher_last_name} ${assignment.teacher_first_name}`)
         .join(', ')
       notify.error(
         t('general.deleteBlockedTitle', { name }),

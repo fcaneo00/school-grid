@@ -4,7 +4,7 @@ import { useAssignmentForm } from './useAssignmentForm'
 const props = defineProps<{ id?: number }>()
 
 const { t } = useI18n()
-const { schema, state, submitLabel, teacherOptions, schoolClassOptions, subjectOptions, onSubmit } = useAssignmentForm(props.id)
+const { schema, state, submitLabel, teacherOptions, schoolClassOptions, onSubmit } = useAssignmentForm(props.id)
 </script>
 
 <template>
@@ -14,9 +14,6 @@ const { schema, state, submitLabel, teacherOptions, schoolClassOptions, subjectO
     </UFormField>
     <UFormField name="school_class_id" :label="t('assignments.form.schoolClass')">
       <USelect v-model="state.school_class_id" :items="schoolClassOptions" class="w-full" />
-    </UFormField>
-    <UFormField name="subject_id" :label="t('assignments.form.subject')">
-      <USelect v-model="state.subject_id" :items="subjectOptions" class="w-full" />
     </UFormField>
     <UFormField name="weekly_hours" :label="t('assignments.form.weeklyHours')">
       <UInputNumber v-model="state.weekly_hours" :min="1" class="w-full" />
