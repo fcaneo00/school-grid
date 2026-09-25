@@ -80,11 +80,15 @@
     "mixedStudyTrack": "Corsi diversi",
     "expandDetail": "Mostra dettaglio classi",
     "yearOrdinal": "{year}° Anno",
+    "weeklyHoursValue": "{hours} ore",
+    "weeklyHoursNotSet": "monte ore non impostato",
     "form": {
       "year": "N° Anno",
       "yearInvalid": "Deve essere tra 1 e 5",
       "section": "Sezione",
-      "studyTrack": "Corso di studio"
+      "studyTrack": "Corso di studio",
+      "weeklyHours": "Monte ore settimanale",
+      "weeklyHoursInvalid": "Deve essere un numero intero tra 1 e 36"
     }
   },
   "studyTracks": {
@@ -125,11 +129,16 @@
     "noClassSelected": "Seleziona una classe per vedere e costruire il suo orario.",
     "noAssignments": "Nessuna cattedra per questa classe.",
     "hoursAssigned": "{assigned}/{total} ore",
+    "classHoursLabel": "Ore occupate:",
+    "classHoursNoTarget": "{assigned} ore (monte ore non impostato)",
     "complete": "Completa",
     "overassigned": "Sovra-assegnata",
     "dayOffWarningTitle": "Giorno libero del docente",
     "dayOffWarningDescription": "{teacher} ha indicato {day} come giorno libero.",
     "removeEntry": "Rimuovi dalla griglia",
+    "editTeacherRegistry": "Modifica anagrafica",
+    "editAssignment": "Modifica cattedra",
+    "deleteAssignment": "Elimina cattedra",
     "draftBanner": "Bozza - modifiche non salvate",
     "save": "Salva",
     "revert": "Ripristina",

@@ -3,6 +3,7 @@ export interface SchoolClass {
   year: number
   section_id: number | null
   study_track_id: number | null
+  weekly_hours: number | null
 }
 
 export interface SchoolClassWithDetails extends SchoolClass {
@@ -27,6 +28,7 @@ export function useSchoolClasses() {
           CAST(school_class.year AS INTEGER) AS year,
           school_class.section_id,
           school_class.study_track_id,
+          school_class.weekly_hours,
           section.name AS section_name,
           study_track.name AS study_track_name
         FROM school_class
@@ -44,8 +46,8 @@ export function useSchoolClasses() {
   async function insertSchoolClass(schoolClass: Omit<SchoolClass, 'id'>) {
     const db = await getDb()
     const result = await db.execute(
-      'INSERT INTO school_class (year, section_id, study_track_id) VALUES ($1, $2, $3)',
-      [schoolClass.year, schoolClass.section_id, schoolClass.study_track_id]
+      'INSERT INTO school_class (year, section_id, study_track_id, weekly_hours) VALUES ($1, $2, $3, $4)',
+      [schoolClass.year, schoolClass.section_id, schoolClass.study_track_id, schoolClass.weekly_hours]
     )
     return result.lastInsertId
   }
@@ -83,8 +85,8 @@ export function useSchoolClasses() {
     const db = await getDb()
     try {
       await db.execute(
-        'UPDATE school_class SET year = $1, section_id = $2, study_track_id = $3 WHERE id = $4',
-        [schoolClass.year, schoolClass.section_id, schoolClass.study_track_id, id]
+        'UPDATE school_class SET year = $1, section_id = $2, study_track_id = $3, weekly_hours = $4 WHERE id = $5',
+        [schoolClass.year, schoolClass.section_id, schoolClass.study_track_id, schoolClass.weekly_hours, id]
       )
     } catch (e) {
       if (isUniqueConstraintError(e)) {

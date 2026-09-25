@@ -4,6 +4,9 @@ export function useTeacherForm(id: Ref<number | undefined>) {
   const { t } = useI18n()
   const { teachers, fetchTeachers, addTeacher, updateTeacher } = useTeachers()
   const { saveDayOffs } = useTeacherPreference()
+  const route = useRoute()
+
+  const returnTo = computed(() => resolveReturnTo(route.query.returnTo, '/teachers'))
 
   const schema = createTeacherFormSchema(t)
 
@@ -38,13 +41,14 @@ export function useTeacherForm(id: Ref<number | undefined>) {
     if (teacherId !== undefined) {
       await saveDayOffs(teacherId, day_off)
     }
-    await navigateTo('/teachers')
+    await navigateTo(returnTo.value)
   }
 
   return {
     schema,
     state,
     dayOffOptions,
+    returnTo,
     onSubmit
   }
 }

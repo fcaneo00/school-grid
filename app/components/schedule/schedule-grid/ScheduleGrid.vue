@@ -17,6 +17,7 @@ const {
   onBlockDragStart,
   onBlockDragEnd,
   handleRemoveBlock,
+  contextMenuItems,
   onResizeStart,
   isResizingBlock,
   isMovingBlock,
@@ -80,37 +81,41 @@ const {
         leave-active-class="transition-all duration-500 ease-in"
         leave-to-class="opacity-0 scale-95"
       >
-        <div
+        <UContextMenu
           v-for="block in allBlocks"
           :key="`${block.day}-${block.assignmentId}-${block.startHour}`"
-          draggable="true"
-          class="group pointer-events-auto absolute cursor-grab overflow-hidden rounded border border-primary/30 active:cursor-grabbing"
-          :class="{
-            'transition-[height] duration-500 ease-out': !isResizingBlock(block),
-            'opacity-30': isMovingBlock(block)
-          }"
-          :style="blockStyle(block)"
-          @dragstart="onBlockDragStart($event, block)"
-          @dragend="onBlockDragEnd"
+          :items="contextMenuItems(block)"
         >
-          <div class="absolute inset-0 bg-default" />
-          <div class="absolute inset-0 bg-primary/10" />
-          <div class="relative flex h-full items-center justify-between gap-1 p-2">
-            <span class="truncate">{{ shortName(block) }}</span>
-            <UButton
-              icon="i-lucide-x"
-              size="xs"
-              color="neutral"
-              variant="ghost"
-              :aria-label="t('schedule.removeEntry')"
-              @click="handleRemoveBlock(block.day, block.assignmentId)"
-            />
-            <div
-              class="absolute inset-x-0 bottom-0 h-1.5 cursor-row-resize rounded-b opacity-0 group-hover:bg-primary/40 group-hover:opacity-100"
-              @mousedown="onResizeStart($event, block)"
-            />
+          <div
+            draggable="true"
+            class="group pointer-events-auto absolute cursor-grab overflow-hidden rounded border border-primary/30 active:cursor-grabbing"
+            :class="{
+              'transition-[height] duration-500 ease-out': !isResizingBlock(block),
+              'opacity-30': isMovingBlock(block)
+            }"
+            :style="blockStyle(block)"
+            @dragstart="onBlockDragStart($event, block)"
+            @dragend="onBlockDragEnd"
+          >
+            <div class="absolute inset-0 bg-default" />
+            <div class="absolute inset-0 bg-primary/10" />
+            <div class="relative flex h-full items-center justify-between gap-1 p-2">
+              <span class="truncate">{{ shortName(block) }}</span>
+              <UButton
+                icon="i-lucide-x"
+                size="xs"
+                color="neutral"
+                variant="ghost"
+                :aria-label="t('schedule.removeEntry')"
+                @click="handleRemoveBlock(block.day, block.assignmentId)"
+              />
+              <div
+                class="absolute inset-x-0 bottom-0 h-1.5 cursor-row-resize rounded-b opacity-0 group-hover:bg-primary/40 group-hover:opacity-100"
+                @mousedown="onResizeStart($event, block)"
+              />
+            </div>
           </div>
-        </div>
+        </UContextMenu>
       </TransitionGroup>
 
       <div

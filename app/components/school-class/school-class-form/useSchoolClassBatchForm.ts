@@ -21,7 +21,7 @@ export function useSchoolClassBatchForm() {
   )
 
   function emptyRow(): Partial<SchoolClassFormSchema> {
-    return { year: 1, section_id: undefined, study_track_id: undefined }
+    return { year: 1, section_id: undefined, study_track_id: undefined, weekly_hours: undefined }
   }
 
   const state = reactive<{ items: Partial<SchoolClassFormSchema>[] }>({
@@ -38,7 +38,8 @@ export function useSchoolClassBatchForm() {
     state.items.push({
       year: last?.year !== undefined && last.year < 5 ? last.year + 1 : last?.year,
       section_id: last?.section_id,
-      study_track_id: last?.study_track_id
+      study_track_id: last?.study_track_id,
+      weekly_hours: last?.weekly_hours
     })
   }
 

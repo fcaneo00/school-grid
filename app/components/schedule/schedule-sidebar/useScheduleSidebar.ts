@@ -1,7 +1,13 @@
+import type { ContextMenuItem } from '@nuxt/ui'
+import type { AssignmentWithDetails } from '~/composables/assignment/useAssignments'
+
 export function useScheduleSidebar(schoolClassId: Ref<number>) {
-  const { assignments, fetchAssignments } = useAssignments()
+  const { t } = useI18n()
+  const { assignments, fetchAssignments, deleteAssignment } = useAssignments()
   const { effectiveEntries } = useScheduleDraft()
   const { draggedAssignment } = useScheduleDrag()
+  const confirmDialog = useConfirmDialog()
+  const route = useRoute()
 
   onMounted(fetchAssignments)
 
@@ -27,9 +33,42 @@ export function useScheduleSidebar(schoolClassId: Ref<number>) {
     draggedAssignment.value = null
   }
 
+  async function handleDeleteAssignment(assignment: AssignmentWithDetails) {
+    const name = `${assignment.teacher_last_name} ${assignment.teacher_first_name}`
+    const confirmed = await confirmDialog({
+      title: t('general.confirmDeleteTitle'),
+      description: t('general.confirmDeleteDescription', { name })
+    })
+    if (confirmed) {
+      await deleteAssignment(assignment.id)
+    }
+  }
+
+  function contextMenuItems(assignment: AssignmentWithDetails): ContextMenuItem[] {
+    return [
+      {
+        label: t('schedule.editTeacherRegistry'),
+        icon: 'i-lucide-user-pen',
+        to: { path: `/teachers/${assignment.teacher_id}/edit`, query: { returnTo: route.fullPath } }
+      },
+      {
+        label: t('schedule.editAssignment'),
+        icon: 'i-lucide-armchair',
+        to: { path: `/assignments/${assignment.id}/edit`, query: { returnTo: route.fullPath } }
+      },
+      {
+        label: t('schedule.deleteAssignment'),
+        icon: 'i-lucide-trash',
+        color: 'error',
+        onSelect: () => handleDeleteAssignment(assignment)
+      }
+    ]
+  }
+
   return {
     classAssignments,
     onDragStart,
-    onDragEnd
+    onDragEnd,
+    contextMenuItems
   }
 }

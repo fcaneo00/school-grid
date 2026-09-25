@@ -18,6 +18,9 @@ const { itemSchema, state, sectionOptions, studyTrackOptions, addRow, removeRow,
         <UFormField name="study_track_id" :label="index === 0 ? t('schoolClasses.form.studyTrack') : undefined" class="flex-1">
           <USelect v-model="row.study_track_id" :items="studyTrackOptions" class="w-full" />
         </UFormField>
+        <UFormField name="weekly_hours" :label="index === 0 ? t('schoolClasses.form.weeklyHours') : undefined" class="w-28">
+          <UInputNumber v-model="row.weekly_hours" :min="1" :max="36" class="w-full" />
+        </UFormField>
       </UForm>
       <UButton
         v-if="state.items.length > 1"

@@ -1,3 +1,5 @@
+import type { ContextMenuItem } from '@nuxt/ui'
+
 type CellStatus = 'occupied' | 'blocked' | 'warning' | 'available' | 'empty'
 
 // Misure in pixel della griglia - fonte unica: usate sia per il posizionamento assoluto dei
@@ -40,6 +42,7 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
   const conflictEntries = computed(() => conflictCheckEntries(schoolClassId.value))
   const { hasTeacherConflict, isDayOff } = useScheduleConflicts(conflictEntries)
   const { draggedAssignment, draggedBlockSource } = useScheduleDrag()
+  const route = useRoute()
 
   const classEntries = computed(() => effectiveEntries(schoolClassId.value))
 
@@ -274,6 +277,27 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
     removeDraftBlock(schoolClassId.value, day, assignmentId)
   }
 
+  function contextMenuItems(block: Block): ContextMenuItem[] {
+    return [
+      {
+        label: t('schedule.editTeacherRegistry'),
+        icon: 'i-lucide-user-pen',
+        to: { path: `/teachers/${block.teacherId}/edit`, query: { returnTo: route.fullPath } }
+      },
+      {
+        label: t('schedule.editAssignment'),
+        icon: 'i-lucide-armchair',
+        to: { path: `/assignments/${block.assignmentId}/edit`, query: { returnTo: route.fullPath } }
+      },
+      {
+        label: t('schedule.removeEntry'),
+        icon: 'i-lucide-trash',
+        color: 'error',
+        onSelect: () => handleRemoveBlock(block.day, block.assignmentId)
+      }
+    ]
+  }
+
   function maxSpanFrom(day: Weekday, assignmentId: number, startHour: HourSlot, teacherId: number) {
     let span = 0
     for (let hour = startHour; hour <= 6; hour++) {
@@ -363,6 +387,7 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
     onBlockDragStart,
     onBlockDragEnd,
     handleRemoveBlock,
+    contextMenuItems,
     onResizeStart,
     isResizingBlock,
     isMovingBlock,

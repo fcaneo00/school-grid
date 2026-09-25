@@ -8,7 +8,7 @@ interface AssignmentFormProps {
 const props = defineProps<AssignmentFormProps>()
 
 const { t } = useI18n()
-const { schema, state, teacherOptions, schoolClassOptions, onSubmit } = useAssignmentForm(toRef(() => props.id))
+const { schema, state, teacherOptions, schoolClassOptions, returnTo, onSubmit } = useAssignmentForm(toRef(() => props.id))
 </script>
 
 <template>
@@ -24,7 +24,7 @@ const { schema, state, teacherOptions, schoolClassOptions, onSubmit } = useAssig
     </UFormField>
     <div class="flex gap-2">
       <UButton type="submit" :label="t('table.save')" />
-      <UButton :label="t('general.cancel')" color="neutral" variant="outline" to="/assignments" />
+      <UButton :label="t('general.cancel')" color="neutral" variant="outline" :to="returnTo" />
     </div>
   </UForm>
 </template>

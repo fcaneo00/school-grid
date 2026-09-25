@@ -164,6 +164,14 @@ fn migrations() -> Vec<Migration> {
       CREATE UNIQUE INDEX idx_schedule_entry_class_slot ON schedule_entry(day, hour_slot, school_class_id);
     ",
         },
+        Migration {
+            version: 8,
+            description: "school_class_weekly_hours",
+            kind: MigrationKind::Up,
+            sql: "
+      ALTER TABLE school_class ADD COLUMN weekly_hours INTEGER;
+    ",
+        },
     ]
 }
 

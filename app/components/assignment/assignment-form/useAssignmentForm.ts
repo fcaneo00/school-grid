@@ -4,6 +4,9 @@ export function useAssignmentForm(id: Ref<number>) {
   const { t } = useI18n()
   const { assignments, fetchAssignments, updateAssignment } = useAssignments()
   const { fetchOptions, teacherOptions, schoolClassOptions } = useAssignmentOptions()
+  const route = useRoute()
+
+  const returnTo = computed(() => resolveReturnTo(route.query.returnTo, '/assignments'))
 
   const schema = createAssignmentFormSchema(t)
 
@@ -26,7 +29,7 @@ export function useAssignmentForm(id: Ref<number>) {
   async function onSubmit(event: FormSubmitEvent<AssignmentFormSchema>) {
     const success = await updateAssignment(id.value, event.data)
     if (success) {
-      await navigateTo('/assignments')
+      await navigateTo(returnTo.value)
     }
   }
 
@@ -35,6 +38,7 @@ export function useAssignmentForm(id: Ref<number>) {
     state,
     teacherOptions,
     schoolClassOptions,
+    returnTo,
     onSubmit
   }
 }

@@ -19,6 +19,7 @@ export function useAssignmentTable() {
 
   const expanded = ref<Record<string, boolean>>({})
   const sorting = ref([{ id: 'teacherName', desc: false }])
+  const { toggleRow, isClosing, isOpen } = useExpandRowAnimation<TeacherGroup>()
 
   function schoolClassNameOf(assignment: AssignmentWithDetails) {
     return formatSchoolClassName({
@@ -81,6 +82,9 @@ export function useAssignmentTable() {
     columns,
     expanded,
     sorting,
+    toggleRow,
+    isClosing,
+    isOpen,
     schoolClassNameOf,
     handleDelete
   }

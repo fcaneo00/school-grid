@@ -22,6 +22,9 @@ const { schema, state, sectionOptions, studyTrackOptions, onSubmit } = useSchool
     <UFormField name="study_track_id" :label="t('schoolClasses.form.studyTrack')">
       <USelect v-model="state.study_track_id" :items="studyTrackOptions" class="w-full" />
     </UFormField>
+    <UFormField name="weekly_hours" :label="t('schoolClasses.form.weeklyHours')">
+      <UInputNumber v-model="state.weekly_hours" :min="1" :max="36" class="w-full" />
+    </UFormField>
     <div class="flex gap-2">
       <UButton type="submit" :label="t('table.save')" />
       <UButton :label="t('general.cancel')" color="neutral" variant="outline" to="/school-classes" />

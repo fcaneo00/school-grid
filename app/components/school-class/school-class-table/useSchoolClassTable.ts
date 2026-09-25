@@ -20,6 +20,7 @@ export function useSchoolClassTable() {
 
   const expanded = ref<Record<string, boolean>>({})
   const sorting = ref([{ id: 'sectionName', desc: false }])
+  const { toggleRow, isClosing, isOpen } = useExpandRowAnimation<SectionGroup>()
 
   async function handleDelete(schoolClass: SchoolClassWithDetails) {
     const confirmed = await confirmDialog({
@@ -77,6 +78,9 @@ export function useSchoolClassTable() {
     columns,
     expanded,
     sorting,
+    toggleRow,
+    isClosing,
+    isOpen,
     handleDelete
   }
 }

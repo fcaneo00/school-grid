@@ -25,7 +25,8 @@ export function useSchoolClassForm(id: Ref<number>) {
   const state = reactive<Partial<SchoolClassFormSchema>>({
     year: 1,
     section_id: undefined,
-    study_track_id: undefined
+    study_track_id: undefined,
+    weekly_hours: undefined
   })
 
   watch(id, async (currentId) => {
@@ -37,6 +38,7 @@ export function useSchoolClassForm(id: Ref<number>) {
     state.year = schoolClass.year
     state.section_id = schoolClass.section_id ?? undefined
     state.study_track_id = schoolClass.study_track_id ?? undefined
+    state.weekly_hours = schoolClass.weekly_hours ?? undefined
   }, { immediate: true })
 
   async function onSubmit(event: FormSubmitEvent<SchoolClassFormSchema>) {

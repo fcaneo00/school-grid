@@ -2,12 +2,13 @@
 const { t } = useI18n()
 const route = useRoute()
 const id = Number(route.params.id)
+const returnTo = resolveReturnTo(route.query.returnTo, '/assignments')
 </script>
 
 <template>
   <div class="space-y-6">
     <div class="flex items-center gap-2">
-      <UButton icon="i-lucide-arrow-left" variant="ghost" color="neutral" :aria-label="t('general.back')" to="/assignments" />
+      <UButton icon="i-lucide-arrow-left" variant="ghost" color="neutral" :aria-label="t('general.back')" :to="returnTo" />
       <h1 class="text-xl font-semibold">{{ t('assignments.editTitle') }}</h1>
     </div>
     <AssignmentForm :id="id" />

@@ -8,7 +8,7 @@ interface TeacherFormProps {
 const props = defineProps<TeacherFormProps>()
 
 const { t } = useI18n()
-const { schema, state, dayOffOptions, onSubmit } = useTeacherForm(toRef(() => props.id))
+const { schema, state, dayOffOptions, returnTo, onSubmit } = useTeacherForm(toRef(() => props.id))
 </script>
 
 <template>
@@ -24,7 +24,7 @@ const { schema, state, dayOffOptions, onSubmit } = useTeacherForm(toRef(() => pr
     </UFormField>
     <div class="flex gap-2">
       <UButton type="submit" :label="t('table.save')" />
-      <UButton :label="t('general.cancel')" color="neutral" variant="outline" to="/teachers" />
+      <UButton :label="t('general.cancel')" color="neutral" variant="outline" :to="returnTo" />
     </div>
   </UForm>
 </template>
