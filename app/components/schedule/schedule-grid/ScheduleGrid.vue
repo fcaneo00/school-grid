@@ -102,7 +102,7 @@ const {
             <div class="relative flex h-full items-center justify-between gap-1 p-2">
               <span class="truncate">{{ shortName(block) }}</span>
               <UButton
-                icon="i-lucide-x"
+                icon="i-ph-x"
                 size="xs"
                 color="neutral"
                 variant="ghost"

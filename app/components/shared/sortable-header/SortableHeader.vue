@@ -10,9 +10,9 @@ const props = defineProps<SortableHeaderProps>()
 
 const icon = computed(() => {
   const sorted = props.column.getIsSorted()
-  if (sorted === 'asc') return 'i-lucide-arrow-up-narrow-wide'
-  if (sorted === 'desc') return 'i-lucide-arrow-down-wide-narrow'
-  return 'i-lucide-arrow-up-down'
+  if (sorted === 'asc') return 'i-ph-sort-ascending'
+  if (sorted === 'desc') return 'i-ph-sort-descending'
+  return 'i-ph-arrows-down-up'
 })
 </script>
 

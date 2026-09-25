@@ -48,17 +48,17 @@ export function useScheduleSidebar(schoolClassId: Ref<number>) {
     return [
       {
         label: t('schedule.editTeacherRegistry'),
-        icon: 'i-lucide-user-pen',
+        icon: 'i-ph-identification-card',
         to: { path: `/teachers/${assignment.teacher_id}/edit`, query: { returnTo: route.fullPath } }
       },
       {
         label: t('schedule.editAssignment'),
-        icon: 'i-lucide-armchair',
+        icon: 'i-ph-armchair',
         to: { path: `/assignments/${assignment.id}/edit`, query: { returnTo: route.fullPath } }
       },
       {
         label: t('schedule.deleteAssignment'),
-        icon: 'i-lucide-trash',
+        icon: 'i-ph-trash',
         color: 'error',
         onSelect: () => handleDeleteAssignment(assignment)
       }

@@ -23,7 +23,7 @@ Le due ragioni per cui l'app esiste: **la validazione dei conflitti mentre si co
 ### Stack
 
 - **Frontend**: Nuxt 4 (Vue), SPA statica (`ssr: false`, build con `nuxt generate`)
-- **Linguaggio**: TypeScript in componenti e composables; SCSS per gli asset di stile
+- **Linguaggio**: TypeScript in componenti e composables; CSS puro per gli asset di stile (Tailwind v4, config del tema in `app/assets/css/main.css` - niente SCSS: il tema di Tailwind v4 vive comunque in un file `.css` nativo, e non c'era altro nel progetto che usasse davvero sintassi Sass)
 - **i18n**: `@nuxtjs/i18n` (`strategy: 'no_prefix'`, niente routing per lingua) - solo italiano attivo, ma nessun testo hardcoded nei template: tutte le stringhe passano da `i18n/locales/*.json` via `$t()`/`useI18n()`, pronto per aggiungere lingue senza toccare i componenti
 - **Lint**: `@nuxt/eslint` (JS/TS/Vue) + `eslint-plugin-sonarjs` (code smell/complessità) + `eslint-plugin-vuejs-accessibility` (a11y dentro i `<template>` Vue, unico strumento che la copre - SonarJS ha regole a11y solo per JSX) + `cargo clippy`/`fmt` (Rust) - `vue/block-order`, `vue/attributes-order`, `@typescript-eslint/no-explicit-any`, `vue/no-setup-props-reactivity-loss`, `vue/no-template-shadow`, `vue/require-explicit-emits`, `vue/no-v-html` forzati a `error` in `eslint.config.mjs`, resto ai default dei moduli. Eccezione consapevole: `vuejs-accessibility/no-static-element-interactions` disattivata solo per `schedule-grid`/`schedule-sidebar` - il drag&drop nativo HTML5 lì usato non ha un equivalente da tastiera senza una feature a sé (non ancora costruita)
 - **Shell desktop**: Tauri 2 (Rust + WebView2 su Windows)

@@ -15,7 +15,7 @@ defineProps<ClearableInputNumberProps>()
     <UInputNumber v-model.optional="model" :placeholder="placeholder" :min="min" :max="max" class="w-full" />
     <UButton
       v-if="model !== undefined"
-      icon="i-lucide-x"
+      icon="i-ph-x"
       color="neutral"
       variant="link"
       size="xs"

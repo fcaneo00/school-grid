@@ -13,13 +13,13 @@ const { studyTracks, loading, columns, sorting, handleDelete } = useStudyTrackTa
       </template>
       <template #actions-cell="{ row }">
         <UButton
-          icon="i-lucide-pencil"
+          icon="i-ph-pencil"
           color="neutral"
           variant="ghost"
           :to="`/study-tracks/${row.original.id}/edit`"
         />
         <UButton
-          icon="i-lucide-trash"
+          icon="i-ph-trash"
           color="error"
           variant="ghost"
           @click="handleDelete(row.original)"

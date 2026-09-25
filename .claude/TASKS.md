@@ -573,6 +573,50 @@ Corretto sfruttando un attributo che `UTable` già scrive da solo sulla riga pri
 - [x] `SchoolClassTable.vue`/`AssignmentTable.vue` - stesso override `:ui="{ tr: ... }"` in entrambe
 - [ ] Verifica: `npm run tauri dev` - aprendo una sezione/docente il bordo sotto la sua riga sparisce subito e ne compare uno nuovo in fondo al dettaglio, che scende progressivamente mentre il blocco si apre invece di comparire fermo; chiudendo, il bordo torna sotto la riga una volta che l'animazione di chiusura è finita
 
+## Riorganizzazione: componenti condivisi sotto components/shared/
+
+I componenti non legati a un'entità (`clearable-input/`, `confirm-dialog/`, `sortable-header/`) erano sibling diretti delle cartelle macroarea per entità (`teacher/`, `school-class/`, ecc.) dentro `app/components/` - spostati sotto `app/components/shared/` per distinguerli a colpo d'occhio. Nessun impatto sui nomi dei componenti nei template (`ClearableInput`, `ConfirmDialog`, `SortableHeader` restano gli stessi): `nuxt.config.ts` ha già `pathPrefix: false` sullo scan di `components/`, quindi il nome registrato viene sempre dal nome del file, non dal percorso della cartella - la profondità in più non cambia nulla lato auto-import, verificato con typecheck/lint puliti dopo lo spostamento.
+
+- [x] `clearable-input/`, `confirm-dialog/`, `sortable-header/` spostati sotto `app/components/shared/` (con `git mv`, storia preservata)
+
+## Cambio tema: colori, icone Phosphor - BREAKING CHANGE
+
+Tema generato con il web tool ufficiale di Nuxt UI (https://ui.nuxt.com/theme), file scaricati (`app.config.ts`, `main.css`) e confrontati con la configurazione esistente prima di applicare nulla.
+
+**Cosa cambia davvero rispetto a prima** (verificato leggendo i default di Nuxt UI in `node_modules`, non per supposizione):
+- **Colori**: `primary: rose`, `success: teal`, `neutral: stone` - il progetto non aveva mai un `app.config.ts` (usava i default di Nuxt UI, che sono `primary: green`/`neutral: slate`) - questa è la prima volta che i colori vengono scelti esplicitamente.
+- **`main.css` invariato**: il file scaricato dal tool è byte-per-byte identico a quello già nel progetto (font `Plus Jakarta Sans`, `--ui-radius: 0.5rem`, gli override chiaro/scuro di `--ui-bg`/`--ui-text-inverted`) - il tool non tocca quella parte, quindi non c'è nulla da cambiare lì. Il font Plus Jakarta Sans non è mai stato davvero caricato (nessun modulo font, nessun link Google Fonts) - probabilmente ripiega già sul sans-serif di sistema; non toccato in questo giro perché il tema generato non lo cambia, resta un problema preesistente e separato.
+- **Icone: Lucide → Phosphor**. Il file generato copre solo le icone *interne* di Nuxt UI (freccine dei componenti, spunta, chiusura popup, spinner di caricamento ecc. - la chiave `icons` di `app.config.ts`). Le icone che il progetto usa *direttamente* nei propri template (61 riferimenti `i-lucide-*` in ~20 file) non sono toccate da quel file - cercate a mano le corrispondenze Phosphor per ciascuna, verificate una per una con la ricerca icone invece di indovinare la convenzione di naming (Phosphor non ricalca sempre quella di Lucide):
+  - `filter` → `funnel` (Phosphor non ha "filter")
+  - `chevron-*` → `caret-*` (Phosphor chiama le frecce piccole "caret", non "chevron" - coerente con la mappatura già nel file generato)
+  - `arrow-up-narrow-wide`/`arrow-down-wide-narrow`/`arrow-up-down` → `sort-ascending`/`sort-descending`/`arrows-down-up` (Phosphor ha icone di ordinamento dedicate, più pulite del nome descrittivo di Lucide)
+  - `user-pen` (nessun equivalente diretto) → `identification-card` (stesso significato - "modifica anagrafica" - reso con un'icona semanticamente diversa ma coerente)
+  - `clipboard-edit` (nessun equivalente diretto, usata per la voce di menu "Anagrafica") → `address-book` (più calzante concettualmente per un registro di persone)
+  - `baseline` (nessun equivalente diretto, usata per "Sezioni") → `text-aa`
+  - Tutte le altre (`arrow-left`, `trash`, `pencil`, `x`, `armchair`, `plus`, `file-down`→`file-arrow-down`, `calendar-days`→`calendar`, `user`, `triangle-alert`→`warning`, `info`, `graduation-cap`, `door-open`, `circle-x`→`x-circle`, `circle-check`→`check-circle`) hanno un corrispondente diretto o quasi-diretto, verificato prima di sostituire
+- **Colore neutro sui campi form** (`input`/`select`/`textarea`/`selectMenu`/`inputMenu`/`inputNumber`/`inputTags`/`inputDate`/`inputTime`/`pinInput`): il generatore imposta `color: neutral` di default invece del primary (rose) - scelta del tool, non nostra, portata as-is.
+- **`size: md`/`variant: solid`**: già i default di Nuxt UI, non richiedono override - il tool infatti non li scrive nel file generato.
+
+- [x] `app/app.config.ts` (nuovo) - contenuto del file generato dal tool, invariato
+- [x] Rinominate tutte le 23 icone `i-lucide-*` distinte usate nel progetto (61 occorrenze totali) nei rispettivi equivalenti `i-ph-*`, con sostituzione mirata (non un cerca-sostituisci alla cieca) per ogni file che le referenzia
+- [ ] Verifica: `npm run tauri dev` - ricaricare e controllare a vista tutte le schermate (Anagrafica, le 5 entità, Tabella orario compresa la griglia e i menu contestuali) - colori, icone e che nessuna icona sia rimasta rotta/mancante
+
+**Chiarito come si aggiungono icone da qui in avanti**: la chiave `icons` di `app.config.ts` è riservata al set *fisso* di icone interne di Nuxt UI (ruoli come `chevronDown`, `close`, `loading` - una lista chiusa della libreria) - non è un posto dove registrare le icone che usiamo nei nostri componenti. Per una nuova icona nostra: si cerca con lo strumento di ricerca icone e si scrive `i-ph-nome` direttamente dove serve (`icon="..."` su un componente, o dentro un item di menu) - nessun passaggio intermedio.
+
+**Consolidamento CSS: main.scss eliminato, tutto in main.css.** `main.scss` conteneva un'unica regola (`button:not(:disabled) { cursor: pointer }`) senza nessuna sintassi Sass vera - CSS puro travestito da SCSS. `main.css` invece contiene la configurazione del tema di Tailwind v4 (`@theme`, le custom property `--ui-*`) che **deve** stare in un file `.css` nativo processato dalla pipeline di Tailwind, farla passare da Sass non avrebbe senso. Dato che il resto del progetto è quasi interamente Tailwind utility-first (mai usato un blocco `<style>` in nessun componente in questa sessione), tenere un secondo file più un compilatore Sass (`sass-embedded`) per una riga di CSS puro non si giustificava.
+- [x] Spostata la regola del cursore in `main.css`, eliminato `app/assets/scss/main.scss`, tolto il riferimento in `nuxt.config.ts` (`css: [...]`), disinstallato `sass-embedded` da `package.json`
+- [x] Aggiornato CLAUDE.md (riga "Linguaggio" nello Stack: via SCSS, CSS puro con Tailwind v4)
+- [ ] Verifica: `npm run tauri dev` - i bottoni mostrano ancora il cursore a manina, nessun errore di build legato allo stile
+
+## Versionamento: 0.1.0 → 0.2.0
+
+Richiesta: numero di versione in `package.json`, in vista di eventuali rilasci futuri degli `.exe` su GitHub. `package.json` da solo non basta per quello scopo specifico: Tauri legge la versione da `src-tauri/tauri.conf.json` (con `Cargo.toml` come fallback se `tauri.conf.json` non la specifica) per i metadati dell'eseguibile/installer, non da `package.json` - i due file erano già allineati a `0.1.0` prima di questa richiesta, `package.json` invece non aveva mai avuto un campo `version`. Allineati tutti e tre a `0.2.0`.
+
+- [x] `package.json` - aggiunto `"version": "0.2.0"` (non c'era prima)
+- [x] `src-tauri/tauri.conf.json` - `0.1.0` → `0.2.0`
+- [x] `src-tauri/Cargo.toml` - `0.1.0` → `0.2.0` (verificato con `cargo clippy` che `Cargo.lock` si è risincronizzato da solo, `app v0.2.0`)
+- [x] Autore: `package.json` (`"author": "Filippo Caneo <filippo.caneo@gmail.com>"`, non c'era) e `Cargo.toml` (`authors`, prima il placeholder `["you"]` mai sistemato dalla creazione del progetto Tauri) allineati entrambi
+
 ## Salvataggi multipli (un anno scolastico per file) - IN CODA, verso la fine
 
 Bisogno: poter tenere dati separati per anno scolastico (es. AS2026/2027, poi AS2027/2028) senza perdere quelli precedenti - "salvataggi" come in un videogioco: crea, duplica, elimina, cambia.

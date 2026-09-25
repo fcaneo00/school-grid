@@ -4,19 +4,19 @@ export function useNotification() {
   const toast = useToast()
 
   function success(title: string, description?: string) {
-    toast.add({ title, description, color: 'success', icon: 'i-lucide-circle-check', duration: toastDuration })
+    toast.add({ title, description, color: 'success', icon: 'i-ph-check-circle', duration: toastDuration })
   }
 
   function error(title: string, description?: string) {
-    toast.add({ title, description, color: 'error', icon: 'i-lucide-circle-x', duration: toastDuration })
+    toast.add({ title, description, color: 'error', icon: 'i-ph-x-circle', duration: toastDuration })
   }
 
   function warning(title: string, description?: string) {
-    toast.add({ title, description, color: 'warning', icon: 'i-lucide-triangle-alert', duration: toastDuration })
+    toast.add({ title, description, color: 'warning', icon: 'i-ph-warning', duration: toastDuration })
   }
 
   function info(title: string, description?: string) {
-    toast.add({ title, description, color: 'info', icon: 'i-lucide-info', duration: toastDuration })
+    toast.add({ title, description, color: 'info', icon: 'i-ph-info', duration: toastDuration })
   }
 
   return {

@@ -12,19 +12,19 @@ const { t } = useI18n()
       <UPageCard
         :title="t('home.registryTitle')"
         :description="t('home.registryDescription')"
-        icon="i-lucide-clipboard-edit"
+        icon="i-ph-address-book"
         to="/registry"
       />
       <UPageCard
         :title="t('home.scheduleTitle')"
         :description="t('home.scheduleDescription')"
-        icon="i-lucide-calendar-days"
+        icon="i-ph-calendar"
         to="/schedule"
       />
       <UPageCard
         :title="t('home.pdfExportTitle')"
         :description="t('home.pdfExportDescription')"
-        icon="i-lucide-file-down"
+        icon="i-ph-file-arrow-down"
         class="opacity-50"
       >
         <template #header>

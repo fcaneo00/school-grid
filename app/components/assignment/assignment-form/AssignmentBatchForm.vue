@@ -22,14 +22,14 @@ const { schema, itemSchema, state, teacherOptions, schoolClassOptions, addRow, r
       </UForm>
       <UButton
         v-if="state.items.length > 1"
-        icon="i-lucide-trash"
+        icon="i-ph-trash"
         color="error"
         variant="ghost"
         :aria-label="t('form.removeRow')"
         @click="removeRow(index)"
       />
     </div>
-    <UButton :label="t('form.addRow')" icon="i-lucide-plus" color="neutral" variant="outline" @click="addRow" />
+    <UButton :label="t('form.addRow')" icon="i-ph-plus" color="neutral" variant="outline" @click="addRow" />
     <div class="flex gap-2">
       <UButton type="submit" :label="t('table.save')" />
       <UButton :label="t('general.cancel')" color="neutral" variant="outline" to="/assignments" />

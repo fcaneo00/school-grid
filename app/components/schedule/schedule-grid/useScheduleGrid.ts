@@ -281,17 +281,17 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
     return [
       {
         label: t('schedule.editTeacherRegistry'),
-        icon: 'i-lucide-user-pen',
+        icon: 'i-ph-identification-card',
         to: { path: `/teachers/${block.teacherId}/edit`, query: { returnTo: route.fullPath } }
       },
       {
         label: t('schedule.editAssignment'),
-        icon: 'i-lucide-armchair',
+        icon: 'i-ph-armchair',
         to: { path: `/assignments/${block.assignmentId}/edit`, query: { returnTo: route.fullPath } }
       },
       {
         label: t('schedule.removeEntry'),
-        icon: 'i-lucide-trash',
+        icon: 'i-ph-trash',
         color: 'error',
         onSelect: () => handleRemoveBlock(block.day, block.assignmentId)
       }

@@ -19,7 +19,7 @@ const { teacherGroups, loading, columns, expanded, sorting, toggleRow, isClosing
         <UButton
           color="neutral"
           variant="ghost"
-          icon="i-lucide-chevron-down"
+          icon="i-ph-caret-down"
           square
           :aria-label="t('assignments.expandDetail')"
           :ui="{ leadingIcon: ['transition-transform', isOpen(row) ? 'duration-200 rotate-180' : ''] }"
@@ -55,8 +55,8 @@ const { teacherGroups, loading, columns, expanded, sorting, toggleRow, isClosing
               <div class="flex items-center gap-4">
                 <span class="text-sm text-muted">{{ t('assignments.form.weeklyHours') }}: {{ assignment.weekly_hours }}</span>
                 <div class="flex gap-1">
-                  <UButton icon="i-lucide-pencil" color="neutral" variant="ghost" size="xs" :to="`/assignments/${assignment.id}/edit`" />
-                  <UButton icon="i-lucide-trash" color="error" variant="ghost" size="xs" @click="handleDelete(assignment)" />
+                  <UButton icon="i-ph-pencil" color="neutral" variant="ghost" size="xs" :to="`/assignments/${assignment.id}/edit`" />
+                  <UButton icon="i-ph-trash" color="error" variant="ghost" size="xs" @click="handleDelete(assignment)" />
                 </div>
               </div>
             </div>

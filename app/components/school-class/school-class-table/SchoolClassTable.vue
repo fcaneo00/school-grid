@@ -19,7 +19,7 @@ const { sectionGroups, loading, columns, expanded, sorting, toggleRow, isClosing
         <UButton
           color="neutral"
           variant="ghost"
-          icon="i-lucide-chevron-down"
+          icon="i-ph-caret-down"
           square
           :aria-label="t('schoolClasses.expandDetail')"
           :ui="{ leadingIcon: ['transition-transform', isOpen(row) ? 'duration-200 rotate-180' : ''] }"
@@ -56,8 +56,8 @@ const { sectionGroups, loading, columns, expanded, sorting, toggleRow, isClosing
                 <span v-if="!row.original.studyTrackUniform" class="text-sm text-muted">{{ schoolClass.study_track_name ?? '-' }}</span>
                 <span class="text-sm text-muted">{{ schoolClass.weekly_hours !== null ? t('schoolClasses.weeklyHoursValue', { hours: schoolClass.weekly_hours }) : t('schoolClasses.weeklyHoursNotSet') }}</span>
                 <div class="flex gap-1">
-                  <UButton icon="i-lucide-pencil" color="neutral" variant="ghost" size="xs" :to="`/school-classes/${schoolClass.id}/edit`" />
-                  <UButton icon="i-lucide-trash" color="error" variant="ghost" size="xs" @click="handleDelete(schoolClass)" />
+                  <UButton icon="i-ph-pencil" color="neutral" variant="ghost" size="xs" :to="`/school-classes/${schoolClass.id}/edit`" />
+                  <UButton icon="i-ph-trash" color="error" variant="ghost" size="xs" @click="handleDelete(schoolClass)" />
                 </div>
               </div>
             </div>

@@ -1,5 +1,7 @@
 {
   "name": "school-grid",
+  "version": "0.2.0",
+  "author": "Filippo Caneo <filippo.caneo@gmail.com>",
   "type": "module",
   "private": true,
   "scripts": {
@@ -35,7 +37,6 @@
     "@tauri-apps/cli": "^2.11.5",
     "eslint-plugin-sonarjs": "^4.2.1",
     "eslint-plugin-vuejs-accessibility": "^2.6.0",
-    "sass-embedded": "^1.105.0",
     "typescript": "^5.9.3",
     "vue-tsc": "^3.3.11"
   }

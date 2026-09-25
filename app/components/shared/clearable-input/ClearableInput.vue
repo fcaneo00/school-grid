@@ -12,7 +12,7 @@ defineProps<ClearableInputProps>()
   <UInput v-model="model" :placeholder="placeholder" class="w-full">
     <template v-if="model" #trailing>
       <UButton
-        icon="i-lucide-x"
+        icon="i-ph-x"
         color="neutral"
         variant="link"
         size="xs"
