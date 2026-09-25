@@ -8,7 +8,7 @@ interface SectionFormProps {
 const props = defineProps<SectionFormProps>()
 
 const { t } = useI18n()
-const { schema, state, onSubmit } = useSectionForm(props.id)
+const { schema, state, onSubmit } = useSectionForm(toRef(() => props.id))
 </script>
 
 <template>

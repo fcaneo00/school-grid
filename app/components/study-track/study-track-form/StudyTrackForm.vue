@@ -8,7 +8,7 @@ interface StudyTrackFormProps {
 const props = defineProps<StudyTrackFormProps>()
 
 const { t } = useI18n()
-const { schema, state, onSubmit } = useStudyTrackForm(props.id)
+const { schema, state, onSubmit } = useStudyTrackForm(toRef(() => props.id))
 </script>
 
 <template>

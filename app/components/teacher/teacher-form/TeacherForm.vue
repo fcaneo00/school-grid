@@ -8,7 +8,7 @@ interface TeacherFormProps {
 const props = defineProps<TeacherFormProps>()
 
 const { t } = useI18n()
-const { schema, state, dayOffOptions, onSubmit } = useTeacherForm(props.id)
+const { schema, state, dayOffOptions, onSubmit } = useTeacherForm(toRef(() => props.id))
 </script>
 
 <template>

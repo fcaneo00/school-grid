@@ -1,6 +1,6 @@
 import type { FormSubmitEvent } from '@nuxt/ui'
 
-export function useAssignmentForm(id: number) {
+export function useAssignmentForm(id: Ref<number>) {
   const { t } = useI18n()
   const { assignments, fetchAssignments, updateAssignment } = useAssignments()
   const { fetchOptions, teacherOptions, schoolClassOptions } = useAssignmentOptions()
@@ -13,19 +13,21 @@ export function useAssignmentForm(id: number) {
     weekly_hours: undefined
   })
 
-  onMounted(async () => {
+  watch(id, async (currentId) => {
     fetchOptions()
     await fetchAssignments()
-    const assignment = assignments.value.find((assignment) => assignment.id === id)
+    const assignment = assignments.value.find((assignment) => assignment.id === currentId)
     if (!assignment) return
     state.teacher_id = assignment.teacher_id
     state.school_class_id = assignment.school_class_id
     state.weekly_hours = assignment.weekly_hours
-  })
+  }, { immediate: true })
 
   async function onSubmit(event: FormSubmitEvent<AssignmentFormSchema>) {
-    await updateAssignment(id, event.data)
-    await navigateTo('/assignments')
+    const success = await updateAssignment(id.value, event.data)
+    if (success) {
+      await navigateTo('/assignments')
+    }
   }
 
   return {

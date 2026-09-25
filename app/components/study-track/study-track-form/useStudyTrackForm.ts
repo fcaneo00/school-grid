@@ -1,6 +1,6 @@
 import type { FormSubmitEvent } from '@nuxt/ui'
 
-export function useStudyTrackForm(id?: number) {
+export function useStudyTrackForm(id: Ref<number | undefined>) {
   const { t } = useI18n()
   const { studyTracks, fetchStudyTracks, addStudyTrack, updateStudyTrack } = useStudyTracks()
 
@@ -10,19 +10,19 @@ export function useStudyTrackForm(id?: number) {
     name: ''
   })
 
-  onMounted(async () => {
-    if (id === undefined) return
+  watch(id, async (currentId) => {
+    if (currentId === undefined) return
     await fetchStudyTracks()
-    const studyTrack = studyTracks.value.find((studyTrack) => studyTrack.id === id)
+    const studyTrack = studyTracks.value.find((studyTrack) => studyTrack.id === currentId)
     if (!studyTrack) return
     state.name = studyTrack.name
-  })
+  }, { immediate: true })
 
   async function onSubmit(event: FormSubmitEvent<StudyTrackFormSchema>) {
-    if (id === undefined) {
+    if (id.value === undefined) {
       await addStudyTrack(event.data)
     } else {
-      await updateStudyTrack(id, event.data)
+      await updateStudyTrack(id.value, event.data)
     }
     await navigateTo('/study-tracks')
   }

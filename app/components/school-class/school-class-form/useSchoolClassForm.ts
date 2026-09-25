@@ -1,6 +1,6 @@
 import type { FormSubmitEvent } from '@nuxt/ui'
 
-export function useSchoolClassForm(id: number) {
+export function useSchoolClassForm(id: Ref<number>) {
   const { t } = useI18n()
   const { schoolClasses, fetchSchoolClasses, updateSchoolClass } = useSchoolClasses()
   const { sections, fetchSections } = useSections()
@@ -28,19 +28,19 @@ export function useSchoolClassForm(id: number) {
     study_track_id: undefined
   })
 
-  onMounted(async () => {
+  watch(id, async (currentId) => {
     fetchSections()
     fetchStudyTracks()
     await fetchSchoolClasses()
-    const schoolClass = schoolClasses.value.find((schoolClass) => schoolClass.id === id)
+    const schoolClass = schoolClasses.value.find((schoolClass) => schoolClass.id === currentId)
     if (!schoolClass) return
     state.year = schoolClass.year
     state.section_id = schoolClass.section_id ?? undefined
     state.study_track_id = schoolClass.study_track_id ?? undefined
-  })
+  }, { immediate: true })
 
   async function onSubmit(event: FormSubmitEvent<SchoolClassFormSchema>) {
-    const success = await updateSchoolClass(id, event.data)
+    const success = await updateSchoolClass(id.value, event.data)
     if (success) {
       await navigateTo('/school-classes')
     }

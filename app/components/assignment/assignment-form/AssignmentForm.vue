@@ -8,7 +8,7 @@ interface AssignmentFormProps {
 const props = defineProps<AssignmentFormProps>()
 
 const { t } = useI18n()
-const { schema, state, teacherOptions, schoolClassOptions, onSubmit } = useAssignmentForm(props.id)
+const { schema, state, teacherOptions, schoolClassOptions, onSubmit } = useAssignmentForm(toRef(() => props.id))
 </script>
 
 <template>

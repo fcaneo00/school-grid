@@ -1,6 +1,6 @@
 import type { FormSubmitEvent } from '@nuxt/ui'
 
-export function useTeacherForm(id?: number) {
+export function useTeacherForm(id: Ref<number | undefined>) {
   const { t } = useI18n()
   const { teachers, fetchTeachers, addTeacher, updateTeacher } = useTeachers()
   const { saveDayOffs } = useTeacherPreference()
@@ -17,19 +17,19 @@ export function useTeacherForm(id?: number) {
     day_off: []
   })
 
-  onMounted(async () => {
-    if (id === undefined) return
+  watch(id, async (currentId) => {
+    if (currentId === undefined) return
     await fetchTeachers()
-    const teacher = teachers.value.find((teacher) => teacher.id === id)
+    const teacher = teachers.value.find((teacher) => teacher.id === currentId)
     if (!teacher) return
     state.first_name = teacher.first_name
     state.last_name = teacher.last_name
     state.day_off = teacher.day_off
-  })
+  }, { immediate: true })
 
   async function onSubmit(event: FormSubmitEvent<TeacherFormSchema>) {
     const { day_off, ...teacher } = event.data
-    let teacherId = id
+    let teacherId = id.value
     if (teacherId === undefined) {
       teacherId = await addTeacher(teacher)
     } else {

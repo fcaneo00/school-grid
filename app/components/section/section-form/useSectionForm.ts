@@ -1,6 +1,6 @@
 import type { FormSubmitEvent } from '@nuxt/ui'
 
-export function useSectionForm(id?: number) {
+export function useSectionForm(id: Ref<number | undefined>) {
   const { t } = useI18n()
   const { sections, fetchSections, addSection, updateSection } = useSections()
 
@@ -10,19 +10,19 @@ export function useSectionForm(id?: number) {
     name: ''
   })
 
-  onMounted(async () => {
-    if (id === undefined) return
+  watch(id, async (currentId) => {
+    if (currentId === undefined) return
     await fetchSections()
-    const section = sections.value.find((section) => section.id === id)
+    const section = sections.value.find((section) => section.id === currentId)
     if (!section) return
     state.name = section.name
-  })
+  }, { immediate: true })
 
   async function onSubmit(event: FormSubmitEvent<SectionFormSchema>) {
-    if (id === undefined) {
+    if (id.value === undefined) {
       await addSection(event.data)
     } else {
-      await updateSection(id, event.data)
+      await updateSection(id.value, event.data)
     }
     await navigateTo('/sections')
   }

@@ -8,7 +8,7 @@ interface SchoolClassFormProps {
 const props = defineProps<SchoolClassFormProps>()
 
 const { t } = useI18n()
-const { schema, state, sectionOptions, studyTrackOptions, onSubmit } = useSchoolClassForm(props.id)
+const { schema, state, sectionOptions, studyTrackOptions, onSubmit } = useSchoolClassForm(toRef(() => props.id))
 </script>
 
 <template>
