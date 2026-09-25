@@ -9,6 +9,8 @@ export function useSectionTable() {
 
   onMounted(fetchSections)
 
+  const sorting = ref([{ id: 'name', desc: false }])
+
   async function handleDelete(section: Section) {
     const confirmed = await confirmDialog({
       title: t('general.confirmDeleteTitle'),
@@ -26,7 +28,7 @@ export function useSectionTable() {
   )
 
   const columns: TableColumn<Section>[] = [
-    { accessorKey: 'name', header: t('sections.form.name') },
+    { accessorKey: 'name', header: t('sections.form.name'), enableSorting: true },
     { id: 'actions', header: t('table.actions') }
   ]
 
@@ -34,6 +36,7 @@ export function useSectionTable() {
     sections: filteredSections,
     loading,
     columns,
+    sorting,
     handleDelete
   }
 }

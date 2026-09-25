@@ -1,25 +1,61 @@
 <script setup lang="ts">
 import { useAssignmentTable } from './useAssignmentTable'
 
-const { assignments, loading, columns, handleDelete } = useAssignmentTable()
+const { t } = useI18n()
+const { teacherGroups, loading, columns, expanded, sorting, schoolClassNameOf, handleDelete } = useAssignmentTable()
 </script>
 
 <template>
   <div class="space-y-2">
-    <UTable :data="assignments" :columns="columns" :loading="loading">
-      <template #actions-cell="{ row }">
+    <UTable
+      v-model:expanded="expanded"
+      v-model:sorting="sorting"
+      :data="teacherGroups"
+      :columns="columns"
+      :loading="loading"
+    >
+      <template #expand-cell="{ row }">
         <UButton
-          icon="i-lucide-pencil"
           color="neutral"
           variant="ghost"
-          :to="`/assignments/${row.original.id}/edit`"
+          icon="i-lucide-chevron-down"
+          square
+          :aria-label="t('assignments.expandDetail')"
+          :ui="{ leadingIcon: ['transition-transform', row.getIsExpanded() ? 'duration-200 rotate-180' : ''] }"
+          @click="row.toggleExpanded()"
         />
-        <UButton
-          icon="i-lucide-trash"
-          color="error"
-          variant="ghost"
-          @click="handleDelete(row.original)"
-        />
+      </template>
+      <template #teacherName-header="{ column }">
+        <SortableHeader :column="column" :label="t('assignments.form.teacher')" />
+      </template>
+      <template #teacherName-cell="{ row }">
+        <button type="button" class="cursor-pointer bg-transparent p-0 text-left hover:underline" @click="row.toggleExpanded()">
+          {{ row.original.teacherName }}
+        </button>
+      </template>
+      <template #classCount-header="{ column }">
+        <SortableHeader :column="column" :label="t('assignments.classCount')" />
+      </template>
+      <template #totalHours-header="{ column }">
+        <SortableHeader :column="column" :label="t('assignments.totalHours')" />
+      </template>
+      <template #expanded="{ row }">
+        <div class="space-y-2 p-2">
+          <div
+            v-for="assignment in row.original.assignments"
+            :key="assignment.id"
+            class="flex items-center justify-between gap-4 rounded border border-default px-3 py-2"
+          >
+            <span>{{ schoolClassNameOf(assignment) }}</span>
+            <div class="flex items-center gap-4">
+              <span class="text-sm text-muted">{{ t('assignments.form.weeklyHours') }}: {{ assignment.weekly_hours }}</span>
+              <div class="flex gap-1">
+                <UButton icon="i-lucide-pencil" color="neutral" variant="ghost" size="xs" :to="`/assignments/${assignment.id}/edit`" />
+                <UButton icon="i-lucide-trash" color="error" variant="ghost" size="xs" @click="handleDelete(assignment)" />
+              </div>
+            </div>
+          </div>
+        </div>
       </template>
     </UTable>
   </div>

@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { useStudyTrackTable } from './useStudyTrackTable'
 
-const { studyTracks, loading, columns, handleDelete } = useStudyTrackTable()
+const { t } = useI18n()
+const { studyTracks, loading, columns, sorting, handleDelete } = useStudyTrackTable()
 </script>
 
 <template>
   <div class="space-y-2">
-    <UTable :data="studyTracks" :columns="columns" :loading="loading">
+    <UTable v-model:sorting="sorting" :data="studyTracks" :columns="columns" :loading="loading">
+      <template #name-header="{ column }">
+        <SortableHeader :column="column" :label="t('studyTracks.form.name')" />
+      </template>
       <template #actions-cell="{ row }">
         <UButton
           icon="i-lucide-pencil"

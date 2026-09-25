@@ -20,8 +20,8 @@ const dayOffFilterOptions = computed(() => [
           <UButton :label="t('table.filters')" icon="i-lucide-filter" color="neutral" variant="outline" />
           <template #content>
             <div class="p-4 space-y-2 w-64">
-              <ClearableInput v-model="filters.first_name" :placeholder="t('teachers.form.firstName')" />
               <ClearableInput v-model="filters.last_name" :placeholder="t('teachers.form.lastName')" />
+              <ClearableInput v-model="filters.first_name" :placeholder="t('teachers.form.firstName')" />
               <USelect v-model="filters.day_off" :items="dayOffFilterOptions" :placeholder="t('teachers.form.dayOff')" class="w-full" />
             </div>
           </template>

@@ -9,6 +9,8 @@ export function useTeacherTable() {
 
   onMounted(fetchTeachers)
 
+  const sorting = ref([{ id: 'last_name', desc: false }])
+
   async function handleDelete(teacher: TeacherWithDetails) {
     const confirmed = await confirmDialog({
       title: t('general.confirmDeleteTitle'),
@@ -28,8 +30,8 @@ export function useTeacherTable() {
   )
 
   const columns: TableColumn<TeacherWithDetails>[] = [
-    { accessorKey: 'first_name', header: t('teachers.form.firstName') },
-    { accessorKey: 'last_name', header: t('teachers.form.lastName') },
+    { accessorKey: 'last_name', header: t('teachers.form.lastName'), enableSorting: true },
+    { accessorKey: 'first_name', header: t('teachers.form.firstName'), enableSorting: true },
     {
       id: 'day_off',
       header: t('teachers.form.dayOff'),
@@ -42,6 +44,7 @@ export function useTeacherTable() {
     teachers: filteredTeachers,
     loading,
     columns,
+    sorting,
     handleDelete
   }
 }

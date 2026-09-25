@@ -9,6 +9,8 @@ export function useStudyTrackTable() {
 
   onMounted(fetchStudyTracks)
 
+  const sorting = ref([{ id: 'name', desc: false }])
+
   async function handleDelete(studyTrack: StudyTrack) {
     const confirmed = await confirmDialog({
       title: t('general.confirmDeleteTitle'),
@@ -26,7 +28,7 @@ export function useStudyTrackTable() {
   )
 
   const columns: TableColumn<StudyTrack>[] = [
-    { accessorKey: 'name', header: t('studyTracks.form.name') },
+    { accessorKey: 'name', header: t('studyTracks.form.name'), enableSorting: true },
     { id: 'actions', header: t('table.actions') }
   ]
 
@@ -34,6 +36,7 @@ export function useStudyTrackTable() {
     studyTracks: filteredStudyTracks,
     loading,
     columns,
+    sorting,
     handleDelete
   }
 }

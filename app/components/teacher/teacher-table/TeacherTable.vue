@@ -1,12 +1,19 @@
 <script setup lang="ts">
 import { useTeacherTable } from './useTeacherTable'
 
-const { teachers, loading, columns, handleDelete } = useTeacherTable()
+const { t } = useI18n()
+const { teachers, loading, columns, sorting, handleDelete } = useTeacherTable()
 </script>
 
 <template>
   <div class="space-y-2">
-    <UTable :data="teachers" :columns="columns" :loading="loading">
+    <UTable v-model:sorting="sorting" :data="teachers" :columns="columns" :loading="loading">
+      <template #last_name-header="{ column }">
+        <SortableHeader :column="column" :label="t('teachers.form.lastName')" />
+      </template>
+      <template #first_name-header="{ column }">
+        <SortableHeader :column="column" :label="t('teachers.form.firstName')" />
+      </template>
       <template #actions-cell="{ row }">
         <UButton
           icon="i-lucide-pencil"

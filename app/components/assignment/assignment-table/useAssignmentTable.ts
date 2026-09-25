@@ -1,6 +1,14 @@
 import type { TableColumn } from '@nuxt/ui'
 import type { AssignmentWithDetails } from '~/composables/assignment/useAssignments'
 
+interface TeacherGroup {
+  teacherId: number
+  teacherName: string
+  classCount: number
+  totalHours: number
+  assignments: AssignmentWithDetails[]
+}
+
 export function useAssignmentTable() {
   const { t } = useI18n()
   const { assignments, loading, fetchAssignments, deleteAssignment } = useAssignments()
@@ -8,6 +16,9 @@ export function useAssignmentTable() {
   const confirmDialog = useConfirmDialog()
 
   onMounted(fetchAssignments)
+
+  const expanded = ref<Record<string, boolean>>({})
+  const sorting = ref([{ id: 'teacherName', desc: false }])
 
   function schoolClassNameOf(assignment: AssignmentWithDetails) {
     return formatSchoolClassName({
@@ -36,25 +47,41 @@ export function useAssignmentTable() {
     )
   )
 
-  const columns: TableColumn<AssignmentWithDetails>[] = [
-    {
-      id: 'teacher',
-      header: t('assignments.form.teacher'),
-      cell: ({ row }) => `${row.original.teacher_last_name} ${row.original.teacher_first_name}`
-    },
-    {
-      id: 'schoolClass',
-      header: t('assignments.form.schoolClass'),
-      cell: ({ row }) => schoolClassNameOf(row.original)
-    },
-    { accessorKey: 'weekly_hours', header: t('assignments.form.weeklyHours') },
-    { id: 'actions', header: t('table.actions') }
+  const teacherGroups = computed<TeacherGroup[]>(() => {
+    const groups = new Map<number, TeacherGroup>()
+    for (const assignment of filteredAssignments.value) {
+      let group = groups.get(assignment.teacher_id)
+      if (!group) {
+        group = {
+          teacherId: assignment.teacher_id,
+          teacherName: `${assignment.teacher_last_name} ${assignment.teacher_first_name}`,
+          classCount: 0,
+          totalHours: 0,
+          assignments: []
+        }
+        groups.set(assignment.teacher_id, group)
+      }
+      group.assignments.push(assignment)
+      group.classCount += 1
+      group.totalHours += assignment.weekly_hours
+    }
+    return [...groups.values()].sort((a, b) => a.teacherName.localeCompare(b.teacherName))
+  })
+
+  const columns: TableColumn<TeacherGroup>[] = [
+    { id: 'expand' },
+    { accessorKey: 'teacherName', header: t('assignments.form.teacher'), enableSorting: true },
+    { accessorKey: 'classCount', header: t('assignments.classCount'), enableSorting: true },
+    { accessorKey: 'totalHours', header: t('assignments.totalHours'), enableSorting: true }
   ]
 
   return {
-    assignments: filteredAssignments,
+    teacherGroups,
     loading,
     columns,
+    expanded,
+    sorting,
+    schoolClassNameOf,
     handleDelete
   }
 }

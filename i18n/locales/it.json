@@ -75,8 +75,13 @@
     "editTitle": "Modifica classe",
     "duplicateTitle": "Classe già esistente",
     "duplicateDescription": "Esiste già una classe con lo stesso anno, sezione e corso di studio.",
+    "classCount": "N. classi",
+    "noSection": "Senza sezione",
+    "mixedStudyTrack": "Corsi diversi",
+    "expandDetail": "Mostra dettaglio classi",
+    "yearOrdinal": "{year}° Anno",
     "form": {
-      "year": "Anno",
+      "year": "N° Anno",
       "yearInvalid": "Deve essere tra 1 e 5",
       "section": "Sezione",
       "studyTrack": "Corso di studio"
@@ -104,6 +109,9 @@
     "editTitle": "Modifica cattedra",
     "scheduleConflictTitle": "Modifica non applicabile",
     "scheduleConflictDescription": "Questa cattedra ha già ore in tabella orario che andrebbero in conflitto con il nuovo docente o classe. Rimuovile prima dalla griglia.",
+    "classCount": "N. classi",
+    "totalHours": "Ore totali",
+    "expandDetail": "Mostra dettaglio classi",
     "form": {
       "teacher": "Docente",
       "schoolClass": "Classe",

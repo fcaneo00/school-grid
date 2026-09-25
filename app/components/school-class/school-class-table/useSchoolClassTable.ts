@@ -1,6 +1,15 @@
 import type { TableColumn } from '@nuxt/ui'
 import type { SchoolClassWithDetails } from '~/composables/school-class/useSchoolClasses'
 
+interface SectionGroup {
+  sectionId: number | null
+  sectionName: string
+  studyTrackLabel: string
+  studyTrackUniform: boolean
+  classCount: number
+  classes: SchoolClassWithDetails[]
+}
+
 export function useSchoolClassTable() {
   const { t } = useI18n()
   const { schoolClasses, loading, fetchSchoolClasses, deleteSchoolClass } = useSchoolClasses()
@@ -8,6 +17,9 @@ export function useSchoolClassTable() {
   const confirmDialog = useConfirmDialog()
 
   onMounted(fetchSchoolClasses)
+
+  const expanded = ref<Record<string, boolean>>({})
+  const sorting = ref([{ id: 'sectionName', desc: false }])
 
   async function handleDelete(schoolClass: SchoolClassWithDetails) {
     const confirmed = await confirmDialog({
@@ -27,17 +39,44 @@ export function useSchoolClassTable() {
     )
   )
 
-  const columns: TableColumn<SchoolClassWithDetails>[] = [
-    { accessorKey: 'year', header: t('schoolClasses.form.year') },
-    { accessorKey: 'section_name', header: t('schoolClasses.form.section') },
-    { accessorKey: 'study_track_name', header: t('schoolClasses.form.studyTrack') },
-    { id: 'actions', header: t('table.actions') }
+  const sectionGroups = computed<SectionGroup[]>(() => {
+    const groups = new Map<number | null, SchoolClassWithDetails[]>()
+    for (const schoolClass of filteredSchoolClasses.value) {
+      const list = groups.get(schoolClass.section_id) ?? []
+      list.push(schoolClass)
+      groups.set(schoolClass.section_id, list)
+    }
+
+    return [...groups.entries()]
+      .map(([sectionId, classes]) => {
+        const sorted = [...classes].sort((a, b) => a.year - b.year)
+        const distinctTrackIds = new Set(sorted.map((schoolClass) => schoolClass.study_track_id))
+        const studyTrackUniform = distinctTrackIds.size === 1
+        return {
+          sectionId,
+          sectionName: sorted[0]!.section_name ?? t('schoolClasses.noSection'),
+          studyTrackLabel: studyTrackUniform ? (sorted[0]!.study_track_name ?? '-') : t('schoolClasses.mixedStudyTrack'),
+          studyTrackUniform,
+          classCount: sorted.length,
+          classes: sorted
+        }
+      })
+      .sort((a, b) => a.sectionName.localeCompare(b.sectionName))
+  })
+
+  const columns: TableColumn<SectionGroup>[] = [
+    { id: 'expand' },
+    { accessorKey: 'sectionName', header: t('schoolClasses.form.section'), enableSorting: true },
+    { accessorKey: 'studyTrackLabel', header: t('schoolClasses.form.studyTrack'), enableSorting: true },
+    { accessorKey: 'classCount', header: t('schoolClasses.classCount'), enableSorting: true }
   ]
 
   return {
-    schoolClasses: filteredSchoolClasses,
+    sectionGroups,
     loading,
     columns,
+    expanded,
+    sorting,
     handleDelete
   }
 }

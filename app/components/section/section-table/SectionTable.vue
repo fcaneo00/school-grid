@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { useSectionTable } from './useSectionTable'
 
-const { sections, loading, columns, handleDelete } = useSectionTable()
+const { t } = useI18n()
+const { sections, loading, columns, sorting, handleDelete } = useSectionTable()
 </script>
 
 <template>
   <div class="space-y-2">
-    <UTable :data="sections" :columns="columns" :loading="loading">
+    <UTable v-model:sorting="sorting" :data="sections" :columns="columns" :loading="loading">
+      <template #name-header="{ column }">
+        <SortableHeader :column="column" :label="t('sections.form.name')" />
+      </template>
       <template #actions-cell="{ row }">
         <UButton
           icon="i-lucide-pencil"
