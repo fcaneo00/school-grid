@@ -450,6 +450,9 @@ Decisioni:
 - [x] `ScheduleGrid.vue` - riquadro fantasma + blocco sorgente affievolito durante lo spostamento
 - [ ] Verifica: `npm run tauri dev` - trascinando un blocco appare un riquadro tratteggiato nella cella sotto il cursore, della stessa durata del blocco, verde/blu se la posizione è libera e rosso se occupata/in conflitto; il blocco originale appare sbiadito mentre lo si trascina; il fantasma sparisce a rilascio o se si annulla il trascinamento
 
+**Bug visivo segnalato con dati reali in griglia: nei blocchi di più ore si vedeva una sottile riga orizzontale a metà.** Causa: i riquadri (sia quello reale sia il fantasma di anteprima) hanno uno sfondo colorato ma semi-trasparente (`bg-primary/10`, coerente con le tinte usate altrove nella griglia) - per un blocco di una sola ora il bordo della tabella sottostante (`border border-default` su ogni `<td>`, mai rimosso da quando i blocchi sono diventati un overlay separato dalla tabella) cade solo ai margini del riquadro e non si nota, ma per un blocco multi-ora il confine tra due righe della tabella cade *dentro* il riquadro e si vede in trasparenza. Corretto aggiungendo uno strato di sfondo opaco (`bg-default`, il colore di sfondo della pagina) **sotto** la tinta colorata in entrambi i riquadri (blocco piazzato e fantasma di anteprima) - stessa tinta finale a vista, ma niente più bordi della tabella visibili in trasparenza.
+- [x] `ScheduleGrid.vue` - due layer (`bg-default` poi `bg-primary/10` o `bg-error/20`/`bg-primary/20` per il fantasma) invece di un singolo sfondo traslucido diretto sul contenitore, contenuto racchiuso in un div `relative` sopra i due layer
+
 ## Tabella orario: modalità bozza (Salva/Ripristina invece di scrittura immediata)
 
 Oggi ogni azione sulla griglia (drop, spostamento, resize, rimozione) scrive subito su DB e ricarica. Richiesta: le modifiche restano locali ("bozza") finché non si preme Salva; Ripristina scarta la bozza e ricarica l'ultimo stato salvato.

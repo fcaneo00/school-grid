@@ -84,7 +84,7 @@ const {
           v-for="block in allBlocks"
           :key="`${block.day}-${block.assignmentId}-${block.startHour}`"
           draggable="true"
-          class="group pointer-events-auto absolute flex cursor-grab items-center justify-between gap-1 rounded bg-primary/10 p-2 active:cursor-grabbing"
+          class="group pointer-events-auto absolute cursor-grab overflow-hidden rounded border border-primary/30 active:cursor-grabbing"
           :class="{
             'transition-[height] duration-500 ease-out': !isResizingBlock(block),
             'opacity-30': isMovingBlock(block)
@@ -93,29 +93,37 @@ const {
           @dragstart="onBlockDragStart($event, block)"
           @dragend="onBlockDragEnd"
         >
-          <span class="truncate">{{ shortName(block) }}</span>
-          <UButton
-            icon="i-lucide-x"
-            size="xs"
-            color="neutral"
-            variant="ghost"
-            :aria-label="t('schedule.removeEntry')"
-            @click="handleRemoveBlock(block.day, block.assignmentId)"
-          />
-          <div
-            class="absolute inset-x-0 bottom-0 h-1.5 cursor-row-resize rounded-b opacity-0 group-hover:bg-primary/40 group-hover:opacity-100"
-            @mousedown="onResizeStart($event, block)"
-          />
+          <div class="absolute inset-0 bg-default" />
+          <div class="absolute inset-0 bg-primary/10" />
+          <div class="relative flex h-full items-center justify-between gap-1 p-2">
+            <span class="truncate">{{ shortName(block) }}</span>
+            <UButton
+              icon="i-lucide-x"
+              size="xs"
+              color="neutral"
+              variant="ghost"
+              :aria-label="t('schedule.removeEntry')"
+              @click="handleRemoveBlock(block.day, block.assignmentId)"
+            />
+            <div
+              class="absolute inset-x-0 bottom-0 h-1.5 cursor-row-resize rounded-b opacity-0 group-hover:bg-primary/40 group-hover:opacity-100"
+              @mousedown="onResizeStart($event, block)"
+            />
+          </div>
         </div>
       </TransitionGroup>
 
       <div
         v-if="movePreview"
-        class="pointer-events-none absolute flex items-center rounded border-2 border-dashed p-2"
-        :class="movePreview.valid ? 'border-primary bg-primary/20' : 'border-error bg-error/20'"
+        class="pointer-events-none absolute overflow-hidden rounded border-2 border-dashed"
+        :class="movePreview.valid ? 'border-primary' : 'border-error'"
         :style="movePreview.style"
       >
-        <span class="truncate text-xs font-medium">{{ movePreview.label }}</span>
+        <div class="absolute inset-0 bg-default" />
+        <div class="absolute inset-0" :class="movePreview.valid ? 'bg-primary/20' : 'bg-error/20'" />
+        <div class="relative flex h-full items-center p-2">
+          <span class="truncate text-xs font-medium">{{ movePreview.label }}</span>
+        </div>
       </div>
     </div>
   </div>

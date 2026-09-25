@@ -11,8 +11,8 @@ const { t } = useI18n()
     <UPageGrid>
       <UPageCard :title="t('teachers.title')" icon="i-lucide-user" to="/teachers" />
       <UPageCard :title="t('sections.title')" icon="i-lucide-baseline" to="/sections" />
-      <UPageCard :title="t('schoolClasses.title')" icon="i-lucide-door-open" to="/school-classes" />
       <UPageCard :title="t('studyTracks.title')" icon="i-lucide-graduation-cap" to="/study-tracks" />
+      <UPageCard :title="t('schoolClasses.title')" icon="i-lucide-door-open" to="/school-classes" />
       <UPageCard :title="t('assignments.title')" icon="i-lucide-armchair" to="/assignments" />
     </UPageGrid>
   </div>
