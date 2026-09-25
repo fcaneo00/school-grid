@@ -19,12 +19,8 @@ const { t } = useI18n()
         :title="t('home.scheduleTitle')"
         :description="t('home.scheduleDescription')"
         icon="i-lucide-calendar-days"
-        class="opacity-50"
-      >
-        <template #header>
-          <UBadge :label="t('nav.comingSoon')" color="neutral" variant="subtle" />
-        </template>
-      </UPageCard>
+        to="/schedule"
+      />
       <UPageCard
         :title="t('home.pdfExportTitle')"
         :description="t('home.pdfExportDescription')"

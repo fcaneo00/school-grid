@@ -152,6 +152,18 @@ fn migrations() -> Vec<Migration> {
       CREATE UNIQUE INDEX idx_school_class_unique ON school_class(year, section_id, study_track_id);
     ",
         },
+        Migration {
+            version: 7,
+            description: "schedule_entry_denormalized_constraints",
+            kind: MigrationKind::Up,
+            sql: "
+      ALTER TABLE schedule_entry ADD COLUMN teacher_id INTEGER NOT NULL REFERENCES teacher(id);
+      ALTER TABLE schedule_entry ADD COLUMN school_class_id INTEGER NOT NULL REFERENCES school_class(id);
+
+      CREATE UNIQUE INDEX idx_schedule_entry_teacher_slot ON schedule_entry(day, hour_slot, teacher_id);
+      CREATE UNIQUE INDEX idx_schedule_entry_class_slot ON schedule_entry(day, hour_slot, school_class_id);
+    ",
+        },
     ]
 }
 

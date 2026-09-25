@@ -3,7 +3,7 @@ const { t } = useI18n()
 
 const navItems = computed(() => [
   { label: t('nav.registry'), icon: 'i-lucide-clipboard-edit', to: '/registry' },
-  { label: t('nav.schedule'), icon: 'i-lucide-calendar-days', badge: t('nav.comingSoon'), disabled: true },
+  { label: t('nav.schedule'), icon: 'i-lucide-calendar-days', to: '/schedule' },
   { label: t('nav.pdfExport'), icon: 'i-lucide-file-down', badge: t('nav.comingSoon'), disabled: true }
 ])
 </script>

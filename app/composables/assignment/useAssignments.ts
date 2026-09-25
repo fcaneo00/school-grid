@@ -86,13 +86,27 @@ export function useAssignments() {
 
   async function updateAssignment(id: number, assignment: Omit<Assignment, 'id'>) {
     const db = await getDb()
-    await db.execute(
-      'UPDATE assignment SET teacher_id = $1, school_class_id = $2, weekly_hours = $3 WHERE id = $4',
-      [assignment.teacher_id, assignment.school_class_id, assignment.weekly_hours, id]
-    )
+    try {
+      await db.execute(
+        'UPDATE assignment SET teacher_id = $1, school_class_id = $2, weekly_hours = $3 WHERE id = $4',
+        [assignment.teacher_id, assignment.school_class_id, assignment.weekly_hours, id]
+      )
+      await db.execute(
+        'UPDATE schedule_entry SET teacher_id = $1, school_class_id = $2 WHERE assignment_id = $3',
+        [assignment.teacher_id, assignment.school_class_id, id]
+      )
+    } catch (e) {
+      if (isUniqueConstraintError(e)) {
+        notify.error(t('assignments.scheduleConflictTitle'), t('assignments.scheduleConflictDescription'))
+      } else {
+        notify.error(t('general.errorTitle'), String(e))
+      }
+      return false
+    }
     await fetchAssignments()
     const updated = assignments.value.find((a) => a.id === id)
     notify.success(t('general.updated'), updated ? displayName(updated) : '')
+    return true
   }
 
   async function deleteAssignment(id: number) {

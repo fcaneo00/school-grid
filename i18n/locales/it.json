@@ -102,11 +102,34 @@
     "title": "Cattedre",
     "addButton": "Aggiungi cattedra",
     "editTitle": "Modifica cattedra",
+    "scheduleConflictTitle": "Modifica non applicabile",
+    "scheduleConflictDescription": "Questa cattedra ha già ore in tabella orario che andrebbero in conflitto con il nuovo docente o classe. Rimuovile prima dalla griglia.",
     "form": {
       "teacher": "Docente",
       "schoolClass": "Classe",
       "weeklyHours": "Ore settimanali",
       "weeklyHoursInvalid": "Deve essere un numero intero positivo"
     }
+  },
+  "schedule": {
+    "title": "Tabella orario",
+    "selectClass": "Seleziona una classe",
+    "noClassSelected": "Seleziona una classe per vedere e costruire il suo orario.",
+    "noAssignments": "Nessuna cattedra per questa classe.",
+    "hoursAssigned": "{assigned}/{total} ore",
+    "complete": "Completa",
+    "overassigned": "Sovra-assegnata",
+    "dayOffWarningTitle": "Giorno libero del docente",
+    "dayOffWarningDescription": "{teacher} ha indicato {day} come giorno libero.",
+    "removeEntry": "Rimuovi dalla griglia",
+    "draftBanner": "Bozza - modifiche non salvate",
+    "save": "Salva",
+    "revert": "Ripristina",
+    "savedTitle": "Orario salvato",
+    "revertedTitle": "Bozza ripristinata",
+    "saveConflictTitle": "Conflitto nel salvataggio",
+    "saveConflictDescription": "Una delle ore in bozza è ora occupata da un'altra classe o dallo stesso docente altrove. Correggi e riprova.",
+    "leaveConfirmTitle": "Uscire senza salvare?",
+    "leaveConfirmDescription": "Ci sono modifiche non salvate nella tabella orario. Uscendo andranno perse."
   }
 }
