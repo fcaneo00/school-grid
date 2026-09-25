@@ -13,7 +13,7 @@ const { t } = useI18n()
       <UPageCard :title="t('sections.title')" icon="i-ph-text-aa" to="/sections" />
       <UPageCard :title="t('studyTracks.title')" icon="i-ph-graduation-cap" to="/study-tracks" />
       <UPageCard :title="t('schoolClasses.title')" icon="i-ph-door-open" to="/school-classes" />
-      <UPageCard :title="t('assignments.title')" icon="i-ph-armchair" to="/assignments" />
+      <UPageCard :title="t('assignments.title')" icon="i-ph-chalkboard-teacher" to="/assignments" />
     </UPageGrid>
   </div>
 </template>

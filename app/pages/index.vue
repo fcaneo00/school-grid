@@ -25,12 +25,8 @@ const { t } = useI18n()
         :title="t('home.pdfExportTitle')"
         :description="t('home.pdfExportDescription')"
         icon="i-ph-file-arrow-down"
-        class="opacity-50"
-      >
-        <template #header>
-          <UBadge :label="t('nav.comingSoon')" color="neutral" variant="subtle" />
-        </template>
-      </UPageCard>
+        to="/pdf-export"
+      />
     </UPageGrid>
   </div>
 </template>

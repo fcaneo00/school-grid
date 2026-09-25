@@ -1,6 +1,6 @@
 {
   "name": "school-grid",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": "Filippo Caneo <filippo.caneo@gmail.com>",
   "type": "module",
   "private": true,
@@ -27,6 +27,8 @@
     "@tauri-apps/plugin-fs": "^2.5.2",
     "@tauri-apps/plugin-sql": "^2.4.1",
     "eslint": "^10.11.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
     "nuxt": "^4.5.2",
     "tailwindcss": "^4.3.3",
     "vue": "^3.5.43",

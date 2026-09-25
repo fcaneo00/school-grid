@@ -286,7 +286,7 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
       },
       {
         label: t('schedule.editAssignment'),
-        icon: 'i-ph-armchair',
+        icon: 'i-ph-chalkboard-teacher',
         to: { path: `/assignments/${block.assignmentId}/edit`, query: { returnTo: route.fullPath } }
       },
       {

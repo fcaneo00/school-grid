@@ -53,7 +53,7 @@ export function useScheduleSidebar(schoolClassId: Ref<number>) {
       },
       {
         label: t('schedule.editAssignment'),
-        icon: 'i-ph-armchair',
+        icon: 'i-ph-chalkboard-teacher',
         to: { path: `/assignments/${assignment.id}/edit`, query: { returnTo: route.fullPath } }
       },
       {

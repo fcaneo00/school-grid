@@ -4,7 +4,7 @@ const { t } = useI18n()
 const navItems = computed(() => [
   { label: t('nav.registry'), icon: 'i-ph-address-book', to: '/registry' },
   { label: t('nav.schedule'), icon: 'i-ph-calendar', to: '/schedule' },
-  { label: t('nav.pdfExport'), icon: 'i-ph-file-arrow-down', badge: t('nav.comingSoon'), disabled: true }
+  { label: t('nav.pdfExport'), icon: 'i-ph-file-arrow-down', to: '/pdf-export' }
 ])
 </script>
 

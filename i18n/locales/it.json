@@ -148,5 +148,15 @@
     "saveConflictDescription": "Una delle ore in bozza è ora occupata da un'altra classe o dallo stesso docente altrove. Correggi e riprova.",
     "leaveConfirmTitle": "Uscire senza salvare?",
     "leaveConfirmDescription": "Ci sono modifiche non salvate nella tabella orario. Uscendo andranno perse."
+  },
+  "pdfExport": {
+    "title": "Esporta PDF",
+    "description": "Genera un unico PDF in formato A3 con l'orario di tutte le classi e l'orario dei docenti, pronto da stampare e distribuire. Vengono usate solo le ore già salvate, non le bozze in corso di modifica nella Tabella orario.",
+    "generateButton": "Genera PDF",
+    "hourColumn": "Ora",
+    "teacherColumn": "Docente",
+    "teacherScheduleTitle": "Orario docenti",
+    "noClasses": "Nessuna classe da esportare.",
+    "successTitle": "PDF salvato"
   }
 }

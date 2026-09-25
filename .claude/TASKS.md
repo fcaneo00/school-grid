@@ -617,6 +617,13 @@ Richiesta: numero di versione in `package.json`, in vista di eventuali rilasci f
 - [x] `src-tauri/Cargo.toml` - `0.1.0` → `0.2.0` (verificato con `cargo clippy` che `Cargo.lock` si è risincronizzato da solo, `app v0.2.0`)
 - [x] Autore: `package.json` (`"author": "Filippo Caneo <filippo.caneo@gmail.com>"`, non c'era) e `Cargo.toml` (`authors`, prima il placeholder `["you"]` mai sistemato dalla creazione del progetto Tauri) allineati entrambi
 
+## Versionamento: 0.2.0 → 0.3.0
+
+In concomitanza con l'implementazione della v2 dell'esportazione PDF (formato A3, impacchettamento, orario docenti - sezione sopra).
+
+- [x] `package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` - `0.2.0` → `0.3.0` (stessi tre file della volta scorsa, stesso motivo: solo `tauri.conf.json`/`Cargo.toml` contano davvero per i metadati dell'eseguibile, `package.json` allineato per coerenza)
+- [x] `Cargo.lock` risincronizzato da solo con `cargo clippy` (`app v0.3.0`)
+
 ## Salvataggi multipli (un anno scolastico per file) - IN CODA, verso la fine
 
 Bisogno: poter tenere dati separati per anno scolastico (es. AS2026/2027, poi AS2027/2028) senza perdere quelli precedenti - "salvataggi" come in un videogioco: crea, duplica, elimina, cambia.
@@ -631,3 +638,71 @@ Punti da risolvere quando ci si arriva:
 - Duplica = copia file (`tauri-plugin-fs`), Elimina = cancella file, Cambia = `Database.load()` sul nuovo percorso + richiamare tutti i `fetch*()` per aggiornare le liste in pagina
 - UI di gestione salvataggi (lista/crea/duplica/elimina/cambia) - da disegnare quando ci si arriva, non ancora deciso dove viva nella navigazione
 - [ ] (non ancora iniziato - deliberatamente rimandato a dopo griglia orario + esportazione PDF)
+
+## Esportazione PDF
+
+Seconda delle due ragioni per cui l'app esiste (CLAUDE.md). Decisioni confermate (via `AskUserQuestion`): un unico PDF con tutte le classi (una pagina per classe, non un file per classe), ogni cella mostra solo il cognome+iniziale del docente (nessuna materia, coerente con la rimozione di `subject`), nessun merge/rowspan tra ore consecutive dello stesso docente. Usa solo lo stato **salvato** della griglia (`useSchedule().entries`, via `fetchEntries()`), non le bozze in corso di modifica nella Tabella orario - coerente con la sidebar/griglia che già distingue bozza da salvato.
+
+`tauri-plugin-dialog`/`tauri-plugin-fs` erano già registrati come plugin Rust dal setup iniziale del progetto - non è servita nessuna modifica a `src-tauri/src/lib.rs`. Le **capabilities** invece sì (vedi bug sotto): il plugin era registrato ma i permessi non bastavano per il comando di scrittura effettivamente usato.
+
+- [x] `jspdf` + `jspdf-autotable` (v5, API a funzione `autoTable(doc, options)` non più `doc.autoTable()`) aggiunti alle dipendenze
+- [x] `app/composables/pdf-export/usePdfExport.ts` (nuovo) - `buildDocument()` genera un `jsPDF` landscape A4, una `autoTable` per classe (ordinate per anno poi sezione) con `doc.addPage()` tra una e l'altra, intestazione colonna ora + giorni della settimana; `exportPdf()` orchestrata: fetch di classi+entries, `save()` per scegliere il percorso, `writeFile()` dei byte generati, toast di successo/errore
+- [x] `app/pages/pdf-export/index.vue` (nuovo) - pulsante indietro, titolo, descrizione, unico bottone "Genera PDF" con stato di caricamento
+- [x] Abilitati il collegamento nella home (`pages/index.vue`) e nel menu (`layouts/default.vue`), tolto il badge "In arrivo"/`disabled`
+- [x] Chiavi i18n: nuovo namespace `pdfExport.*` (titolo, descrizione, bottone, intestazione ora, "nessuna classe", titolo toast successo)
+- [x] Refactor `buildDocument()` per il gate `sonarjs/no-nested-functions` (max 5 livelli): estratte `cellLabel()` (ricerca dell'entry per giorno/ora) e `buildRow()` (una riga della tabella) come funzioni separate invece di `map` annidate dentro il `forEach` sulle classi
+
+**Bug segnalato dall'utente: `fs.write_file not allowed` al primo tentativo di esportazione.** Causa (verificata leggendo la descrizione generata di `fs:default` in `src-tauri/gen/schemas/desktop-schema.json`, non per supposizione): quel set di permessi concede *solo* lettura/creazione delle cartelle interne dell'app (AppConfig/AppData/AppLocalData/AppCache/AppLog) - non include affatto il comando `write_file`, tantomeno per un percorso arbitrario fuori da quelle cartelle. Il percorso di salvataggio del PDF però lo sceglie l'utente col dialog nativo (`save()`), quindi può essere ovunque sul filesystem - non basta uno scope fisso su una cartella nota.
+
+- [x] `src-tauri/capabilities/default.json` - aggiunto `fs:allow-write-file` (abilita il comando) + `{ "identifier": "fs:scope", "allow": ["**"] }` (nessuna restrizione di percorso) - scelta consapevole di uno scope ampio: il percorso non è mai deciso dal codice ma sempre da una scelta esplicita dell'utente tramite il dialog nativo del sistema operativo, che è già di per sé la barriera di sicurezza rilevante qui
+- [ ] Verifica (**riavviare `npm run tauri dev`**: le capabilities si leggono all'avvio del processo Rust, non è un hot-reload lato frontend) - generare il PDF con almeno due classi che hanno ore salvate, scegliendo un percorso di salvataggio fuori dalle cartelle dell'app (es. Desktop o Documenti), controllare che ogni pagina mostri la classe giusta, le celle vuote restino vuote, le ore non salvate (solo in bozza) non compaiano; una classe senza nessuna ora salvata produce comunque una pagina con tabella vuota
+
+## Riorganizzazione: composable condivisi sotto composables/shared/
+
+Stesso principio già applicato ai componenti (`components/shared/`): i composable non legati a un'entità (`useConfirmDialog`, `useNotification`, `useExpandRowAnimation`) erano file sciolti al primo livello di `app/composables/` - spostati sotto `app/composables/shared/`. Contestualmente, il neo-creato `usePdfExport.ts` ha avuto subito una cartella propria `app/composables/pdf-export/` (come `schedule/`, `assignment/`, ecc.) invece di restare sciolto al primo livello.
+
+- [x] `useConfirmDialog.ts`, `useNotification.ts`, `useExpandRowAnimation.ts` spostati in `app/composables/shared/` (`git mv`, storia preservata)
+- [x] `usePdfExport.ts` creato direttamente in `app/composables/pdf-export/` (spostato con `mv` semplice, non ancora tracciato al momento dello spostamento)
+- [x] Verifica statica: `npm run typecheck`/`npm run lint` puliti dopo lo spostamento - nessun impatto sull'auto-import, `nuxt.config.ts` ha già `imports.dirs: ['composables', 'composables/**']` dalla riorganizzazione precedente
+
+## Fix icona cattedra: armchair → chalkboard-teacher
+
+Segnalato dall'utente: l'icona poltrona (`i-ph-armchair`) usata per "cattedra" non rendeva bene il concetto. Cercate le alternative Phosphor per "cattedra" (tavolo/lavagna); scelta `i-ph-chalkboard-teacher` (una lavagna con una figura che insegna) invece di `i-ph-table` (un tavolo generico, meno specifico) - coerente col dominio scolastico.
+
+- [x] Sostituito `i-ph-armchair` → `i-ph-chalkboard-teacher` nei 3 punti che lo usavano: `pages/registry/index.vue` (card entità Cattedre), `useScheduleSidebar.ts` e `useScheduleGrid.ts` (voce "Modifica cattedra" nei menu contestuali)
+
+## Esportazione PDF v2: formato stampa, impacchettamento classi, orario docenti
+
+La v1 (sezione sopra) riusa i colori/stile a schermo dell'app e stampa una classe per pagina A4 con tutte le 6 ore sempre presenti - in stampa reale (spesso bianco e nero/fotocopiata) il tema rosa perde di senso, e una classe-per-pagina spreca carta quando molte classi hanno orari più corti di 6 ore al giorno.
+
+Decisioni confermate (via `AskUserQuestion`):
+- **Formato A3 orizzontale** invece di A4 - più superficie per pagina, meno pagine totali
+- **Stile bianco e nero puro**: solo bordi sottili neri/grigi, nessuno sfondo colorato (niente `headStyles.fillColor` rosa) - massima leggibilità anche su stampe/fotocopie economiche
+- **Taglio righe vuote per classe**: se un `hour_slot` non ha nessuna ora assegnata in nessun giorno della settimana per quella classe, la riga intera non compare in tabella (non tutte le classi hanno lo stesso numero di ore al giorno)
+- **Più classi per foglio, impacchettamento a flusso libero**: le tabelle-classe hanno tutte la stessa larghezza (stessa struttura di colonne) ma altezza variabile (dipende da quante righe restano dopo il taglio) - si riempiono "a scaffale": si piazzano una accanto all'altra finché entrano nella riga corrente, poi si scende dell'altezza della tabella più alta di quella riga per iniziarne una nuova, nuova pagina quando non c'è più spazio verticale. Non è una griglia fissa a N colonne: l'ordine (anno poi sezione, invariato) resta deterministico, ma quante classi finiscono sullo stesso foglio dipende dai dati
+- **Nuova sezione "Orario docenti"**: una singola tabella (non una per docente) - riga = docente, colonne = i 6 giorni ciascuno diviso nelle 6 ore (36 colonne, intestazione a due livelli: giorno con colspan 6 sopra, le 6 ore sotto), cella = classe in forma compatta o vuota se il docente è libero in quello slot. Si estende su più pagine da sola via la paginazione automatica di `autoTable` (a differenza delle classi, qui non c'è impacchettamento manuale da fare: è già una tabella sola)
+
+**Rischio segnalato onestamente**: 36 colonne più la colonna docente sono tante anche su A3 (420mm) - serve un'etichetta di classe molto compatta (vedi sotto) e probabilmente un `fontSize` ridotto rispetto alle tabelle-classe; da verificare/aggiustare a vista una volta generato un PDF con dati reali, non è garantito che il primo tentativo sia già leggibile.
+
+- [x] Formato pagina: `new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a3' })` invece di `'a4'`
+- [x] Stile di stampa condiviso (`PRINT_STYLES`, costante di modulo) - `theme: 'grid'`, `fillColor: 255` ovunque, testo nero/bordi grigio scuro, intestazione in grassetto per distinguerla senza colore - applicato sia alle tabelle-classe sia alla tabella docenti, al posto del `headStyles.fillColor` rosa
+- [x] `app/utils/schoolClassDisplay.ts` - `formatSchoolClassShortName({year, section_name})` → `"1A"`, senza corso di studio, per le celle strette della tabella docenti
+- [x] Taglio righe vuote: `usedHourSlots(classEntries)` calcola, per una classe, quali `hour_slot` hanno almeno un'ora assegnata in un giorno qualsiasi - solo quelle diventano righe della tabella, al posto del fisso `HOUR_SLOT_VALUES`
+- [x] Impacchettamento "a scaffale" delle tabelle-classe (`packClassTables`): larghezza fissa uguale per tutte, colonne a larghezza esplicita via `columnStyles` così l'algoritmo conosce la larghezza in anticipo, altezza attesa calcolata da `classTableHeight()` prima di renderizzare - decide se la tabella entra nella riga corrente, se aprirne una nuova, o se serve una pagina nuova; `columnsPerRow` calcolato dallo spazio utile della pagina, non hardcoded
+- [x] Sezione "Orario docenti" (`addTeacherSchedule`): tabella unica con intestazione a due livelli (`rowSpan`/`colSpan` di `autoTable` - giorno sopra, ora sotto), una riga per docente, cella = classe in forma compatta o vuota; aggiunta su una pagina propria dopo tutte le pagine delle classi, paginata da sola se i docenti non ci stanno in una pagina
+- [x] Chiavi i18n aggiunte: `pdfExport.teacherColumn`, `pdfExport.teacherScheduleTitle`; aggiornata `pdfExport.description` (non più "una pagina per classe")
+- [x] Refactor tenuto piatto per il gate `sonarjs/no-nested-functions` fin dall'inizio (imparato dal fix della v1): ogni funzione helper è una sibling dentro `usePdfExport()`, mai annidata dentro un'altra - solo *chiamate* tra loro, non definizioni annidate
+- [x] Verifica statica: `npm run typecheck`/`npm run lint`/`npm run lint:rust` puliti
+
+**Bug trovato dall'utente al primo PDF generato (letto direttamente il file con lo strumento di lettura PDF, non solo a descrizione): spazio vuoto a destra su ogni riga di tabelle-classe, e alcune tabelle si sovrapponevano verticalmente con quelle della riga successiva.** Causa reale della sovrapposizione: alcune etichette docente (es. "Esposito G.") sono più larghe della colonna giorno fissa (16mm) e andavano a capo su due righe - l'altezza *realmente* disegnata da `autoTable` superava quella precalcolata da `classTableHeight()` per decidere la posizione della riga successiva, che quindi partiva troppo in alto. Lo spazio vuoto a destra era una conseguenza diretta dell'usare una larghezza-tabella fissa (`CLASS_TABLE_WIDTH_MM`, 106mm) invece di calcolarla dallo spazio effettivamente disponibile: con 3 tabelle per riga restavano ~66mm inutilizzati.
+
+- [x] Tabelle-classe "allargate per riempire la riga": `MIN_CLASS_TABLE_WIDTH_MM` (con `MIN_CLASS_DAY_COL_WIDTH_MM = 18`, su da 16) decide solo quante colonne ci stanno (`columnsPerRow`), poi la larghezza reale di ogni tabella si calcola dividendo tutto lo spazio utile della riga per quel numero di colonne (`tableWidth = (usableWidth - (columnsPerRow-1)*GAP) / columnsPerRow`) - niente più spazio vuoto a destra, e le colonne giorno risultano più larghe (~20mm) invece che fisse a 16mm
+- [x] Stessa idea sulla tabella docenti: la larghezza delle 36 colonne-ora si calcola dallo spazio rimasto dopo la colonna nome (`hourColWidth`), non più un valore fisso (9mm) - anche lì niente più margine vuoto a destra
+- [x] `overflow: 'ellipsize'` aggiunto a `PRINT_STYLES.styles` (prima assente) - correzione della causa, non solo del sintomo: anche allargando le colonne non c'è garanzia che ogni nome docente/classe (dato dell'utente, lunghezza imprevedibile) ci stia sempre su una riga sola; con l'ellipsize un nome troppo lungo viene troncato con "…" invece di andare a capo, così l'altezza di riga resta *sempre* esattamente quella precalcolata e l'impacchettamento non può più rompersi per questo motivo
+- [x] Verifica statica: `npm run typecheck`/`npm run lint` puliti dopo il fix
+
+**Richiesta successiva dell'utente: stesso taglio-righe già fatto per le classi anche sulla tabella docenti, se un'ora non è usata da nessuno.** Per i docenti l'ora non è una riga ma un gruppo di 6 colonne (una per giorno) - il taglio quindi è globale (su tutto l'orario, non per singolo docente): se `hour_slot` X non compare in nessuna `schedule_entry` di nessun giorno, quel gruppo di colonne sparisce per intero dalla tabella. Riusata la stessa `usedHourSlots()` già scritta per le classi, chiamata questa volta su `entries.value` (tutto l'orario) invece che sulle entry di una singola classe - nessuna nuova funzione, solo `teacherRow`/`teacherTableHead`/`teacherColumnStyles` ora ricevono `hourSlots` come parametro invece di usare `HOUR_SLOT_VALUES` fisso, e la larghezza colonna si ricalcola di conseguenza (meno colonne = colonne più larghe, spazio sempre riempito).
+
+- [x] `addTeacherSchedule` calcola `hourSlots = usedHourSlots(entries.value)` e lo passa a intestazione, righe e larghezza colonne della tabella docenti
+- [x] Verifica statica: `npm run typecheck`/`npm run lint` puliti dopo il fix
+- [ ] Verifica visiva: `npm run tauri dev` - generare il PDF con dati reali; controllare che le classi con orari più corti abbiano meno righe e che più classi compaiano sullo stesso foglio quando le tabelle sono corte; che la tabella docenti non mostri più le colonne di un'ora se nessuno la usa; che ogni docente compaia nella classe giusta per ogni slot e resti leggibile; che tutto risulti chiaro anche in bianco e nero puro (anche su una fotocopia); niente più sovrapposizioni o spazio vuoto a destra
