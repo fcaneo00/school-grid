@@ -142,6 +142,9 @@
     "classHoursNoTarget": "{assigned} ore (monte ore non impostato)",
     "complete": "Completa",
     "overassigned": "Sovra-assegnata",
+    "assignmentsHoursMismatchTitle": "Il monte ore delle cattedre non corrisponde a quello della classe",
+    "assignmentsHoursExcessDescription": "Le cattedre di questa classe sommano {assignmentsTotal} ore, {diff} in più delle {classTotal} ore del monte ore della classe.",
+    "assignmentsHoursDeficitDescription": "Le cattedre di questa classe sommano {assignmentsTotal} ore, {diff} in meno delle {classTotal} ore del monte ore della classe.",
     "dayOffWarningTitle": "Giorno libero del docente",
     "dayOffWarningDescription": "{teacher} ha indicato {day} come giorno libero.",
     "removeEntry": "Rimuovi dalla griglia",
@@ -161,12 +164,21 @@
   "pdfExport": {
     "title": "Esporta PDF",
     "description": "Genera un unico PDF in formato A3 con l'orario di tutte le classi e l'orario dei docenti, pronto da stampare e distribuire. Vengono usate solo le ore già salvate, non le bozze in corso di modifica nella Tabella orario.",
+    "previewButton": "Anteprima",
+    "previewTitle": "Anteprima PDF",
+    "hoursReportTitle": "Verifica ore",
+    "hoursReportSummary": "{complete} complete, {under} incomplete, {over} in eccesso su {total} cattedre totali.",
+    "hoursReportAllComplete": "Tutte le cattedre hanno le ore rispettate.",
+    "hoursIncomplete": "Incompleta",
+    "hoursWarningTitle": "Alcune cattedre non hanno le ore rispettate",
+    "hoursWarningDescription": "Ci sono cattedre con ore in difetto o in eccesso rispetto al monte ore. Vuoi generare comunque il PDF o vedere prima il dettaglio in anteprima?",
+    "generateAnywayButton": "Genera comunque",
     "generateButton": "Genera PDF",
     "hourColumn": "Ora",
     "teacherColumn": "Docente",
     "teacherScheduleTitle": "Orario docenti",
     "noClasses": "Nessuna classe da esportare.",
-    "successTitle": "PDF salvato"
+    "successTitle": "PDF salvato - Clicca per aprire"
   },
   "settings": {
     "title": "Impostazioni",

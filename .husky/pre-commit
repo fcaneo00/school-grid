@@ -1,0 +1,17 @@
+set -e
+
+echo "🔍 Running pre-commit checks..."
+
+# 1. Linting Nuxt
+echo "✨ Linting frontend code..."
+npm run lint
+
+# 2. Typecheck
+echo "🏗️ Checking types..."
+npm run typecheck
+
+# 3. Linting Tauri
+echo "✨ Linting tauri code..."
+npm run lint:rust
+
+echo "✅ All checks passed! Proceeding with commit."

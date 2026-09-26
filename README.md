@@ -10,7 +10,7 @@
 
 ---
 
-**School Grid** è un'app desktop pensata per chi costruisce davvero l'orario di una scuola: un dirigente scolastico, o chi ne fa le veci (un docente delegato, di solito quello con più pazienza). Gestisce classi, docenti, materie e cattedre, e - quando la parte più importante del progetto sarà pronta - mette tutto in griglia e lo esporta in un PDF pronto da stampare e affiggere.
+**School Grid** è un'app desktop pensata per chi costruisce davvero l'orario di una scuola: un dirigente scolastico, o chi ne fa le veci (un docente delegato, di solito quello con più pazienza). Gestisce classi, docenti e cattedre, mette tutto in griglia trascinando - per classe o per docente, a scelta - e lo esporta in un PDF pronto da stampare e affiggere.
 
 Gira in locale, dati su SQLite sul tuo computer: nessun account, nessun cloud, nessun abbonamento. Un solo utilizzatore, un solo file `.db`, punto.
 
@@ -35,9 +35,41 @@ La parte anagrafica è pronta e sensata, non solo funzionante:
 
 Ogni cancellazione controlla se il record è ancora agganciato a qualcos'altro (una materia usata in una cattedra non si cancella per sbaglio) e te lo dice per nome, non con un codice errore SQL. Tabelle filtrabili, form validati, tutto in italiano e pronto per altre lingue il giorno in cui servissero.
 
-## Cosa manca (ed è la parte che conta)
+## Il flusso, in breve
 
-Le fondamenta della griglia orario ci sono già nel database, ma l'interfaccia per costruirla - trascinare le cattedre negli slot, vedere i conflitti evidenziati in tempo reale, ed esportare tutto in PDF - è il prossimo, vero obiettivo. È la ragione per cui il progetto esiste; il resto è solo l'anagrafica che gli serve sotto.
+```mermaid
+flowchart TD
+    Home["Home"] --> Anagrafica["Anagrafica"]
+    Home --> Orario["Tabella orario"]
+    Home --> PDF["Esporta PDF"]
+    Home --> Impostazioni["Impostazioni"]
+
+    Anagrafica --> Docenti["Docenti"]
+    Anagrafica --> Classi["Classi"]
+    Anagrafica --> Sezioni["Sezioni"]
+    Anagrafica --> Corsi["Corsi di studio"]
+    Anagrafica --> Cattedre["Cattedre"]
+
+    Impostazioni -.->|regola ore/giorni attivi| Orario
+
+    Orario --> Modalita{"Classe o Docente?"}
+    Modalita -->|Classe| GrigliaClasse["Trascina le cattedre della classe negli slot"]
+    Modalita -->|Docente| GrigliaDocente["Trascina le classi del docente negli slot"]
+    GrigliaClasse --> Bozza["Bozza - modifiche non salvate"]
+    GrigliaDocente --> Bozza
+    Bozza --> Salva["Salva su DB"]
+
+    Salva --> PDF
+    PDF --> Anteprima["Anteprima + resoconto ore"]
+    Anteprima -->|cattedra da correggere| Orario
+    Anteprima --> Genera["Genera PDF"]
+```
+
+Le due modalità della Tabella orario (per classe o per docente) guardano gli stessi dati da due lenti diverse - una modifica fatta nell'una compare subito nell'altra. L'Anteprima PDF segnala anche le cattedre con ore in difetto o in eccesso rispetto al monte ore: da lì si torna con un clic direttamente alla classe da correggere.
+
+## Cosa manca
+
+Il grosso - griglia orario trascinabile, doppia modalità, validazione dei conflitti in tempo reale, esportazione PDF - è già costruito ed è la ragione per cui il progetto esiste. Quello che resta in coda: la possibilità di tenere più orari separati (un "salvataggio" per anno scolastico) invece di un unico database sempre attivo.
 
 ## Lo stack, in breve
 
@@ -52,9 +84,13 @@ npm install
 
 # finestra nativa, con SQLite/dialog/filesystem funzionanti
 npm run tauri dev
+# oppure
+npm run dev:tauri
 
 # eseguibile finale
 npm run tauri build
+# oppure
+npm run build:tauri
 ```
 
 Il solo `npm run dev` apre l'app nel browser, ma senza i plugin Tauri (SQLite incluso) - utile per lavorare rapidamente sull'interfaccia, non per testare nulla che tocchi il database.

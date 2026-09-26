@@ -17,7 +17,8 @@
     "lint:fix": "eslint . --fix",
     "lint:rust": "cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings",
     "lint:rust:fix": "cargo fmt --manifest-path src-tauri/Cargo.toml && cargo clippy --manifest-path src-tauri/Cargo.toml --fix --allow-dirty --allow-staged",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "prepare": "husky"
   },
   "dependencies": {
     "@nuxt/eslint": "^1.17.0",
@@ -40,6 +41,7 @@
     "@tauri-apps/cli": "^2.11.5",
     "eslint-plugin-sonarjs": "^4.2.1",
     "eslint-plugin-vuejs-accessibility": "^2.6.0",
+    "husky": "^9.1.7",
     "typescript": "^5.9.3",
     "vue-tsc": "^3.3.11"
   }

@@ -4,6 +4,7 @@ const { schoolClasses, fetchSchoolClasses } = useSchoolClasses()
 const { teachers, fetchTeachers } = useTeachers()
 const { fetchEntries } = useSchedule()
 const { fetchSettings } = useAppSettings()
+const { assignments, fetchAssignments } = useAssignments()
 const { isDirty, saveDraft, revertDraft, discardAllDrafts, effectiveEntries } = useScheduleDraft()
 const confirmDialog = useConfirmDialog()
 const route = useRoute()
@@ -27,7 +28,7 @@ watch([mode, selectedEntityId], ([modeValue, entityId]) => {
 })
 
 onMounted(async () => {
-  await Promise.all([fetchSchoolClasses(), fetchTeachers(), fetchEntries(), fetchSettings()])
+  await Promise.all([fetchSchoolClasses(), fetchTeachers(), fetchEntries(), fetchSettings(), fetchAssignments()])
 })
 
 const entityOptions = computed(() => mode.value === 'class'
@@ -45,6 +46,14 @@ const occupiedHours = computed(() => subject.value === undefined ? 0 : effective
   subject.value!.type === 'class' ? entry.school_class_id === subject.value!.id : entry.teacher_id === subject.value!.id
 ).length)
 const targetHours = computed(() => selectedClass.value?.weekly_hours ?? null)
+
+const assignmentsHoursTotal = computed(() => selectedClass.value === undefined
+  ? 0
+  : assignments.value
+    .filter((assignment) => assignment.school_class_id === selectedClass.value!.id)
+    .reduce((sum, assignment) => sum + assignment.weekly_hours, 0)
+)
+const assignmentsHoursDiff = computed(() => targetHours.value === null ? 0 : assignmentsHoursTotal.value - targetHours.value)
 
 async function handleSave() {
   await saveDraft()
@@ -91,6 +100,14 @@ onBeforeRouteLeave(async () => {
         <span v-else class="text-muted">{{ t('schedule.classHoursNoTarget', { assigned: occupiedHours }) }}</span>
         <UBadge v-if="targetHours !== null && occupiedHours === targetHours" :label="t('schedule.complete')" color="success" variant="subtle" size="sm" />
         <UBadge v-else-if="targetHours !== null && occupiedHours > targetHours" :label="t('schedule.overassigned')" color="warning" variant="subtle" size="sm" />
+      </div>
+      <div v-if="mode === 'class' && assignmentsHoursDiff !== 0" class="rounded border border-warning bg-warning/10 px-4 py-3 text-sm">
+        <p class="font-medium">{{ t('schedule.assignmentsHoursMismatchTitle') }}</p>
+        <p class="text-muted">
+          {{ assignmentsHoursDiff > 0
+            ? t('schedule.assignmentsHoursExcessDescription', { assignmentsTotal: assignmentsHoursTotal, classTotal: targetHours, diff: assignmentsHoursDiff })
+            : t('schedule.assignmentsHoursDeficitDescription', { assignmentsTotal: assignmentsHoursTotal, classTotal: targetHours, diff: -assignmentsHoursDiff }) }}
+        </p>
       </div>
       <ScheduleSidebar :subject="subject" />
       <ScheduleGrid :subject="subject" />

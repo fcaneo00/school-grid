@@ -844,3 +844,41 @@ In concomitanza con selettore classe ricercabile, Tabella orario per Docente, fo
 
 - [x] `package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` - `0.4.0` → `0.4.1`
 - [x] `Cargo.lock` risincronizzato da solo con `cargo clippy` (`app v0.4.1`)
+
+## Esporta PDF: pulsante Anteprima + resoconto ore
+
+Richiesta: un pulsante per vedere in anteprima il PDF prima di generarlo, insieme a un resoconto di quali cattedre hanno ore in difetto o in eccesso rispetto al monte ore.
+
+- [x] `usePdfExport.ts` - nuovo `hoursReport` (`computed`): confronta, per ogni cattedra, le ore effettivamente piazzate (`schedule_entry` salvate, non la bozza - stessa fonte già usata per il PDF) con `weekly_hours` target; stato `'under'`/`'complete'`/`'over'` per cattedra, più i conteggi totali. Mostra solo le cattedre non complete nel dettaglio (quelle a posto non hanno bisogno di essere elencate), i conteggi totali danno comunque il quadro generale
+- [x] `openPreview()`/`closePreview()`/`exportPdfFromPreview()`: l'anteprima costruisce lo stesso `jsPDF` già usato per l'export (`buildDocument()`, nessuna duplicazione), lo converte in blob (`doc.output('blob')` + `URL.createObjectURL`) mostrato dentro un `<iframe>` - il WebView di Tauri è Chromium, ha già un visualizzatore PDF nativo integrato, non serve nessuna libreria per il rendering. L'URL viene revocato (`URL.revokeObjectURL`) alla chiusura o rigenerazione per non perdere memoria
+- [x] `exportPdf()` ora ritorna `true`/`false` (salvato/annullato o fallito) invece di niente - serve a `exportPdfFromPreview()` per decidere se chiudere la modale dopo un salvataggio riuscito
+- [x] `pages/pdf-export/index.vue` - nuovo bottone "Anteprima" accanto a "Genera PDF"; `UModal fullscreen` con il resoconto ore a sinistra e l'iframe a destra (colonna sotto `lg`), footer con "Chiudi"/"Genera PDF" (quest'ultimo richiama lo stesso export, poi chiude la modale se riuscito)
+- [x] Chiavi i18n: `pdfExport.previewButton`/`previewTitle`/`hoursReportTitle`/`hoursReportSummary`/`hoursReportAllComplete`/`hoursIncomplete`
+- [x] Verifica statica: `npm run typecheck`/`npm run lint` puliti
+- [ ] **Da verificare a vista, incerto senza poterlo provare**: (a) `<UModal v-model:open="previewOpen">` senza uno slot di default (nessun elemento-trigger dentro il componente, apertura pilotata solo esternamente da `previewOpen.value = true`) - dovrebbe funzionare perché `open` è documentato come stato controllabile a sé, ma non l'ho mai usato così finora nel progetto; (b) l'iframe dentro il body `fullscreen` prende davvero l'altezza disponibile o resta schiacciato - la classe `min-h-[60vh]` è una rete di sicurezza ma potrebbe non essere il massimo dello spazio ottenibile; (c) se il WebView2 renderizza davvero il PDF dentro l'iframe (blob URL) invece di scaricarlo o mostrare un errore
+- [x] Verifica: `npm run tauri dev` - cliccare Anteprima con dati reali, controllare che il PDF si veda dentro la modale, che il resoconto elenchi correttamente le cattedre in difetto/eccesso (provarne almeno una di ciascun tipo) e che "Tutte le cattedre..." compaia quando non ce ne sono; "Genera PDF" dalla modale salva e chiude, "Chiudi" annulla senza salvare
+
+**Richiesta successiva: cliccare su una riga del resoconto porta direttamente alla Tabella orario per quella cattedra**, così si può correggere subito invece di dover cercare la classe a mano.
+
+- [x] Ogni riga del resoconto è ora un `<button>` (non un `<div>` cliccabile - serve un elemento nativamente interattivo/da tastiera per non violare l'a11y lint, che qui non ha l'eccezione già concessa a `schedule-grid`/`schedule-sidebar` per il drag&drop) che chiude la modale (`closePreview()`, revoca il blob URL) e naviga a `/schedule?mode=class&entityId=<school_class_id della cattedra>` - stessi parametri già letti dalla pagina Tabella orario, atterra sulla classe con quella cattedra pronta da correggere
+- [x] Verifica statica: `npm run typecheck`/`npm run lint` puliti
+- [x] Verifica: `npm run tauri dev` - cliccare una riga del resoconto porta alla Tabella orario con la classe giusta già selezionata e la modale chiusa
+
+## Esporta PDF: avviso se si genera direttamente con ore non rispettate
+
+Richiesta: se si clicca "Genera PDF" direttamente (senza passare dall'Anteprima) e ci sono cattedre con ore in difetto/eccesso, mostrare un avviso che permetta di generare comunque o passare all'Anteprima per vedere il dettaglio - invece di generare il PDF in silenzio senza che l'utente se ne accorga.
+
+- [x] Nuovo `PdfHoursWarningDialog.vue` (`app/components/pdf-export/pdf-hours-warning-dialog/`) - stesso pattern già usato da `ConfirmDialog` (`useOverlay().create(Component, {...}).open()` risolve una Promise col valore emesso da `close`), ma a 3 esiti invece di 2: qui `close: [value: 'generate' | 'preview']`, non dismissibile (stessa scelta di `ConfirmDialog`: va scelta esplicitamente un'opzione, non si chiude cliccando fuori)
+- [x] `usePdfExport.ts` - estratta `performExport()` (il vero salvataggio su disco, senza fetch né controlli) da quello che prima era il corpo di `exportPdf()`. `exportPdf()` (bottone diretto nella pagina) ora: fetch dati → se `hoursReport.value.issues.length > 0` mostra `PdfHoursWarningDialog` e attende la scelta - "Genera comunque" prosegue con `performExport()`, "Vai all'anteprima" apre la modale di anteprima invece di salvare. `exportPdfFromPreview()` (bottone dentro la modale anteprima) chiama `performExport()` direttamente, **senza** questo controllo - il resoconto ore è già visibile lì, un secondo avviso sopra sarebbe ridondante
+- [x] Chiavi i18n: `pdfExport.hoursWarningTitle`/`hoursWarningDescription`/`generateAnywayButton`
+- [x] Verifica statica: `npm run typecheck`/`npm run lint` puliti
+- [x] Verifica: `npm run tauri dev` - con almeno una cattedra non completa, cliccare "Genera PDF" direttamente mostra l'avviso; "Vai all'anteprima" apre la modale (senza aver salvato nulla); "Genera comunque" salva normalmente; con tutte le cattedre complete "Genera PDF" salva subito senza alcun avviso; da dentro l'Anteprima "Genera PDF" salva sempre senza avviso aggiuntivo
+
+## Tabella orario: alert se le cattedre non sommano al monte ore della classe
+
+Bug segnalato dall'utente: si può impostare un monte ore su una classe e assegnarle N cattedre, ma se la somma delle ore *delle cattedre* (`assignment.weekly_hours`, il monte ore di ciascuna cattedra) non corrisponde al monte ore *della classe* (`school_class.weekly_hours`), non c'era alcuna segnalazione da nessuna parte. Da non confondere col controllo già esistente (ore effettivamente piazzate in griglia vs monte ore della singola cattedra, mostrato nella sidebar) - questo è un controllo diverso e più a monte: il roster di cattedre assegnate a una classe basta o no a coprire il suo monte ore dichiarato, indipendentemente da quanto è già stato piazzato in griglia.
+
+- [x] `pages/schedule/index.vue` - `assignmentsHoursTotal` (somma di `weekly_hours` delle cattedre della classe selezionata) confrontato con `targetHours` (`school_class.weekly_hours`); se diversi (ed è impostato un monte ore) mostra un alert distinto dal banner bozza/dal badge ore-piazzate già esistenti, con testo diverso per eccesso/difetto e la differenza in ore. Nessun alert se il monte ore della classe non è impostato (niente da confrontare) o in modalità Docente (il monte ore è un concetto della classe, non del docente)
+- [x] Chiavi i18n: `schedule.assignmentsHoursMismatchTitle`/`assignmentsHoursExcessDescription`/`assignmentsHoursDeficitDescription`
+- [x] Verifica statica: `npm run typecheck`/`npm run lint` puliti
+- [ ] Verifica: `npm run tauri dev` - impostare un monte ore su una classe, assegnarle cattedre la cui somma non corrisponde: appare l'alert con il messaggio corretto (eccesso/difetto) e la differenza giusta; se la somma corrisponde, o se il monte ore della classe non è impostato, l'alert non appare; in modalità Docente non appare mai

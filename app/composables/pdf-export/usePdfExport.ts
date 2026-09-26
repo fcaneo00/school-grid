@@ -2,11 +2,19 @@ import { jsPDF } from 'jspdf'
 import autoTable, { type Styles, type UserOptions } from 'jspdf-autotable'
 import { save } from '@tauri-apps/plugin-dialog'
 import { writeFile } from '@tauri-apps/plugin-fs'
+import { PdfHoursWarningDialog } from '#components'
 import type { SchoolClassWithDetails } from '~/composables/school-class/useSchoolClasses'
 import type { ScheduleEntryWithDetails } from '~/composables/schedule/useSchedule'
 import type { TeacherWithDetails } from '~/composables/teacher/useTeachers'
+import type { AssignmentWithDetails } from '~/composables/assignment/useAssignments'
 import type { Weekday } from '~/utils/weekdays'
 import type { HourSlot } from '~/utils/hourSlots'
+
+export interface AssignmentHoursStatus {
+  assignment: AssignmentWithDetails
+  assigned: number
+  status: 'under' | 'complete' | 'over'
+}
 
 const MARGIN_MM = 10
 const GAP_MM = 8
@@ -49,8 +57,32 @@ export function usePdfExport() {
   const { schoolClasses, fetchSchoolClasses } = useSchoolClasses()
   const { teachers, fetchTeachers } = useTeachers()
   const { entries, fetchEntries } = useSchedule()
+  const { assignments, fetchAssignments } = useAssignments()
+  const overlay = useOverlay()
 
   const loading = ref(false)
+  const previewOpen = ref(false)
+  const previewUrl = ref<string | null>(null)
+
+  function hoursStatus(assigned: number, target: number): AssignmentHoursStatus['status'] {
+    if (assigned < target) return 'under'
+    if (assigned > target) return 'over'
+    return 'complete'
+  }
+
+  const hoursReport = computed(() => {
+    const statuses: AssignmentHoursStatus[] = assignments.value.map((assignment) => {
+      const assigned = entries.value.filter((entry) => entry.assignment_id === assignment.id).length
+      return { assignment, assigned, status: hoursStatus(assigned, assignment.weekly_hours) }
+    })
+    return {
+      total: statuses.length,
+      complete: statuses.filter((s) => s.status === 'complete').length,
+      under: statuses.filter((s) => s.status === 'under').length,
+      over: statuses.filter((s) => s.status === 'over').length,
+      issues: statuses.filter((s) => s.status !== 'complete')
+    }
+  })
 
   function sortedClasses() {
     return [...schoolClasses.value].sort((a, b) => {
@@ -216,22 +248,25 @@ export function usePdfExport() {
     return doc
   }
 
-  async function exportPdf() {
+  async function fetchPreviewData() {
+    await Promise.all([fetchSchoolClasses(), fetchTeachers(), fetchEntries(), fetchAssignments()])
+  }
+
+  function revokePreviewUrl() {
+    if (previewUrl.value) {
+      URL.revokeObjectURL(previewUrl.value)
+      previewUrl.value = null
+    }
+  }
+
+  async function openPreview() {
     loading.value = true
     try {
-      await Promise.all([fetchSchoolClasses(), fetchTeachers(), fetchEntries()])
-
-      const filePath = await save({
-        defaultPath: 'orario-scolastico.pdf',
-        filters: [{ name: 'PDF', extensions: ['pdf'] }]
-      })
-      if (!filePath) return
-
+      await fetchPreviewData()
       const doc = buildDocument()
-      const bytes = new Uint8Array(doc.output('arraybuffer'))
-      await writeFile(filePath, bytes)
-
-      notify.openFileToast(t('pdfExport.successTitle'), filePath)
+      revokePreviewUrl()
+      previewUrl.value = URL.createObjectURL(doc.output('blob'))
+      previewOpen.value = true
     } catch (e) {
       notify.error(t('general.errorTitle'), String(e))
     } finally {
@@ -239,8 +274,71 @@ export function usePdfExport() {
     }
   }
 
+  function closePreview() {
+    previewOpen.value = false
+    revokePreviewUrl()
+  }
+
+  async function performExport() {
+    loading.value = true
+    try {
+      const filePath = await save({
+        defaultPath: 'orario-scolastico.pdf',
+        filters: [{ name: 'PDF', extensions: ['pdf'] }]
+      })
+      if (!filePath) return false
+
+      const doc = buildDocument()
+      const bytes = new Uint8Array(doc.output('arraybuffer'))
+      await writeFile(filePath, bytes)
+
+      notify.openFileToast(t('pdfExport.successTitle'), filePath)
+      return true
+    } catch (e) {
+      notify.error(t('general.errorTitle'), String(e))
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
+  function confirmGenerateWithIssues() {
+    const modal = overlay.create(PdfHoursWarningDialog, { destroyOnClose: true })
+    return modal.open()
+  }
+
+  async function exportPdf() {
+    loading.value = true
+    try {
+      await fetchPreviewData()
+    } finally {
+      loading.value = false
+    }
+
+    if (hoursReport.value.issues.length > 0) {
+      const choice = await confirmGenerateWithIssues()
+      if (choice !== 'generate') {
+        await openPreview()
+        return false
+      }
+    }
+
+    return performExport()
+  }
+
+  async function exportPdfFromPreview() {
+    const success = await performExport()
+    if (success) closePreview()
+  }
+
   return {
     loading,
-    exportPdf
+    previewOpen,
+    previewUrl,
+    hoursReport,
+    openPreview,
+    closePreview,
+    exportPdf,
+    exportPdfFromPreview
   }
 }
