@@ -2,7 +2,7 @@
 import { useScheduleGrid } from './useScheduleGrid'
 
 interface ScheduleGridProps {
-  schoolClassId: number
+  subject: ScheduleSubject
 }
 
 const props = defineProps<ScheduleGridProps>()
@@ -24,11 +24,11 @@ const {
   isMovingBlock,
   movePreview,
   blockStyle,
-  shortName,
+  blockLabel,
   rowHeightPx,
   hourColPx,
   headerHeightPx
-} = useScheduleGrid(toRef(() => props.schoolClassId))
+} = useScheduleGrid(toRef(() => props.subject))
 </script>
 
 <template>
@@ -101,7 +101,7 @@ const {
             <div class="absolute inset-0 bg-default" />
             <div class="absolute inset-0 bg-primary/10" />
             <div class="relative flex h-full items-center justify-between gap-1 p-2">
-              <span class="truncate">{{ shortName(block) }}</span>
+              <span class="truncate">{{ blockLabel(block) }}</span>
               <UButton
                 icon="i-ph-x"
                 size="xs"

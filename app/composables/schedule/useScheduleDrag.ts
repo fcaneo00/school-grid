@@ -2,6 +2,7 @@ interface DraggedBlockSource {
   day: Weekday
   assignmentId: number
   teacherId: number
+  schoolClassId: number
   startHour: HourSlot
   span: number
   entryIds: number[]

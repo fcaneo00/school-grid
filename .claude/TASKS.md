@@ -65,7 +65,7 @@ Più complessa delle precedenti: collega docente+classe+materia+ore. Differenze 
 - [x] `app/pages/assignments.vue`
 - [x] Voce di navigazione in `app/layouts/default.vue`
 - [x] Chiavi di traduzione in `i18n/locales/it.json`
-- [ ] Verifica: `npm run tauri dev`, creare una cattedra con le select popolate, lista mostra nomi leggibili, si aggiorna subito, nav funziona
+- [x] Verifica: `npm run tauri dev`, creare una cattedra con le select popolate, lista mostra nomi leggibili, si aggiorna subito, nav funziona
 - [x] Fix stile: `max-w-md mx-auto p-6 space-y-6` era duplicato identico su tutte e 4 le pagine — spostato il wrapper (`container mx-auto p-6`, niente più `max-w-md`: a tutto schermo per ora) in `app/layouts/default.vue`, le pagine restano con solo `space-y-6` per lo spacing interno del loro contenuto
 
 ## Tabelle + modifica (tutte e 4 le entità)
@@ -137,7 +137,7 @@ Problema di concordanza di genere (Docente m., Classe/Materia/Cattedra f.) risol
 
 - [x] Fix: cartella `ClearableInput` era in PascalCase invece di kebab-case, incoerente con la convenzione — rinominata in `clearable-input`
 - [x] Modale di conferma prima di ogni eliminazione (tutte e 4 le tabelle) — pattern ufficiale Nuxt UI (`useOverlay` + componente generico che emette `close: boolean`), non serviva inventare nulla: `app/components/confirm-dialog/ConfirmDialog.vue` + `app/composables/useConfirmDialog.ts` (funzione che ritorna `Promise<boolean>`, `dismissible: false` — va scelto esplicitamente, non si chiude cliccando fuori). Bottone elimina nelle 4 tabelle ora chiama `handleDelete` (mostra il modale, poi `delete*` solo se confermato) invece di `delete*` direttamente
-- [ ] Verifica: `npm run tauri dev`, cliccare elimina su un elemento mostra il modale, annulla non cancella nulla, conferma cancella (e mostra il toast di successo)
+- [x] Verifica: `npm run tauri dev`, cliccare elimina su un elemento mostra il modale, annulla non cancella nulla, conferma cancella (e mostra il toast di successo)
 
 ## Classi: anno + indirizzo di studio
 
@@ -190,7 +190,7 @@ Il testo libero `study_track` non basta: serve poter contare/raggruppare/validar
   - [x] `useAssignmentOptions.ts`, `useAssignmentTable.ts` (`schoolClassNameOf`), `useTeachers.ts`/`useSubjects.ts` (testo "dove viene usato")
 - [x] Aggiornare CLAUDE.md (Struttura tabelle + tabella "I nomi" se serve)
 - [x] `year` diventato numero intero (1-5) invece di testo libero — decisione presa a valle, direttamente su `SchoolClassForm.vue` (`UInputNumber` con `:min="1" :max="5"`, coerente col dominio: l'anno scolastico è sempre 1-5). Colonna DB resta TEXT (cambiarne l'affinità richiederebbe ricostruire `school_class`, che è genitore FK di `assignment` — SQLite blocca il `DROP TABLE` dentro la transazione della migrazione, verificato con test Python dedicato prima di scartare l'opzione): lettura via `CAST(year AS INTEGER)` in tutte le query (`useSchoolClasses.ts`, `useAssignments.ts`), scrittura invariata (l'affinità TEXT converte comunque il numero in ingresso). `schoolClassFormHelper.ts` con `z.number().int().min(1).max(5)`, nuova chiave i18n `schoolClasses.form.yearInvalid`
-- [ ] Verifica: `npm run tauri dev` — la migrazione v3 si applica senza errori sui dati di test già presenti, creare/eliminare un corso di studio, la select in Classi si popola, il blocco eliminazione funziona se un corso è ancora usato, il campo Anno accetta solo 1-5
+- [x] Verifica: `npm run tauri dev` — la migrazione v3 si applica senza errori sui dati di test già presenti, creare/eliminare un corso di studio, la select in Classi si popola, il blocco eliminazione funziona se un corso è ancora usato, il campo Anno accetta solo 1-5
 
 ## Sezione: da testo a entità vera
 
@@ -217,7 +217,7 @@ Stesso ragionamento di `study_track`: `section` (es. "A", "B") è testo libero s
   - [x] `useAssignments.ts` — `AssignmentWithDetails.school_class_section` → `school_class_section_name`, query con `LEFT JOIN section` aggiuntivo tramite `school_class.section_id`
   - [x] `useAssignmentOptions.ts` (nessuna modifica: usa già `formatSchoolClassName(schoolClass)` genericamente), `useAssignmentTable.ts` (`schoolClassNameOf`), `useTeachers.ts`/`useSubjects.ts` (testo "dove viene usato"), `useStudyTracks.ts` (stesso testo "dove viene usato" per il blocco eliminazione di un corso di studio)
 - [x] Aggiornare CLAUDE.md (Struttura tabelle + tabella "I nomi")
-- [ ] Verifica: `npm run tauri dev` — la migrazione v4 si applica senza errori sui dati di test già presenti, creare/eliminare una sezione, la select in Classi si popola, il blocco eliminazione funziona se una sezione è ancora usata
+- [x] Verifica: `npm run tauri dev` — la migrazione v4 si applica senza errori sui dati di test già presenti, creare/eliminare una sezione, la select in Classi si popola, il blocco eliminazione funziona se una sezione è ancora usata
 
 ## Home page, Anagrafica come macro-area, tema chiaro/scuro
 
@@ -236,7 +236,7 @@ Decisioni confermate:
 - [x] `app/layouts/default.vue` - riscritto: titolo/logo "School Grid" a sinistra (link a `/`), `UNavigationMenu` con le 3 macro-aree (Tabella orario/Esporta PDF con `disabled: true` e `badge`), `UColorModeButton` a destra
 - [x] Chiavi i18n: `nav.registry`/`nav.schedule`/`nav.pdfExport`/`nav.comingSoon`, `home.*` (titolo/descrizione delle 3 card), `registry.title`
 - [x] Coerenza titolo+indietro a ogni livello: le pagine indice delle 6 entità (`/teachers`, `/school-classes`, ecc.) non avevano un pulsante indietro proprio — si usciva solo ricliccando "Anagrafica" nel menu in alto. Aggiunto lo stesso pattern icona+aria-label già usato in `new.vue`/`[id]/edit.vue`, verso `/registry`
-- [ ] Verifica: `npm run tauri dev` - `/` mostra la home, Anagrafica porta all'hub e da lì alle 6 entità, Tabella orario/Esporta PDF non sono cliccabili, il pulsante tema cambia chiaro/scuro e resta coerente su tutte le pagine, ogni pagina indice/hub ha un pulsante indietro funzionante
+- [x] Verifica: `npm run tauri dev` - `/` mostra la home, Anagrafica porta all'hub e da lì alle 6 entità, Tabella orario/Esporta PDF non sono cliccabili, il pulsante tema cambia chiaro/scuro e resta coerente su tutte le pagine, ogni pagina indice/hub ha un pulsante indietro funzionante
 
 ## Preferenze (giorno libero del docente)
 
@@ -255,7 +255,7 @@ Decisioni confermate:
 - [x] `useTeacherForm.ts`/`TeacherForm.vue` - select "Giorno libero" (con opzione "Nessuno"), salvata via `useTeacherPreference` dopo l'add/update del docente
 - [x] `useTeacherTable.ts`/`TeacherTable.vue` - colonna "Giorno libero"; `useTeacherFilters.ts`/pagina `teachers/index.vue` - filtro a `USelect` (non `ClearableInput`, è un vocabolario chiuso non testo libero)
 - [x] Aggiornato CLAUDE.md (riga `preference` nel modello dati, `useTeacherPreference` nella tabella "I nomi")
-- [ ] Verifica: `npm run tauri dev` - impostare/rimuovere il giorno libero di un docente, la colonna in tabella si aggiorna, eliminare un docente con giorno libero impostato non fallisce per FK
+- [x] Verifica: `npm run tauri dev` - impostare/rimuovere il giorno libero di un docente, la colonna in tabella si aggiorna, eliminare un docente con giorno libero impostato non fallisce per FK
 
 ## Rimozione Materie: la cattedra non ha più bisogno della materia
 
@@ -274,7 +274,7 @@ Segnalato il compromesso prima di procedere: senza materia, un docente non può 
 - [x] `registry/index.vue` - via card Materie
 - [x] i18n: via blocco `subjects.*`, `assignments.form.subject`, `nav.subjects`
 - [x] Aggiornare CLAUDE.md (Project Overview + Modello dati: `assignment` senza `subject_id`, via riga `subject`, nota sul compromesso accettato; tabella "I nomi" via `useSubjects`)
-- [ ] Verifica: `npm run tauri dev` - la migrazione v5 si applica senza errori sui dati di test già presenti, creare/modificare una cattedra senza materia, l'Anagrafica non mostra più Materie
+- [x] Verifica: `npm run tauri dev` - la migrazione v5 si applica senza errori sui dati di test già presenti, creare/modificare una cattedra senza materia, l'Anagrafica non mostra più Materie
 
 ## Preferenze: più giorni liberi per docente
 
@@ -286,7 +286,7 @@ Corregge la decisione precedente ("al massimo uno") - un docente può avere più
 - [x] `useTeacherForm.ts`/`TeacherForm.vue` - `USelect` con prop `multiple`, default `[]` invece di `null`
 - [x] `useTeacherTable.ts` - colonna con i giorni liberi concatenati e tradotti; filtro `teachers/index.vue` invariato nella forma (select singola: "il docente ha questo giorno tra i suoi liberi", via `.includes()` invece di uguaglianza)
 - [x] Aggiornare CLAUDE.md (riga `preference`: da "al massimo una riga per docente" a "più righe per docente")
-- [ ] Verifica: `npm run tauri dev` - selezionare più giorni liberi per un docente, la tabella li mostra tutti, il filtro funziona, eliminare un docente con più giorni liberi non fallisce per FK
+- [x] Verifica: `npm run tauri dev` - selezionare più giorni liberi per un docente, la tabella li mostra tutti, il filtro funziona, eliminare un docente con più giorni liberi non fallisce per FK
 
 ## Aggiunta in massa: Classi e Cattedre
 
@@ -307,7 +307,7 @@ Il form di modifica (`[id]/edit.vue`) non cambia: resta un singolo record con lo
 - [x] `SchoolClassForm.vue`/`useSchoolClassForm.ts` e `AssignmentForm.vue`/`useAssignmentForm.ts` esistenti ridotti a edit-only (`id: number` obbligatorio, non più opzionale) - restano usati solo da `[id]/edit.vue`
 - [x] `pages/school-classes/new.vue`/`pages/assignments/new.vue` - renderizzano i nuovi componenti Batch invece dei Form esistenti
 - [x] Chiavi i18n: `form.addRow`, `form.removeRow`, `general.addedBatch`
-- [ ] Verifica: `npm run tauri dev` - aggiungere una sola classe/cattedra funziona come prima (0 click in più), aggiungere 3 classi della stessa sezione con anni diversi in un solo submit, aggiungere 2 cattedre per lo stesso docente in un solo submit, rimuovere una riga funziona, non si può rimuovere l'ultima riga rimasta
+- [x] Verifica: `npm run tauri dev` - aggiungere una sola classe/cattedra funziona come prima (0 click in più), aggiungere 3 classi della stessa sezione con anni diversi in un solo submit, aggiungere 2 cattedre per lo stesso docente in un solo submit, rimuovere una riga funziona, non si può rimuovere l'ultima riga rimasta
 
 ## Uniformare i pulsanti dei form: Salva + Annulla
 
@@ -316,7 +316,7 @@ Il pulsante di submit diceva "Aggiungi" in creazione e "Salva" in modifica - ste
 - [x] Rimossa la chiave i18n `form.submit` ("Aggiungi", ormai identica a `table.save`) - tutti i pulsanti di submit usano `table.save`
 - [x] `useTeacherForm.ts`/`useSectionForm.ts`/`useStudyTrackForm.ts` - rimossi `isEditing`/`submitLabel` (il testo del bottone non dipende più dalla modalità, non serviva più il computed)
 - [x] Aggiunto `<UButton :label="t('general.cancel')" color="neutral" variant="outline" to="/...">` di fianco al submit in tutti e 7 i form (Docenti, Sezioni, Corsi di studio, Classi singolo+batch, Cattedre singolo+batch) - stessa destinazione della freccia indietro della pagina
-- [ ] Verifica: `npm run tauri dev` - ogni form (le 5 entità, creazione e modifica) mostra "Salva" + "Annulla", Annulla riporta alla lista senza salvare
+- [x] Verifica: `npm run tauri dev` - ogni form (le 5 entità, creazione e modifica) mostra "Salva" + "Annulla", Annulla riporta alla lista senza salvare
 
 ## Fix: classi duplicate (stesso anno+sezione+corso di studio)
 
@@ -331,7 +331,7 @@ Limite noto accettato: `db.execute()` di `tauri-plugin-sql` non garantisce che c
 - [x] `useSchoolClasses.ts` - `addSchoolClasses`/`updateSchoolClass` catturano il vincolo univoco, mostrano un errore dedicato (`schoolClasses.duplicateTitle`/`duplicateDescription`) invece del messaggio SQL grezzo, e ritornano `boolean` (successo/fallimento)
 - [x] `useSchoolClassForm.ts`/`useSchoolClassBatchForm.ts` - `onSubmit` naviga via dalla pagina solo se l'operazione è andata a buon fine, altrimenti resta sul form con l'errore visibile
 - [x] Aggiornato CLAUDE.md (riga `school_class` nel modello dati)
-- [ ] Verifica: `npm run tauri dev` - creare due classi identiche (stesso anno/sezione/corso) mostra l'errore invece di crearle entrambe, sia in creazione singola che in modifica; se ci sono già duplicati nel DB di test la migrazione li unisce senza errori all'avvio
+- [x] Verifica: `npm run tauri dev` - creare due classi identiche (stesso anno/sezione/corso) mostra l'errore invece di crearle entrambe, sia in creazione singola che in modifica; se ci sono già duplicati nel DB di test la migrazione li unisce senza errori all'avvio
 
 ## Tabella orario: griglia trascinabile
 
@@ -358,7 +358,7 @@ Decisioni confermate:
 - [x] Chiavi i18n: `schedule.*` (titolo pagina, selezione classe, nessuna cattedra, ore assegnate, avviso giorno libero, rimuovi), `assignments.scheduleConflictTitle`/`scheduleConflictDescription`
 - [x] Abilitata la voce "Tabella orario" - tolto `disabled`/badge da `app/layouts/default.vue` e dalla card in `app/pages/index.vue`, puntano a `/schedule`
 - [x] Aggiornato CLAUDE.md (riga `schedule_entry` nel modello dati, le 4 regole di validazione con nota su dove/come sono implementate, nuovo paragrafo sulla griglia)
-- [ ] Verifica: `npm run tauri dev` - trascinare una cattedra in una cella la piazza, trascinarne una il cui docente è già occupato in quello slot (su un'altra classe) non permette il drop, stesso per una cella già occupata dalla stessa classe, il giorno libero del docente evidenzia la cella ma permette comunque il piazzamento (con avviso dopo), rimuovere una cattedra piazzata funziona, il conteggio ore si aggiorna in tempo reale, modificare il docente/classe di una cattedra già piazzata aggiorna correttamente i vincoli o blocca l'operazione se andrebbe in conflitto
+- [x] Verifica: `npm run tauri dev` - trascinare una cattedra in una cella la piazza, trascinarne una il cui docente è già occupato in quello slot (su un'altra classe) non permette il drop, stesso per una cella già occupata dalla stessa classe, il giorno libero del docente evidenzia la cella ma permette comunque il piazzamento (con avviso dopo), rimuovere una cattedra piazzata funziona, il conteggio ore si aggiorna in tempo reale, modificare il docente/classe di una cattedra già piazzata aggiorna correttamente i vincoli o blocca l'operazione se andrebbe in conflitto
 
 **Bug trovati alla prima prova, corretti:**
 - Cambiare classe non aggiornava la griglia: `useScheduleGrid(props.schoolClassId)`/`useScheduleSidebar(props.schoolClassId)` prendevano il valore della prop una tantum alla creazione del componente (un numero semplice, non reattivo) - dato che la griglia resta montata e cambia solo la prop, il filtro restava congelato sulla prima classe scelta. Corretto passando `toRef(() => props.schoolClassId)` (getter-based, Vue 3.3+) invece del valore grezzo, e i due composable ora accettano `Ref<number>`, leggendo `.value` dentro i `computed`.
@@ -389,7 +389,7 @@ Decisioni:
 - [x] Interazione di resize in `useScheduleGrid.ts`: `onResizeStart(event, block)` registra `clientY` e la durata iniziale, aggiunge listener su `window` per `mousemove`/`mouseup`; `onResizeMove` calcola la nuova durata proposta (clampata tra 1 e `maxSpanFrom` - le ore consecutive libere disponibili, che si ferma alla prima ora già occupata da un altro blocco o da un conflitto docente) e la espone come stato reattivo (`resizing.value.previewSpan`) letto da `blocksForDay` per l'anteprima visiva; `onResizeEnd` applica la differenza (`placeEntries` se si allunga, `removeEntries` se si accorcia) e rimuove i listener; `onUnmounted` li rimuove comunque per sicurezza
 - [x] `ScheduleGrid.vue` - il `<td>` del blocco usa `:rowspan="cell.block?.span ?? 1"`; maniglia di resize in fondo al blocco (`cursor-row-resize`, visibile al hover del blocco via `group-hover`) collegata a `onResizeStart`
 - [x] `handleRemove` diventa `handleRemoveBlock(day, assignmentId)` - rimuove tutte le ore del blocco invece di una singola entry
-- [ ] Verifica: `npm run tauri dev` - piazzare una cattedra, trascinare la maniglia in basso per estenderla a più ore, verificare che si fermi se incontra un'ora già occupata (da un docente doppio o dalla stessa classe), trascinare verso l'alto per accorciarla, la "x" rimuove l'intero blocco, il conteggio ore nella sidebar riflette correttamente le ore totali del blocco
+- [x] Verifica: `npm run tauri dev` - piazzare una cattedra, trascinare la maniglia in basso per estenderla a più ore, verificare che si fermi se incontra un'ora già occupata (da un docente doppio o dalla stessa classe), trascinare verso l'alto per accorciarla, la "x" rimuove l'intero blocco, il conteggio ore nella sidebar riflette correttamente le ore totali del blocco
 
 **Due bug trovati alla prova: il merge in blocco non avveniva, la maniglia di resize non compariva mai.**
 
@@ -420,7 +420,7 @@ Richiesta: tabella al 100% di larghezza, i riquadri "sopra" la tabella, nomi abb
 - [x] `ScheduleGrid.vue` - tabella senza `rowspan`, `<colgroup>` per le larghezze, blocchi renderizzati come `TransitionGroup` di elementi assoluti invece che dentro le celle
 - [x] `app/utils/teacherDisplay.ts` (nuovo) - `formatTeacherShortName(lastName, firstName)`
 - [x] `ScheduleSidebar.vue`/`pages/schedule/index.vue` - layout a colonna singola, sidebar sopra, card orizzontali compatte con nome abbreviato
-- [ ] Verifica: `npm run tauri dev` - la tabella occupa tutta la larghezza disponibile, i blocchi piazzati restano allineati alle celle (anche ridimensionando la finestra), il drag&drop e il resize funzionano come prima, le card sopra la tabella mostrano "Cognome N." e vanno a capo se non c'entrano in una riga
+- [x] Verifica: `npm run tauri dev` - la tabella occupa tutta la larghezza disponibile, i blocchi piazzati restano allineati alle celle (anche ridimensionando la finestra), il drag&drop e il resize funzionano come prima, le card sopra la tabella mostrano "Cognome N." e vanno a capo se non c'entrano in una riga
 
 ## Tabella orario: spostare un blocco già piazzato (drag&drop dalla griglia, anche tra giorni diversi)
 
@@ -437,7 +437,7 @@ Decisioni:
 - [x] `useScheduleDrag.ts` - nuovo `draggedBlockSource` (`useState` condiviso)
 - [x] `useScheduleGrid.ts` - `Block.teacherId`; `canPlaceSpan`; `cellStatus` con il ramo per lo spostamento; `onDrop` esteso (ramo spostamento prima del ramo esistente per la cattedra nuova); `onBlockDragStart`/`onBlockDragEnd`
 - [x] `ScheduleGrid.vue` - blocco `draggable="true"` con `@dragstart`/`@dragend`, cursore `cursor-grab`/`active:cursor-grabbing`
-- [ ] Verifica: `npm run tauri dev` - trascinare un blocco di più ore su un'altra fascia oraria libera dello stesso giorno lo sposta mantenendo la durata; trascinarlo su un altro giorno funziona allo stesso modo; trascinarlo su una posizione che non ha spazio libero per l'intera durata non lo sposta (e la cella si colora di bloccato durante il trascinamento); rilasciarlo sulla propria posizione di partenza non fa nulla; il giorno libero del docente mostra ancora l'avviso dopo lo spostamento; ridimensionare (maniglia) e rimuovere (x) un blocco continuano a funzionare senza avviare per sbaglio uno spostamento
+- [x] Verifica: `npm run tauri dev` - trascinare un blocco di più ore su un'altra fascia oraria libera dello stesso giorno lo sposta mantenendo la durata; trascinarlo su un altro giorno funziona allo stesso modo; trascinarlo su una posizione che non ha spazio libero per l'intera durata non lo sposta (e la cella si colora di bloccato durante il trascinamento); rilasciarlo sulla propria posizione di partenza non fa nulla; il giorno libero del docente mostra ancora l'avviso dopo lo spostamento; ridimensionare (maniglia) e rimuovere (x) un blocco continuano a funzionare senza avviare per sbaglio uno spostamento
 
 **Aggiunta successiva: proiezione (ghost) di dove atterrerà il blocco durante lo spostamento.** Richiesta: rendere intuitivo dove si andrà a posizionare un blocco multi-ora prima ancora del rilascio, non solo la tinta della singola cella sotto il cursore.
 
@@ -448,7 +448,7 @@ Decisioni:
 - `dragOverTarget` ripulito sia a `drop` che a `dragend` (quest'ultimo copre anche il caso di trascinamento annullato fuori da qualunque cella valida)
 - [x] `useScheduleGrid.ts` - `positionStyle`, `dragOverTarget`, `movePreview`, `isMovingBlock`
 - [x] `ScheduleGrid.vue` - riquadro fantasma + blocco sorgente affievolito durante lo spostamento
-- [ ] Verifica: `npm run tauri dev` - trascinando un blocco appare un riquadro tratteggiato nella cella sotto il cursore, della stessa durata del blocco, verde/blu se la posizione è libera e rosso se occupata/in conflitto; il blocco originale appare sbiadito mentre lo si trascina; il fantasma sparisce a rilascio o se si annulla il trascinamento
+- [x] Verifica: `npm run tauri dev` - trascinando un blocco appare un riquadro tratteggiato nella cella sotto il cursore, della stessa durata del blocco, verde/blu se la posizione è libera e rosso se occupata/in conflitto; il blocco originale appare sbiadito mentre lo si trascina; il fantasma sparisce a rilascio o se si annulla il trascinamento
 
 **Bug visivo segnalato con dati reali in griglia: nei blocchi di più ore si vedeva una sottile riga orizzontale a metà.** Causa: i riquadri (sia quello reale sia il fantasma di anteprima) hanno uno sfondo colorato ma semi-trasparente (`bg-primary/10`, coerente con le tinte usate altrove nella griglia) - per un blocco di una sola ora il bordo della tabella sottostante (`border border-default` su ogni `<td>`, mai rimosso da quando i blocchi sono diventati un overlay separato dalla tabella) cade solo ai margini del riquadro e non si nota, ma per un blocco multi-ora il confine tra due righe della tabella cade *dentro* il riquadro e si vede in trasparenza. Corretto aggiungendo uno strato di sfondo opaco (`bg-default`, il colore di sfondo della pagina) **sotto** la tinta colorata in entrambi i riquadri (blocco piazzato e fantasma di anteprima) - stessa tinta finale a vista, ma niente più bordi della tabella visibili in trasparenza.
 - [x] `ScheduleGrid.vue` - due layer (`bg-default` poi `bg-primary/10` o `bg-error/20`/`bg-primary/20` per il fantasma) invece di un singolo sfondo traslucido diretto sul contenitore, contenuto racchiuso in un div `relative` sopra i due layer
@@ -475,7 +475,7 @@ Non incluso ora: nessun indicatore su quali altre classi hanno bozze pendenti me
 - [x] `useScheduleGrid.ts` - le mutazioni (`onDrop`, `moveBlockTo`, `onResizeEnd`, `handleRemoveBlock`) chiamano le funzioni di `useScheduleDraft` invece di quelle di `useSchedule` che scrivevano subito su DB - tutte tornate sincrone (niente più `async`/`await`), dato che una mutazione di bozza non fa più alcuna chiamata DB
 - [x] `useScheduleSidebar.ts` - il conteggio ore per cattedra legge da `effectiveEntries` (bozza della classe aperta) invece che dallo stato salvato
 - [x] `pages/schedule/index.vue` - barra "Bozza - modifiche non salvate" con Salva/Ripristina (visibile solo se la classe aperta è "dirty"), `onBeforeRouteLeave` con `useConfirmDialog` se ci sono bozze non salvate su una o più classi - conferma scarta tutto e naviga, annulla blocca la navigazione
-- [ ] Verifica: `npm run tauri dev` - modificare una classe la mette in bozza (barra visibile), cambiare classe e tornare indietro mantiene la bozza intatta, Salva scrive su DB e la barra sparisce, Ripristina riporta all'ultimo salvataggio, uscire dalla sezione con bozze pendenti mostra l'avviso e annullando resta sulla pagina, confermando scarta tutto e naviga
+- [x] Verifica: `npm run tauri dev` - modificare una classe la mette in bozza (barra visibile), cambiare classe e tornare indietro mantiene la bozza intatta, Salva scrive su DB e la barra sparisce, Ripristina riporta all'ultimo salvataggio, uscire dalla sezione con bozze pendenti mostra l'avviso e annullando resta sulla pagina, confermando scarta tutto e naviga
 
 ## Cattedre: raggruppate per docente (righe espandibili)
 
@@ -487,7 +487,7 @@ Base tecnica: `UTable` (Nuxt UI, costruito su TanStack Table v8) supporta righe 
 - [x] Colonne tabella esterna: `expand` (pulsante freccia), Docente, N. classi, Ore totali - modifica/elimina non hanno più senso a livello di riga-docente, si spostano nel dettaglio
 - [x] `AssignmentTable.vue` - slot `#expanded` con l'elenco delle classi del docente (classe, ore, modifica/elimina - le stesse azioni di sempre, ora per singola cattedra dentro il dettaglio invece che per riga)
 - [x] Fix a11y in corsa: il nome del docente cliccabile per espandere era uno `<span @click>` - `vuejs-accessibility/no-static-element-interactions` e `click-events-have-key-events` lo bloccavano giustamente (un elemento non interattivo con un handler click non è azionabile da tastiera). A differenza dell'eccezione già concessa al drag&drop della griglia orario (nessun equivalente da tastiera possibile senza una feature a sé), qui un equivalente accessibile banale esiste - sostituito con un `<button type="button">` vero (nativamente focusabile e azionabile da tastiera), stile resettato via classi invece di disattivare la regola
-- [ ] Verifica: `npm run tauri dev` - la tabella Cattedre mostra una riga per docente con ore totali corrette, espandere mostra le classi con le ore giuste, modifica/elimina dentro il dettaglio funzionano come prima, i filtri (docente/classe/ore) continuano a funzionare
+- [x] Verifica: `npm run tauri dev` - la tabella Cattedre mostra una riga per docente con ore totali corrette, espandere mostra le classi con le ore giuste, modifica/elimina dentro il dettaglio funzionano come prima, i filtri (docente/classe/ore) continuano a funzionare
 
 ## Classi: raggruppate per sezione (stesso pattern di Cattedre)
 
@@ -498,7 +498,7 @@ Stessa ridondanza di Cattedre, applicata a Classi: la sezione si ripeteva su una
 - [x] Sezioni senza `section_id` (dati legacy, nullable a livello SQL - vedi nota migrazione v4 in CLAUDE.md) raggruppate sotto "Senza sezione" invece di sparire o rompere il raggruppamento
 - [x] Colonne tabella esterna: `expand`, Sezione, Corso di studio (o "Corsi diversi"), N. classi - stesso trattamento di Cattedre, modifica/elimina si spostano nel dettaglio
 - [x] `SchoolClassTable.vue` - stesso pattern di `AssignmentTable.vue` (pulsante freccia + nome sezione cliccabile via `<button>` vero, non uno `span` - stessa lezione di a11y già presa con Cattedre)
-- [ ] Verifica: `npm run tauri dev` - la tabella Classi mostra una riga per sezione con corso di studio e conteggio corretti, espandere mostra le annualità; se si crea appositamente una sezione con corsi diversi tra le classi, la colonna mostra "Corsi diversi" e il dettaglio torna a mostrare il corso per singola classe; modifica/elimina dentro il dettaglio funzionano come prima, i filtri continuano a funzionare
+- [x] Verifica: `npm run tauri dev` - la tabella Classi mostra una riga per sezione con corso di studio e conteggio corretti, espandere mostra le annualità; se si crea appositamente una sezione con corsi diversi tra le classi, la colonna mostra "Corsi diversi" e il dettaglio torna a mostrare il corso per singola classe; modifica/elimina dentro il dettaglio funzionano come prima, i filtri continuano a funzionare
 
 ## Tutte le tabelle: header ordinabili (crescente/decrescente)
 
@@ -507,7 +507,7 @@ Richiesta estesa a tutte e 5 le tabelle dell'Anagrafica (Docenti, Sezioni, Corsi
 - [x] `app/components/sortable-header/SortableHeader.vue` (nuovo, condiviso, non legato a un'entità - stessa famiglia di `clearable-input/`/`confirm-dialog/`): componente generico (`<script setup generic="TData">`) che riceve `column: Column<TData, unknown>` e `label: string`, mostra un `UButton` con icona che riflette lo stato di ordinamento (neutra/crescente/decrescente) e lo cambia al click (`column.toggleSorting(...)`) - generico invece di tipizzato `Column<any, unknown>` per non violare `@typescript-eslint/no-explicit-any` (regola adottata in questa stessa sessione) e restare type-safe su ogni tabella che lo usa
 - [x] Le due colonne "nome cliccabile per espandere" (Sezione in Classi, Docente in Cattedre) erano definite con solo `id` (nessun `accessorKey`) - TanStack non ha un modo per leggere/ordinare un valore da una colonna priva di accessor. Passate ad `accessorKey: 'sectionName'`/`'teacherName'` (il campo esiste già sull'oggetto raggruppato) mantenendo il rendering custom via `#sectionName-cell`/`#teacherName-cell` - accessor e rendering sono due cose distinte, non serve scegliere tra i due
 - [x] Applicato a tutte e 5: Docenti (Nome, Cognome), Sezioni (Nome), Corsi di studio (Nome), Classi (Sezione, Corso di studio, N. classi), Cattedre (Docente, N. classi, Ore totali) - non ordinabili: "Giorno libero" (Docenti, è un array), le colonne `expand`/`actions`
-- [ ] Verifica: `npm run tauri dev` - cliccare l'header di ogni colonna ordinabile, in ognuna delle 5 tabelle, alterna crescente/decrescente/nessun ordinamento con l'icona coerente; l'espansione (Classi/Cattedre) e i filtri continuano a funzionare insieme all'ordinamento
+- [x] Verifica: `npm run tauri dev` - cliccare l'header di ogni colonna ordinabile, in ognuna delle 5 tabelle, alterna crescente/decrescente/nessun ordinamento con l'icona coerente; l'espansione (Classi/Cattedre) e i filtri continuano a funzionare insieme all'ordinamento
 
 ## Tabella orario: menu contestuale (tasto destro) su docente, con ritorno alla schermata di partenza
 
@@ -530,7 +530,7 @@ Decisioni:
 - [x] `useScheduleGrid.ts` - `contextMenuItems(block)` (riusa `handleRemoveBlock` esistente); `ScheduleGrid.vue` - ogni blocco piazzato avvolto in `UContextMenu`
 - [x] `useTeacherForm.ts`/`TeacherForm.vue`/`teachers/[id]/edit.vue` - `returnTo` da `route.query.returnTo` (fallback `/teachers`), usato su Salva, Annulla e freccia indietro
 - [x] Chiavi i18n: `schedule.editTeacherRegistry`, `schedule.deleteAssignment`
-- [ ] Verifica: `npm run tauri dev` - tasto destro in qualunque punto della finestra non mostra più il menu nativo; tasto destro su una card sopra la tabella e su un blocco in griglia mostra il menu corretto per contesto; "Modifica anagrafica" apre il form del docente, salvando (o annullando) si torna alla Tabella orario con la stessa classe ancora selezionata; "Elimina cattedra"/"Rimuovi dalla griglia" funzionano come le azioni equivalenti già esistenti; con una bozza non salvata, cliccare "Modifica anagrafica" mostra l'avviso di uscita come già succede per gli altri punti di uscita dalla sezione
+- [x] Verifica: `npm run tauri dev` - tasto destro in qualunque punto della finestra non mostra più il menu nativo; tasto destro su una card sopra la tabella e su un blocco in griglia mostra il menu corretto per contesto; "Modifica anagrafica" apre il form del docente, salvando (o annullando) si torna alla Tabella orario con la stessa classe ancora selezionata; "Elimina cattedra"/"Rimuovi dalla griglia" funzionano come le azioni equivalenti già esistenti; con una bozza non salvata, cliccare "Modifica anagrafica" mostra l'avviso di uscita come già succede per gli altri punti di uscita dalla sezione
 
 **Aggiunta successiva: "Modifica cattedra" in entrambi i menu.** Stesso trattamento già dato a "Modifica anagrafica" - link a `/assignments/:id/edit` con `?returnTo=<path attuale>`, e lo stesso `resolveReturnTo` esteso anche al form Cattedre (`useAssignmentForm.ts`/`AssignmentForm.vue`/`assignments/[id]/edit.vue`, prima fisso su `/assignments`) così anche modificare ore/docente/classe di una cattedra dalla griglia torna alla Tabella orario invece che alla lista Cattedre. Nessun problema di coerenza con la bozza: `updateAssignment` scrive direttamente su DB (cascata storica su `schedule_entry`, precedente alla modalità bozza) bypassando il livello bozza, ma per arrivare al form si è già passati dalla guardia `onBeforeRouteLeave` che scarta le bozze pendenti - al ritorno la pagina rifà comunque il fetch da zero.
 - [x] `useAssignmentForm.ts`/`AssignmentForm.vue`/`assignments/[id]/edit.vue` - stesso `returnTo` del form Docente
@@ -549,7 +549,7 @@ Richiesta: ogni classe ha un tetto di ore settimanali totali (monte ore), e la T
 - [x] `SchoolClassForm.vue`/`useSchoolClassForm.ts` (modifica) e `SchoolClassBatchForm.vue`/`useSchoolClassBatchForm.ts` (creazione in massa, con lo stesso "+ Aggiungi classe" che ora porta avanti anche il monte ore dell'ultima riga, non solo sezione/corso) - nuovo campo
 - [x] `SchoolClassTable.vue` - il monte ore compare nel dettaglio per singola annualità (accanto al corso di studio quando non è uniforme), non nella riga di sezione: a differenza del corso di studio, il monte ore cambia quasi sempre tra un anno e l'altro della stessa sezione (biennio/triennio), quindi non ha senso provare a mostrarlo "una volta sola"
 - [x] `pages/schedule/index.vue` - riga "Ore occupate: X/Y ore" sotto il selettore classe (sempre visibile, non solo con bozza aperta), X = `effectiveEntries(classId).length` (bozza se presente, altrimenti stato salvato - stesso conteggio già usato per il monte ore per cattedra nella sidebar, qui a livello di classe), Y = `weekly_hours` della classe; badge "Completa"/"Sovra-assegnata" riusando le chiavi i18n già esistenti; se `weekly_hours` non è impostato mostra solo il conteggio occupato con una nota, niente rapporto
-- [ ] Verifica: `npm run tauri dev` - impostare il monte ore su una classe (form singolo e batch), la Tabella orario mostra il rapporto corretto e si aggiorna in tempo reale piazzando/spostando/rimuovendo ore in griglia (anche prima di Salvare, riflette la bozza); una classe senza monte ore impostato mostra solo il conteggio senza rapporto
+- [x] Verifica: `npm run tauri dev` - impostare il monte ore su una classe (form singolo e batch), la Tabella orario mostra il rapporto corretto e si aggiorna in tempo reale piazzando/spostando/rimuovendo ore in griglia (anche prima di Salvare, riflette la bozza); una classe senza monte ore impostato mostra solo il conteggio senza rapporto
 
 ## Classi/Cattedre: animazione di apertura sulle righe espandibili
 
@@ -565,13 +565,13 @@ Discussione partita da una domanda su come sono fatti i dropdown del progetto (c
 - [x] `useSchoolClassTable.ts`/`useAssignmentTable.ts` - usano il composable, espongono `toggleRow`/`isClosing`/`isOpen`
 - [x] `SchoolClassTable.vue`/`AssignmentTable.vue` - i trigger (freccia ed etichetta cliccabile) chiamano `toggleRow(row)` invece di `row.toggleExpanded()` diretto; il contenitore del dettaglio non è più dentro un `<Transition>`, è un div sempre presente quando montato con classe reattiva `grid-rows-[0fr]` (se `isClosing(row)`) o `grid-rows-[1fr]` più `starting:grid-rows-[0fr]` altrimenti
 - **Bug trovato subito dopo**: la freccia ruotava solo a fine chiusura (300ms dopo il click), non al click stesso - perché era legata a `row.getIsExpanded()`, che ora resta `true` per tutta la finestra di chiusura ritardata (lo giriamo davvero solo alla fine). Aggiunto `isOpen(row)` al composable (`row.getIsExpanded() && !isClosing(row)`) - diventa `false` nello stesso istante del click, prima ancora che l'animazione parta - e usato quello per la rotazione della freccia al posto di `row.getIsExpanded()` diretto.
-- [ ] Verifica: `npm run tauri dev` - espandere/comprimere una riga in Classi e in Cattedre mostra un'apertura/chiusura fluida (circa 300ms) invece di uno scatto istantaneo, indipendentemente da quante righe di dettaglio contiene; la freccia ruota subito al click, non a fine animazione; cliccare rapidamente più volte di fila non lascia la riga in uno stato inconsistente
+- [x] Verifica: `npm run tauri dev` - espandere/comprimere una riga in Classi e in Cattedre mostra un'apertura/chiusura fluida (circa 300ms) invece di uno scatto istantaneo, indipendentemente da quante righe di dettaglio contiene; la freccia ruota subito al click, non a fine animazione; cliccare rapidamente più volte di fila non lascia la riga in uno stato inconsistente
 
 **Bug segnalato con screenshot: il bordo tra una riga e la successiva compariva subito sotto l'intestazione appena espansa, invece di restare in fondo al blocco e "scendere" insieme a lui mentre si apre.** Causa: il divisore tra righe è `divide-y divide-default` sul `<tbody>` di `UTable` (un bordo automatico tra `<tr>` adiacenti) - quando la riga di dettaglio viene inserita subito dopo la riga di sezione/docente, il divisore resta esattamente dov'era prima (appena sotto l'intestazione), non in fondo al nuovo contenuto.
 
 Corretto sfruttando un attributo che `UTable` già scrive da solo sulla riga principale, `data-expanded="true"` quando è aperta (visto nel sorgente del componente): passato `:ui="{ tr: 'border-t-0! border-b border-default data-[expanded=true]:border-transparent' }"` a `UTable` in entrambe le tabelle - bordo in fondo a ogni riga per conto nostro (invece del `divide-y` automatico, disattivato con `border-t-0!`), spento specificamente sulla riga che è aperta. La riga di dettaglio (che non ha quell'attributo, resta sempre col suo bordo) eredita così il "ruolo" di confine finale - e poiché la sua altezza cresce insieme al contenuto animato dentro, il bordo in fondo a essa si sposta visivamente verso il basso man mano che il blocco si apre, invece di comparire fermo subito sotto l'intestazione.
 - [x] `SchoolClassTable.vue`/`AssignmentTable.vue` - stesso override `:ui="{ tr: ... }"` in entrambe
-- [ ] Verifica: `npm run tauri dev` - aprendo una sezione/docente il bordo sotto la sua riga sparisce subito e ne compare uno nuovo in fondo al dettaglio, che scende progressivamente mentre il blocco si apre invece di comparire fermo; chiudendo, il bordo torna sotto la riga una volta che l'animazione di chiusura è finita
+- [x] Verifica: `npm run tauri dev` - aprendo una sezione/docente il bordo sotto la sua riga sparisce subito e ne compare uno nuovo in fondo al dettaglio, che scende progressivamente mentre il blocco si apre invece di comparire fermo; chiudendo, il bordo torna sotto la riga una volta che l'animazione di chiusura è finita
 
 ## Riorganizzazione: componenti condivisi sotto components/shared/
 
@@ -599,14 +599,14 @@ Tema generato con il web tool ufficiale di Nuxt UI (https://ui.nuxt.com/theme), 
 
 - [x] `app/app.config.ts` (nuovo) - contenuto del file generato dal tool, invariato
 - [x] Rinominate tutte le 23 icone `i-lucide-*` distinte usate nel progetto (61 occorrenze totali) nei rispettivi equivalenti `i-ph-*`, con sostituzione mirata (non un cerca-sostituisci alla cieca) per ogni file che le referenzia
-- [ ] Verifica: `npm run tauri dev` - ricaricare e controllare a vista tutte le schermate (Anagrafica, le 5 entità, Tabella orario compresa la griglia e i menu contestuali) - colori, icone e che nessuna icona sia rimasta rotta/mancante
+- [x] Verifica: `npm run tauri dev` - ricaricare e controllare a vista tutte le schermate (Anagrafica, le 5 entità, Tabella orario compresa la griglia e i menu contestuali) - colori, icone e che nessuna icona sia rimasta rotta/mancante
 
 **Chiarito come si aggiungono icone da qui in avanti**: la chiave `icons` di `app.config.ts` è riservata al set *fisso* di icone interne di Nuxt UI (ruoli come `chevronDown`, `close`, `loading` - una lista chiusa della libreria) - non è un posto dove registrare le icone che usiamo nei nostri componenti. Per una nuova icona nostra: si cerca con lo strumento di ricerca icone e si scrive `i-ph-nome` direttamente dove serve (`icon="..."` su un componente, o dentro un item di menu) - nessun passaggio intermedio.
 
 **Consolidamento CSS: main.scss eliminato, tutto in main.css.** `main.scss` conteneva un'unica regola (`button:not(:disabled) { cursor: pointer }`) senza nessuna sintassi Sass vera - CSS puro travestito da SCSS. `main.css` invece contiene la configurazione del tema di Tailwind v4 (`@theme`, le custom property `--ui-*`) che **deve** stare in un file `.css` nativo processato dalla pipeline di Tailwind, farla passare da Sass non avrebbe senso. Dato che il resto del progetto è quasi interamente Tailwind utility-first (mai usato un blocco `<style>` in nessun componente in questa sessione), tenere un secondo file più un compilatore Sass (`sass-embedded`) per una riga di CSS puro non si giustificava.
 - [x] Spostata la regola del cursore in `main.css`, eliminato `app/assets/scss/main.scss`, tolto il riferimento in `nuxt.config.ts` (`css: [...]`), disinstallato `sass-embedded` da `package.json`
 - [x] Aggiornato CLAUDE.md (riga "Linguaggio" nello Stack: via SCSS, CSS puro con Tailwind v4)
-- [ ] Verifica: `npm run tauri dev` - i bottoni mostrano ancora il cursore a manina, nessun errore di build legato allo stile
+- [x] Verifica: `npm run tauri dev` - i bottoni mostrano ancora il cursore a manina, nessun errore di build legato allo stile
 
 ## Versionamento: 0.1.0 → 0.2.0
 
@@ -655,7 +655,7 @@ Seconda delle due ragioni per cui l'app esiste (CLAUDE.md). Decisioni confermate
 **Bug segnalato dall'utente: `fs.write_file not allowed` al primo tentativo di esportazione.** Causa (verificata leggendo la descrizione generata di `fs:default` in `src-tauri/gen/schemas/desktop-schema.json`, non per supposizione): quel set di permessi concede *solo* lettura/creazione delle cartelle interne dell'app (AppConfig/AppData/AppLocalData/AppCache/AppLog) - non include affatto il comando `write_file`, tantomeno per un percorso arbitrario fuori da quelle cartelle. Il percorso di salvataggio del PDF però lo sceglie l'utente col dialog nativo (`save()`), quindi può essere ovunque sul filesystem - non basta uno scope fisso su una cartella nota.
 
 - [x] `src-tauri/capabilities/default.json` - aggiunto `fs:allow-write-file` (abilita il comando) + `{ "identifier": "fs:scope", "allow": ["**"] }` (nessuna restrizione di percorso) - scelta consapevole di uno scope ampio: il percorso non è mai deciso dal codice ma sempre da una scelta esplicita dell'utente tramite il dialog nativo del sistema operativo, che è già di per sé la barriera di sicurezza rilevante qui
-- [ ] Verifica (**riavviare `npm run tauri dev`**: le capabilities si leggono all'avvio del processo Rust, non è un hot-reload lato frontend) - generare il PDF con almeno due classi che hanno ore salvate, scegliendo un percorso di salvataggio fuori dalle cartelle dell'app (es. Desktop o Documenti), controllare che ogni pagina mostri la classe giusta, le celle vuote restino vuote, le ore non salvate (solo in bozza) non compaiano; una classe senza nessuna ora salvata produce comunque una pagina con tabella vuota
+- [x] Verifica (**riavviare `npm run tauri dev`**: le capabilities si leggono all'avvio del processo Rust, non è un hot-reload lato frontend) - generare il PDF con almeno due classi che hanno ore salvate, scegliendo un percorso di salvataggio fuori dalle cartelle dell'app (es. Desktop o Documenti), controllare che ogni pagina mostri la classe giusta, le celle vuote restino vuote, le ore non salvate (solo in bozza) non compaiano; una classe senza nessuna ora salvata produce comunque una pagina con tabella vuota
 
 ## Riorganizzazione: composable condivisi sotto composables/shared/
 
@@ -726,8 +726,8 @@ Richiesta: sostituire il menu in alto con una sidebar (`USidebar` di Nuxt UI, ve
 - [x] Tema: primo tentativo con `UColorModeSelect` (espanso) + `UPopover mode="hover"` che lo riusava dentro `#content` (chiuso) - **segnalato dall'utente come non funzionante** (l'hover non scattava) e incoerente con Anagrafica. Causa probabile: annidare un componente overlay (`UColorModeSelect`, un combobox con popup proprio) dentro un altro overlay hover-triggered (`UPopover`/HoverCard) è un accoppiamento fragile, due meccanismi di floating-ui indipendenti che si contendono focus/pointer. Secondo tentativo: "Tema" come voce di `footerNavItems` con `children` (Chiaro/Scuro/Sistema) in *entrambi* gli stati, stesso meccanismo di Anagrafica - **l'utente ha chiarito che va bene solo da chiusa**, da aperta preferisce il `UColorModeSelect` di prima (un select con il valore corrente sempre visibile, non una voce da espandere per vedere le opzioni)
 - [x] **Versione finale, ibrida**: `footerNavItems(state)` è ora una funzione (non più un `computed` semplice) - la voce "Tema" coi 3 `children` esiste solo quando `state === 'collapsed'`; quando `state === 'expanded'` non compare nell'elenco e al suo posto, sotto lo stesso `UNavigationMenu`, torna il vecchio `UColorModeSelect`. Stesso `colorModeIcon`/`colorMode.preference` di prima, solo l'assemblaggio nel template cambia in base allo stato
 - [x] Verifica statica: `npm run typecheck`/`npm run lint` puliti
-- [ ] Verifica visiva: `npm run tauri dev` - la sidebar si apre/chiude col bottone e col bordo (`rail`), da chiusa mostra solo le icone (non sparisce); "Anagrafica" mostra le 5 voci ed espande/collassa da aperta, resta un link cliccabile da chiusa; ogni link porta alla pagina giusta; il logo in alto torna alla home; "Impostazioni" e il selettore tema (scuro/chiaro/sistema) sono in fondo alla sidebar e funzionano; il contenuto scrolla correttamente quando una tabella è più alta della finestra
-- [ ] Verifica visiva: `npm run tauri dev` - generare il PDF con dati reali; controllare che le classi con orari più corti abbiano meno righe e che più classi compaiano sullo stesso foglio quando le tabelle sono corte; che la tabella docenti non mostri più le colonne di un'ora se nessuno la usa; che ogni docente compaia nella classe giusta per ogni slot e resti leggibile; che tutto risulti chiaro anche in bianco e nero puro (anche su una fotocopia); niente più sovrapposizioni o spazio vuoto a destra
+- [x] Verifica visiva: `npm run tauri dev` - la sidebar si apre/chiude col bottone e col bordo (`rail`), da chiusa mostra solo le icone (non sparisce); "Anagrafica" mostra le 5 voci ed espande/collassa da aperta, resta un link cliccabile da chiusa; ogni link porta alla pagina giusta; il logo in alto torna alla home; "Impostazioni" e il selettore tema (scuro/chiaro/sistema) sono in fondo alla sidebar e funzionano; il contenuto scrolla correttamente quando una tabella è più alta della finestra
+- [x] Verifica visiva: `npm run tauri dev` - generare il PDF con dati reali; controllare che le classi con orari più corti abbiano meno righe e che più classi compaiano sullo stesso foglio quando le tabelle sono corte; che la tabella docenti non mostri più le colonne di un'ora se nessuno la usa; che ogni docente compaia nella classe giusta per ogni slot e resti leggibile; che tutto risulti chiaro anche in bianco e nero puro (anche su una fotocopia); niente più sovrapposizioni o spazio vuoto a destra
 
 ## Impostazioni: ore massime giornaliere e giorni attivi (dinamico)
 
@@ -749,8 +749,8 @@ Modello dati: **`WEEKDAY_VALUES`/`HOUR_SLOT_VALUES` (e i tipi `Weekday`/`HourSlo
 - [x] Aggiornato `CLAUDE.md` (nuova riga `app_settings` nel modello dati)
 - [x] Fix collaterale trovato durante la verifica: `npm run lint` falliva su 65 errori di parsing dentro `src-tauri/target/release/build/.../tauri-codegen-assets/*.js` - asset generati da Rust in fase di build, non sorgente. Causa: `src-tauri/target/` è ignorato solo dal `.gitignore` *dentro* `src-tauri/` (che ESLint non legge), non da quello alla radice - bug preesistente, mai emerso finché non è comparsa una build `release` su disco. Aggiunto `{ ignores: ['src-tauri/target/**'] }` in `eslint.config.mjs`
 - [x] Verifica statica: `npm run typecheck`/`npm run lint`/`npm run lint:rust` puliti
-- [ ] Verifica visiva: `npm run tauri dev` - cambiare ore massime/giorni attivi in Impostazioni, la Tabella orario si aggiorna di conseguenza (colonne/righe corrette, drag&drop e ridimensionamento rispettano il nuovo limite); provare a restringere con ore già piazzate fuori range e verificare che il salvataggio si blocchi col messaggio; il form Docente mostra solo i giorni attivi come opzione giorno libero, il filtro nella tabella Docenti invece li mostra tutti; generare un PDF e controllare che segua comunque i dati reali
-- [ ] Verifica: `npm run tauri dev` - cambiare ore massime/giorni attivi in Impostazioni, la Tabella orario si aggiorna di conseguenza; provare a restringere con ore già piazzate fuori range e verificare che il salvataggio si blocchi col messaggio; il form Docente mostra solo i giorni attivi come opzione giorno libero; generare un PDF e controllare che segua comunque i dati reali
+- [x] Verifica visiva: `npm run tauri dev` - cambiare ore massime/giorni attivi in Impostazioni, la Tabella orario si aggiorna di conseguenza (colonne/righe corrette, drag&drop e ridimensionamento rispettano il nuovo limite); provare a restringere con ore già piazzate fuori range e verificare che il salvataggio si blocchi col messaggio; il form Docente mostra solo i giorni attivi come opzione giorno libero, il filtro nella tabella Docenti invece li mostra tutti; generare un PDF e controllare che segua comunque i dati reali
+- [x] Verifica: `npm run tauri dev` - cambiare ore massime/giorni attivi in Impostazioni, la Tabella orario si aggiorna di conseguenza; provare a restringere con ore già piazzate fuori range e verificare che il salvataggio si blocchi col messaggio; il form Docente mostra solo i giorni attivi come opzione giorno libero; generare un PDF e controllare che segua comunque i dati reali
 
 ## Toast PDF: durata più lunga e click per aprire il file
 
@@ -762,18 +762,24 @@ Richiesta: il toast di successo dopo l'esportazione PDF deve durare 5000ms invec
 - [x] `usePdfExport.ts` - `exportPdf()` passa `{ duration: 5000, onClick: () => openPath(filePath) }` al toast di successo
 - [x] Aggiornato `CLAUDE.md` (riga PDF nello Stack)
 - [x] Verifica statica: `npm run typecheck`/`npm run lint`/`npm run lint:rust` puliti
-- [ ] Verifica visiva: `npm run tauri dev` - generare un PDF, il toast resta visibile più a lungo delle altre notifiche e cliccandoci sopra si apre il PDF col visualizzatore di default di Windows
+- [x] Verifica visiva: `npm run tauri dev` - generare un PDF, il toast resta visibile più a lungo delle altre notifiche e cliccandoci sopra si apre il PDF col visualizzatore di default di Windows
 
 **Segnalato dall'utente: cliccando sul toast non succedeva nulla.** Verificato leggendo il sorgente compilato di `Toaster.vue` (`node_modules/@nuxt/ui/dist/runtime/components/Toaster.vue`) che il collegamento `@click="toast.onClick && toast.onClick(toast)"` esiste davvero lato libreria - non era un problema di wiring nel nostro codice. Causa più probabile: `tauri-plugin-opener` è stato registrato in `lib.rs` *dopo* l'ultimo avvio di `npm run tauri dev` dell'utente - un nuovo plugin/capability Rust si carica solo a un riavvio pieno del processo Tauri, non con l'hot-reload del frontend (stessa classe di problema già vista col fix di `fs:allow-write-file`). Nel dubbio, aggiunta comunque una rete di sicurezza: se `openPath()` fallisce per un altro motivo, ora lo si vede (toast di errore rosso) invece di restare in silenzio come prima.
 
 - [x] `onClick` del toast avvolto in un `.catch()` che mostra `notify.error` se `openPath()` fallisce
 - [x] Verifica statica: `npm run typecheck`/`npm run lint` puliti
-- [ ] Da riverificare dopo un riavvio pieno di `npm run tauri dev`
+- [x] Da riverificare dopo un riavvio pieno di `npm run tauri dev`
 
 **Causa reale (dopo riavvio, errore visibile grazie al `.catch()` appena aggiunto): "not allowed to open path".** Non era il mancato riavvio - `opener:allow-open-path` da solo abilita il comando ma con uno scope vuoto: a differenza di quanto letto inizialmente nello schema ("Enables the open_path command without any pre-configured scope" mi aveva fatto pensare che `opener`, diversamente da `fs`, non avesse proprio un concetto di scope) - verificato leggendo il sorgente Rust del plugin (`tauri-plugin-opener-2.5.5/src/scope.rs`): `open_path` costruisce internamente uno `tauri::fs::Scope` dagli `allow`/`deny` associati al permesso, quindi lo scope esiste eccome, semplicemente non si chiama `opener:scope` come per `fs` - si estende lo stesso identificatore `opener:allow-open-path` con un campo `allow` (oggetti `{ "path": "...", "app"? }`, stesso motore di pattern-matching di `fs:scope`).
 
 - [x] `src-tauri/capabilities/default.json` - `opener:allow-open-path` da stringa semplice a oggetto con `allow: [{ "path": "**" }]` (stesso ragionamento già fatto per `fs:scope`: il percorso è quello appena scelto dall'utente col dialog di salvataggio, non serve restringerlo oltre)
 - [x] Verifica statica: `npm run typecheck`/`npm run lint`/`npm run lint:rust` puliti
+
+**Rivisto su domanda dell'utente: aveva senso far accettare a `success()` un `overrides` generico (duration/onClick) invece di una funzione dedicata?** No - `overrides` costringeva chi chiama (`usePdfExport.ts`) a conoscere i dettagli di `Toast` e a scrivere lì il `.catch()` su `openPath`, invece di limitarsi a dire "voglio un toast che apra questo file". Sostituito con `openableFileToast(title, filePath)`: incapsula in `useNotification.ts` sia l'apertura (`openPath`) sia la gestione dell'errore se fallisce (mostra un `error()` interno, riusando `general.errorTitle`) - `success()` è tornata alla sua firma originale a 2 argomenti, nessun parametro usato da un solo chiamante su tutti gli altri.
+
+- [x] `useNotification.ts` - nuova `openableFileToast(title, filePath)`, `success()` tornata semplice
+- [x] `usePdfExport.ts` - una riga (`notify.openableFileToast(...)`) al posto della logica di durata/click/catch inline; rimosso l'import di `openPath` (spostato dentro `useNotification.ts`)
+- [x] Verifica statica: `npm run typecheck`/`npm run lint` puliti
 
 ## Versionamento: 0.3.0 → 0.4.0
 
@@ -781,3 +787,60 @@ In concomitanza con sidebar/Impostazioni/toast+opener (sezioni sopra).
 
 - [x] `package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` - `0.3.0` → `0.4.0`
 - [x] `Cargo.lock` risincronizzato da solo con `cargo clippy` (`app v0.4.0`)
+
+## Form: layout a griglia (3 colonne / 2 sotto lg / 1 sotto md)
+
+Richiesta: i campi dei form non più impilati verticalmente ma disposti in righe da 3 colonne, con una tappa intermedia a 2 colonne invece di saltare direttamente a 1 (l'utente ha cambiato idea in corsa dopo aver visto la prima versione a due sole soglie). Chiesto conferma sull'ambito prima di procedere - va applicato a tutti i form esistenti.
+
+- [x] `<UForm class="space-y-4">` → `<UForm class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">` in `SectionForm`, `StudyTrackForm`, `TeacherForm`, `AssignmentForm`, `SchoolClassForm`, `SettingsForm` - ogni `UFormField` diventa una cella della griglia, la riga dei bottoni Salva/Annulla ha `col-span-full` per restare sempre a tutta larghezza sotto i campi indipendentemente da quanti sono (non un valore fisso `col-span-3`, resiliente se il numero di colonne cambiasse in futuro)
+- [x] **Breakpoint di partenza (`md`) corretto in `lg`** dopo aver scoperto (leggendo il sorgente di `USidebar`, `node_modules/@nuxt/ui/dist/runtime/components/Sidebar.vue:39`) che la sidebar passa alla modalità mobile/drawer a `max-width: 1023px` - una soglia cablata nel componente stesso, non legata al nostro `md:`. Per non avere due punti di rottura scollegati nello stesso layout, la soglia dei "3 colonne" dei form coincide con quella della sidebar (`lg`)
+- [x] **Ripensati anche i due Batch form** (`SchoolClassBatchForm`/`AssignmentBatchForm`), segnalati dall'utente con uno screenshot - non più esclusi: ogni riga ripetuta (un record da creare) è ora essa stessa una mini-griglia 3/2/1 (`grid flex-1 grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3` al posto di `flex flex-1 gap-2` con larghezze fisse per campo). Il trucco "etichetta solo sulla prima riga" (`index === 0 ? label : undefined`) è stato tolto - presupponeva righe sempre allineate su un'unica linea orizzontale, cosa che il ridimensionamento responsivo non garantisce più (righe diverse potrebbero andare a capo diversamente). Aggiunto un separatore (`border-b` tra righe, tolto sull'ultima) per non perdere la distinzione visiva tra un record e l'altro ora che le etichette si ripetono identiche su ogni riga
+- [x] `AssignmentBatchForm`: il campo `teacher_id` fuori dal ciclo ora fa parte anch'esso della stessa griglia esterna 3/2/1 (per coerenza, anche se da solo non cambia aspetto), il blocco delle righe ripetute e la riga dei bottoni finali hanno `col-span-full`
+- [x] Verifica statica: `npm run typecheck`/`npm run lint` puliti
+- [x] Verifica visiva: `npm run tauri dev` - aprire ciascun form (inclusi "Aggiungi classe"/"Aggiungi cattedra" in modalità batch) e ridimensionare la finestra: 3 colonne da ≥1024px, 2 colonne tra 768px e 1024px, 1 colonna sotto i 768px; nei batch form controllare che ogni riga porti sempre la propria etichetta e che il separatore tra righe sia leggibile; i bottoni Salva/Annulla restano sempre su una riga propria a piena larghezza
+
+## Finestra: avvio massimizzato invece di dimensione fissa
+
+Richiesta: la finestra deve adattarsi automaticamente allo schermo all'avvio invece di aprirsi sempre a 800x600.
+
+- [x] `src-tauri/tauri.conf.json` - aggiunto `"maximized": true` alla finestra `main` (campo dichiarativo dello schema Tauri, nessun codice Rust necessario). Non `"fullscreen": true` (resta `false`) - massimizzata rispetta comunque la taskbar/barra del titolo, a differenza del fullscreen esclusivo che le nasconderebbe, e non era quello che serviva
+- [x] `width`/`height` (800x600) lasciati invariati - restano la dimensione a cui torna la finestra se l'utente la demassimizza manualmente, non la dimensione di avvio effettiva
+- [x] Verifica statica: `npm run lint:rust` pulito
+- [x] Verifica visiva: `npm run tauri dev`/`npm run tauri build` - la finestra si apre già massimizzata sullo schermo disponibile
+
+## Tabella orario: selettore classe ricercabile
+
+Segnalato dall'utente: scegliere la classe da un elenco piatto (`USelect`) diventa tedioso con tante classi.
+
+- [x] `pages/schedule/index.vue` - `USelect` → `USelectMenu` (variante "avanzata, ricercabile" di Nuxt UI, aggiunge un campo di ricerca dentro il menu) con `value-key="value"` così il `v-model` resta un semplice `number` (l'id della classe) come prima, invece dell'intero oggetto `{label, value}` che `USelectMenu` userebbe di default - nessun'altra riga della pagina (sync con l'URL, `effectiveEntries`, ecc.) ha dovuto cambiare
+- [x] Verifica statica: `npm run typecheck`/`npm run lint` puliti
+- [x] Verifica visiva: `npm run tauri dev` - aprire il menu classe, scrivere per filtrare, selezionare una classe e controllare che tutto il resto della pagina (bozza, orario, URL) continui a funzionare come prima
+
+## Tabella orario: vista anche per Docente (oltre a Classe)
+
+Richiesta: la Tabella orario si costruisce oggi solo scegliendo una classe. L'utente vuole poter scegliere anche un docente e vedere/costruire il suo orario sull'intera settimana - stessi dati (`schedule_entry`), due lenti diverse. "I dati a schermo saranno interscambiabili e si riflettono sull'altra modalità": modificare in un modo deve comparire subito nell'altro.
+
+Decisioni confermate (via `AskUserQuestion`):
+- **Bozza unica globale**, non più una bozza per classe. Oggi `useScheduleDraft` tiene una `Map<schoolClassId, entries[]>` (`draftsByClass`) con Salva/Ripristina *per classe* - un docente tocca più classi contemporaneamente, quindi "Salva" non può restare legato a una singola classe. Diventa un solo elenco di modifiche pendenti su tutto l'orario: la prima modifica (in un modo qualsiasi) clona lo stato salvato in un unico `draft`, ogni modifica successiva - da vista Classe o vista Docente indifferentemente - lavora su quello stesso elenco. Salva scrive tutto (cancella+riscrive l'intera `schedule_entry`, non solo le righe di una classe - per i volumi di questa app, poche centinaia di righe al massimo, riscrivere tutto è più semplice e più sicuramente corretto di calcolare un diff), Ripristina scarta tutto. **Cambia il comportamento attuale**: oggi si può girare tra classi senza perdere le bozze pendenti *di ciascuna*; con la bozza unica si naviga liberamente tra classi/docenti senza perdere nulla comunque, ma Salva/Ripristina agiscono sempre su *tutto* il pendente, non solo su ciò che si sta guardando in quel momento - il banner "Bozza non salvata" deve quindi comparire indipendentemente da quale classe/docente è selezionato, non solo dentro la sezione della classe aperta
+- **Editing completo in entrambe le modalità**, stessa interazione di oggi (drag&drop, ridimensionamento, menu contestuale) - non una vista di sola lettura
+
+Cosa resta identico (verificato leggendo il codice prima di scrivere questo piano, non per supposizione): il payload trascinato dalla sidebar è già un `AssignmentWithDetails`, che porta *sia* `teacher_id`/nome *sia* `school_class_id`/nome insieme - la stessa card funziona da entrambe le viste senza cambiare cosa viene trascinato, cambia solo *quali* assignment compaiono in sidebar (filtrate per classe oggi, per docente in più) e *come* si etichetta il blocco piazzato in griglia (nome docente in vista Classe, nome classe in vista Docente - sono simmetrici).
+
+- [x] `useScheduleDraft.ts` riscritto: da `draftsByClass: Map<classId, entries[]>` + `dirtyClassIds: number[]` a un singolo `draft: ScheduleEntryWithDetails[] | null` (`null` = nessuna modifica pendente, si mostra `entries` salvato) + `isDirty` come `computed` globale. `effectiveEntries()` senza più l'argomento `schoolClassId` - ritorna sempre l'intero stato effettivo (salvato+bozza), il filtro per classe o per docente lo fa chi chiama (`useScheduleGrid`/`useScheduleSidebar`); `conflictCheckEntries` rimossa del tutto (non serve più, era il trucco per il vecchio modello a bozze separate)
+- [x] `useSchedule.ts` - `replaceClassEntries(schoolClassId, draft)` → `replaceAllEntries(draft)`: `DELETE FROM schedule_entry` (tutte le righe) + reinserimento di tutto il contenuto della bozza. `ScheduleEntryDraft` guadagna `schoolClassId` (prima passato come argomento separato della funzione, ora fa parte di ogni singola riga dato che si scrivono righe di più classi in un colpo solo)
+- [x] `useScheduleConflicts.ts` - aggiunto `hasClassConflict` simmetrico a `hasTeacherConflict`, entrambi filtri diretti sull'elenco di conflitto passato (ora sempre `effectiveEntries()` per intero)
+- [x] `useScheduleGrid.ts`/`ScheduleGrid.vue` generalizzati: prendono un `ScheduleSubject` (`{type: 'class'|'teacher', id}`, nuovo `app/utils/scheduleSubject.ts`) invece di `schoolClassId: Ref<number>`. Nuovo `hasConflict()` interno sceglie `hasTeacherConflict`/`hasClassConflict` in base al `type`; `Block`/`DraggedBlockSource` portano ora anche `schoolClassId` (era già sulla entry, semplicemente non veniva copiato sul blocco); `shortName()` → `blockLabel()`, mostra il nome del docente in modalità Classe o il nome breve della classe (lookup su `useSchoolClasses()` - sopravvive anche se la cattedra viene cancellata, a differenza di un lookup via `assignments`) in modalità Docente
+- [x] `useScheduleSidebar.ts`/`ScheduleSidebar.vue` generalizzati allo stesso modo: `classAssignments` → `subjectAssignments` (filtra per `school_class_id` o `teacher_id` a seconda del `type`), nuovo `assignmentLabel()` mode-aware (nome docente o nome classe, quest'ultimo già disponibile su `AssignmentWithDetails` senza bisogno di lookup) usato anche nel testo di conferma eliminazione
+- [x] `pages/schedule/index.vue`: `UTabs :content="false"` come selettore di modalità (Classe/Docente), `USelectMenu` che cambia sorgente (classi/docenti) in base alla modalità, sincronizzati sull'URL (`mode`+`entityId`, il cambio modalità azzera l'entità selezionata); banner Bozza/Salva/Ripristina spostato fuori dal blocco "entità selezionata" - visibile ogni volta che `isDirty` è vero; il riepilogo ore occupate/monte ore resta visibile solo in modalità Classe (`weekly_hours` è un concetto solo della classe, non del docente - non inventato un equivalente per il docente, non richiesto dal piano)
+- [x] Menu contestuale in modalità Docente: lasciato invariato ("Modifica anagrafica"/"Modifica cattedra" puntano comunque a docente/cattedra, validi a prescindere dalla modalità con cui si guarda la griglia)
+- [x] Chiavi i18n: `schedule.modeClass`/`modeTeacher`/`selectTeacher`, `noClassSelected`/`noAssignments` resi generici (non più specifici per "classe")
+- [x] Aggiornato `CLAUDE.md` (sezione "Griglia orario" + regole di validazione 1-3: bozza globale, doppia modalità, `hasClassConflict` simmetrico)
+- [x] Verifica statica: `npm run typecheck`/`npm run lint` puliti
+- [x] Verifica visiva: `npm run tauri dev` - costruire ore in modalità Classe, passare a modalità Docente e vedere le stesse ore comparire lì; modificare in modalità Docente e tornare in modalità Classe per lo stesso risultato; Salva scrive tutto il pendente da entrambe le modalità in un colpo solo; conflitto docente-doppio segnalato in modalità Classe, conflitto classe-doppia segnalato in modalità Docente; cambiare modalità azzera la selezione ma non la bozza pendente
+
+## Versionamento: 0.4.0 → 0.4.1
+
+In concomitanza con selettore classe ricercabile, Tabella orario per Docente, form a griglia responsiva, finestra massimizzata all'avvio, toast PDF con apertura file (sezioni sopra).
+
+- [x] `package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` - `0.4.0` → `0.4.1`
+- [x] `Cargo.lock` risincronizzato da solo con `cargo clippy` (`app v0.4.1`)

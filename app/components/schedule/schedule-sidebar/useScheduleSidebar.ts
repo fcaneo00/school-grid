@@ -1,7 +1,7 @@
 import type { ContextMenuItem } from '@nuxt/ui'
 import type { AssignmentWithDetails } from '~/composables/assignment/useAssignments'
 
-export function useScheduleSidebar(schoolClassId: Ref<number>) {
+export function useScheduleSidebar(subject: Ref<ScheduleSubject>) {
   const { t } = useI18n()
   const { assignments, fetchAssignments, deleteAssignment } = useAssignments()
   const { effectiveEntries } = useScheduleDraft()
@@ -11,15 +11,27 @@ export function useScheduleSidebar(schoolClassId: Ref<number>) {
 
   onMounted(fetchAssignments)
 
-  const classAssignments = computed(() => {
-    const classSchedule = effectiveEntries(schoolClassId.value)
+  const subjectAssignments = computed(() => {
+    const schedule = effectiveEntries()
     return assignments.value
-      .filter((assignment) => assignment.school_class_id === schoolClassId.value)
+      .filter((assignment) => subject.value.type === 'class'
+        ? assignment.school_class_id === subject.value.id
+        : assignment.teacher_id === subject.value.id)
       .map((assignment) => ({
         ...assignment,
-        assigned: classSchedule.filter((entry) => entry.assignment_id === assignment.id).length
+        assigned: schedule.filter((entry) => entry.assignment_id === assignment.id).length
       }))
   })
+
+  function assignmentLabel(assignment: AssignmentWithDetails) {
+    return subject.value.type === 'class'
+      ? formatTeacherShortName(assignment.teacher_last_name, assignment.teacher_first_name)
+      : formatSchoolClassName({
+          year: assignment.school_class_year,
+          section_name: assignment.school_class_section_name,
+          study_track_name: assignment.school_class_study_track_name
+        })
+  }
 
   function onDragStart(event: DragEvent, assignment: AssignmentWithDetails) {
     draggedAssignment.value = assignment
@@ -34,7 +46,7 @@ export function useScheduleSidebar(schoolClassId: Ref<number>) {
   }
 
   async function handleDeleteAssignment(assignment: AssignmentWithDetails) {
-    const name = `${assignment.teacher_last_name} ${assignment.teacher_first_name}`
+    const name = assignmentLabel(assignment)
     const confirmed = await confirmDialog({
       title: t('general.confirmDeleteTitle'),
       description: t('general.confirmDeleteDescription', { name })
@@ -66,7 +78,8 @@ export function useScheduleSidebar(schoolClassId: Ref<number>) {
   }
 
   return {
-    classAssignments,
+    subjectAssignments,
+    assignmentLabel,
     onDragStart,
     onDragEnd,
     contextMenuItems

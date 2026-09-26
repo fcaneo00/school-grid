@@ -7,18 +7,18 @@ const { itemSchema, state, sectionOptions, studyTrackOptions, addRow, removeRow,
 
 <template>
   <UForm :state="state" class="space-y-4" @submit="onSubmit">
-    <div v-for="(row, index) in state.items" :key="index" class="flex items-end gap-2">
-      <UForm :schema="itemSchema" :name="`items.${index}`" nested class="flex flex-1 gap-2">
-        <UFormField name="year" :label="index === 0 ? t('schoolClasses.form.year') : undefined" class="w-24">
+    <div v-for="(row, index) in state.items" :key="index" class="flex items-start gap-2 border-b border-default pb-4 last:border-b-0 last:pb-0">
+      <UForm :schema="itemSchema" :name="`items.${index}`" nested class="grid flex-1 grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <UFormField name="year" :label="t('schoolClasses.form.year')">
           <UInputNumber v-model="row.year" :min="1" :max="5" class="w-full" />
         </UFormField>
-        <UFormField name="section_id" :label="index === 0 ? t('schoolClasses.form.section') : undefined" class="flex-1">
+        <UFormField name="section_id" :label="t('schoolClasses.form.section')">
           <USelect v-model="row.section_id" :items="sectionOptions" class="w-full" />
         </UFormField>
-        <UFormField name="study_track_id" :label="index === 0 ? t('schoolClasses.form.studyTrack') : undefined" class="flex-1">
+        <UFormField name="study_track_id" :label="t('schoolClasses.form.studyTrack')">
           <USelect v-model="row.study_track_id" :items="studyTrackOptions" class="w-full" />
         </UFormField>
-        <UFormField name="weekly_hours" :label="index === 0 ? t('schoolClasses.form.weeklyHours') : undefined" class="w-28">
+        <UFormField name="weekly_hours" :label="t('schoolClasses.form.weeklyHours')">
           <UInputNumber v-model="row.weekly_hours" :min="1" :max="36" class="w-full" />
         </UFormField>
       </UForm>

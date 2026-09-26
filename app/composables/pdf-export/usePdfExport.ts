@@ -2,7 +2,6 @@ import { jsPDF } from 'jspdf'
 import autoTable, { type Styles, type UserOptions } from 'jspdf-autotable'
 import { save } from '@tauri-apps/plugin-dialog'
 import { writeFile } from '@tauri-apps/plugin-fs'
-import { openPath } from '@tauri-apps/plugin-opener'
 import type { SchoolClassWithDetails } from '~/composables/school-class/useSchoolClasses'
 import type { ScheduleEntryWithDetails } from '~/composables/schedule/useSchedule'
 import type { TeacherWithDetails } from '~/composables/teacher/useTeachers'
@@ -232,12 +231,7 @@ export function usePdfExport() {
       const bytes = new Uint8Array(doc.output('arraybuffer'))
       await writeFile(filePath, bytes)
 
-      notify.success(t('pdfExport.successTitle'), filePath, {
-        duration: 5000,
-        onClick: () => {
-          openPath(filePath).catch((error) => notify.error(t('general.errorTitle'), String(error)))
-        }
-      })
+      notify.openFileToast(t('pdfExport.successTitle'), filePath)
     } catch (e) {
       notify.error(t('general.errorTitle'), String(e))
     } finally {

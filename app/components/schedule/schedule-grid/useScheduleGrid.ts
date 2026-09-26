@@ -12,6 +12,7 @@ interface Block {
   day: Weekday
   assignmentId: number
   teacherId: number
+  schoolClassId: number
   startHour: HourSlot
   span: number
   entryIds: number[]
@@ -28,33 +29,37 @@ interface ResizeState {
   previewSpan: number
 }
 
-export function useScheduleGrid(schoolClassId: Ref<number>) {
+export function useScheduleGrid(subject: Ref<ScheduleSubject>) {
   const { t } = useI18n()
   const notify = useNotification()
-  const {
-    effectiveEntries,
-    conflictCheckEntries,
-    placeDraftEntry,
-    placeDraftEntries,
-    removeDraftEntries,
-    removeDraftBlock
-  } = useScheduleDraft()
-  const conflictEntries = computed(() => conflictCheckEntries(schoolClassId.value))
-  const { hasTeacherConflict, isDayOff } = useScheduleConflicts(conflictEntries)
+  const { effectiveEntries, placeDraftEntry, placeDraftEntries, removeDraftEntries, removeDraftBlock } = useScheduleDraft()
+  const conflictEntries = computed(() => effectiveEntries())
+  const { hasTeacherConflict, hasClassConflict, isDayOff } = useScheduleConflicts(conflictEntries)
   const { draggedAssignment, draggedBlockSource } = useScheduleDrag()
   const { settings, activeHourSlots } = useAppSettings()
+  const { schoolClasses } = useSchoolClasses()
   const route = useRoute()
 
   const activeWeekdays = computed(() => settings.value.activeWeekdays)
   const maxDailyHours = computed(() => settings.value.maxDailyHours)
 
-  const classEntries = computed(() => effectiveEntries(schoolClassId.value))
+  const subjectEntries = computed(() =>
+    effectiveEntries().filter((entry) =>
+      subject.value.type === 'class' ? entry.school_class_id === subject.value.id : entry.teacher_id === subject.value.id
+    )
+  )
 
   const resizing = ref<ResizeState | null>(null)
   const dragOverTarget = ref<{ day: Weekday, hourSlot: HourSlot } | null>(null)
 
+  function hasConflict(teacherId: number, schoolClassId: number, day: Weekday, hourSlot: HourSlot) {
+    return subject.value.type === 'class'
+      ? hasTeacherConflict(teacherId, day, hourSlot)
+      : hasClassConflict(schoolClassId, day, hourSlot)
+  }
+
   function blocksForDay(day: Weekday): Block[] {
-    const dayEntries = [...classEntries.value]
+    const dayEntries = [...subjectEntries.value]
       .filter((entry) => entry.day === day)
       .sort((a, b) => a.hour_slot - b.hour_slot)
 
@@ -70,6 +75,7 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
           day,
           assignmentId: entry.assignment_id,
           teacherId: entry.teacher_id,
+          schoolClassId: entry.school_class_id,
           startHour: entry.hour_slot,
           span: 1,
           entryIds: [entry.id],
@@ -89,14 +95,14 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
     return blocksForDay(day).find((block) => hourSlot >= block.startHour && hourSlot < block.startHour + block.span)
   }
 
-  function canPlaceSpan(day: Weekday, startHour: HourSlot, span: number, teacherId: number, excludeEntryIds: number[]) {
+  function canPlaceSpan(day: Weekday, startHour: HourSlot, span: number, teacherId: number, schoolClassId: number, excludeEntryIds: number[]) {
     if (startHour + span - 1 > maxDailyHours.value) return false
     for (let hour = startHour; hour < startHour + span; hour++) {
       const hourSlot = hour as HourSlot
       const block = blockAt(day, hourSlot)
       const isOwnBlock = block !== undefined && block.entryIds.some((id) => excludeEntryIds.includes(id))
       if (block && !isOwnBlock) return false
-      if (!isOwnBlock && hasTeacherConflict(teacherId, day, hourSlot)) return false
+      if (!isOwnBlock && hasConflict(teacherId, schoolClassId, day, hourSlot)) return false
     }
     return true
   }
@@ -104,14 +110,14 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
   function cellStatus(day: Weekday, hourSlot: HourSlot): CellStatus {
     const moving = draggedBlockSource.value
     if (moving) {
-      if (!canPlaceSpan(day, hourSlot, moving.span, moving.teacherId, moving.entryIds)) return 'blocked'
+      if (!canPlaceSpan(day, hourSlot, moving.span, moving.teacherId, moving.schoolClassId, moving.entryIds)) return 'blocked'
       return isDayOff(moving.teacherId, day) ? 'warning' : 'available'
     }
 
     if (blockAt(day, hourSlot)) return 'occupied'
     const dragging = draggedAssignment.value
     if (!dragging) return 'empty'
-    if (hasTeacherConflict(dragging.teacher_id, day, hourSlot)) return 'blocked'
+    if (hasConflict(dragging.teacher_id, dragging.school_class_id, day, hourSlot)) return 'blocked'
     if (isDayOff(dragging.teacher_id, day)) return 'warning'
     return 'available'
   }
@@ -151,8 +157,15 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
     return positionStyle(block.day, block.startHour, spanFor(block))
   }
 
-  function shortName(block: Block) {
-    return formatTeacherShortName(block.teacherLastName, block.teacherFirstName)
+  function classLabel(schoolClassId: number) {
+    const schoolClass = schoolClasses.value.find((candidate) => candidate.id === schoolClassId)
+    return schoolClass ? formatSchoolClassShortName(schoolClass) : ''
+  }
+
+  function blockLabel(block: Pick<Block, 'schoolClassId' | 'teacherFirstName' | 'teacherLastName'>) {
+    return subject.value.type === 'class'
+      ? formatTeacherShortName(block.teacherLastName, block.teacherFirstName)
+      : classLabel(block.schoolClassId)
   }
 
   function isMovingBlock(block: Block) {
@@ -168,8 +181,8 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
     if (!moving || !target) return null
     return {
       style: positionStyle(target.day, target.hourSlot, moving.span),
-      valid: canPlaceSpan(target.day, target.hourSlot, moving.span, moving.teacherId, moving.entryIds),
-      label: formatTeacherShortName(moving.teacherLastName, moving.teacherFirstName)
+      valid: canPlaceSpan(target.day, target.hourSlot, moving.span, moving.teacherId, moving.schoolClassId, moving.entryIds),
+      label: blockLabel(moving)
     }
   })
 
@@ -195,17 +208,22 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
 
   function moveBlockTo(moving: NonNullable<typeof draggedBlockSource.value>, day: Weekday, hourSlot: HourSlot) {
     if (day === moving.day && hourSlot === moving.startHour) return
-    if (!canPlaceSpan(day, hourSlot, moving.span, moving.teacherId, moving.entryIds)) return
+    if (!canPlaceSpan(day, hourSlot, moving.span, moving.teacherId, moving.schoolClassId, moving.entryIds)) return
 
     const dayOff = isDayOff(moving.teacherId, day)
-    removeDraftEntries(schoolClassId.value, moving.entryIds)
+    removeDraftEntries(moving.entryIds)
     const newHours: HourSlot[] = []
     for (let hour = hourSlot; hour < hourSlot + moving.span; hour++) {
       newHours.push(hour as HourSlot)
     }
     placeDraftEntries(
-      schoolClassId.value,
-      { assignmentId: moving.assignmentId, teacherId: moving.teacherId, teacherFirstName: moving.teacherFirstName, teacherLastName: moving.teacherLastName },
+      {
+        assignmentId: moving.assignmentId,
+        teacherId: moving.teacherId,
+        teacherFirstName: moving.teacherFirstName,
+        teacherLastName: moving.teacherLastName,
+        schoolClassId: moving.schoolClassId
+      },
       day,
       newHours
     )
@@ -239,8 +257,13 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
 
     const dayOff = isDayOff(assignment.teacher_id, day)
     placeDraftEntry(
-      schoolClassId.value,
-      { assignmentId: assignment.id, teacherId: assignment.teacher_id, teacherFirstName: assignment.teacher_first_name, teacherLastName: assignment.teacher_last_name },
+      {
+        assignmentId: assignment.id,
+        teacherId: assignment.teacher_id,
+        teacherFirstName: assignment.teacher_first_name,
+        teacherLastName: assignment.teacher_last_name,
+        schoolClassId: assignment.school_class_id
+      },
       day,
       hourSlot
     )
@@ -260,6 +283,7 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
       day: block.day,
       assignmentId: block.assignmentId,
       teacherId: block.teacherId,
+      schoolClassId: block.schoolClassId,
       startHour: block.startHour,
       span: block.span,
       entryIds: block.entryIds,
@@ -278,7 +302,7 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
   }
 
   function handleRemoveBlock(day: Weekday, assignmentId: number) {
-    removeDraftBlock(schoolClassId.value, day, assignmentId)
+    removeDraftBlock(day, assignmentId)
   }
 
   function contextMenuItems(block: Block): ContextMenuItem[] {
@@ -302,14 +326,14 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
     ]
   }
 
-  function maxSpanFrom(day: Weekday, assignmentId: number, startHour: HourSlot, teacherId: number) {
+  function maxSpanFrom(day: Weekday, assignmentId: number, startHour: HourSlot, teacherId: number, schoolClassId: number) {
     let span = 0
     for (let hour = startHour; hour <= maxDailyHours.value; hour++) {
       const hourSlot = hour as HourSlot
       const block = blockAt(day, hourSlot)
       const isOwnBlock = block !== undefined && block.assignmentId === assignmentId && block.startHour === startHour
       if (block && !isOwnBlock) break
-      if (!isOwnBlock && hasTeacherConflict(teacherId, day, hourSlot)) break
+      if (!isOwnBlock && hasConflict(teacherId, schoolClassId, day, hourSlot)) break
       span++
     }
     return span
@@ -318,12 +342,12 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
   function onResizeMove(event: MouseEvent) {
     if (!resizing.value) return
     const { day, assignmentId, startHour, initialSpan, startY } = resizing.value
-    const referenceEntry = classEntries.value.find((entry) => entry.assignment_id === assignmentId && entry.day === day)
+    const referenceEntry = subjectEntries.value.find((entry) => entry.assignment_id === assignmentId && entry.day === day)
     if (!referenceEntry) return
 
     const deltaHours = Math.round((event.clientY - startY) / ROW_HEIGHT_PX)
     const requestedSpan = initialSpan + deltaHours
-    const maxSpan = maxSpanFrom(day, assignmentId, startHour, referenceEntry.teacher_id)
+    const maxSpan = maxSpanFrom(day, assignmentId, startHour, referenceEntry.teacher_id, referenceEntry.school_class_id)
     resizing.value.previewSpan = Math.min(Math.max(requestedSpan, 1), maxSpan)
   }
 
@@ -336,7 +360,7 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
 
     if (previewSpan === initialSpan) return
 
-    const referenceEntry = classEntries.value.find((entry) => entry.assignment_id === assignmentId && entry.day === day)
+    const referenceEntry = subjectEntries.value.find((entry) => entry.assignment_id === assignmentId && entry.day === day)
     if (!referenceEntry) return
 
     if (previewSpan > initialSpan) {
@@ -345,21 +369,21 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
         newHours.push(hour as HourSlot)
       }
       placeDraftEntries(
-        schoolClassId.value,
         {
           assignmentId,
           teacherId: referenceEntry.teacher_id,
           teacherFirstName: referenceEntry.teacher_first_name,
-          teacherLastName: referenceEntry.teacher_last_name
+          teacherLastName: referenceEntry.teacher_last_name,
+          schoolClassId: referenceEntry.school_class_id
         },
         day,
         newHours
       )
     } else {
-      const idsToRemove = classEntries.value
+      const idsToRemove = subjectEntries.value
         .filter((entry) => entry.assignment_id === assignmentId && entry.day === day && entry.hour_slot >= startHour + previewSpan)
         .map((entry) => entry.id)
-      removeDraftEntries(schoolClassId.value, idsToRemove)
+      removeDraftEntries(idsToRemove)
     }
   }
 
@@ -398,7 +422,7 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
     isMovingBlock,
     movePreview,
     blockStyle,
-    shortName,
+    blockLabel,
     rowHeightPx: ROW_HEIGHT_PX,
     hourColPx: HOUR_COL_PX,
     headerHeightPx: HEADER_HEIGHT_PX

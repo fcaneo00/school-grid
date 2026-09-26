@@ -3,117 +3,85 @@ interface DraftEntryInput {
   teacherId: number
   teacherFirstName: string
   teacherLastName: string
+  schoolClassId: number
 }
 
 export function useScheduleDraft() {
   const { t } = useI18n()
   const notify = useNotification()
-  const { entries, replaceClassEntries } = useSchedule()
+  const { entries, replaceAllEntries } = useSchedule()
 
-  const draftsByClass = useState<Map<number, ScheduleEntryWithDetails[]>>('schedule-drafts-by-class', () => new Map())
-  const dirtyClassIds = useState<number[]>('schedule-dirty-class-ids', () => [])
+  const draft = useState<ScheduleEntryWithDetails[] | null>('schedule-draft', () => null)
 
   let nextTempId = -1
 
-  const hasUnsavedDrafts = computed(() => dirtyClassIds.value.length > 0)
+  const isDirty = computed(() => draft.value !== null)
 
-  function savedEntriesForClass(schoolClassId: number) {
-    return entries.value.filter((entry) => entry.school_class_id === schoolClassId)
-  }
-
-  function draftFor(schoolClassId: number) {
-    if (!draftsByClass.value.has(schoolClassId)) {
-      draftsByClass.value.set(schoolClassId, savedEntriesForClass(schoolClassId).map((entry) => ({ ...entry })))
+  function currentDraft() {
+    if (draft.value === null) {
+      draft.value = entries.value.map((entry) => ({ ...entry }))
     }
-    return draftsByClass.value.get(schoolClassId)!
+    return draft.value
   }
 
-  function effectiveEntries(schoolClassId: number) {
-    return draftsByClass.value.get(schoolClassId) ?? savedEntriesForClass(schoolClassId)
+  function effectiveEntries() {
+    return draft.value ?? entries.value
   }
 
-  function conflictCheckEntries(schoolClassId: number) {
-    const otherClasses = entries.value.filter((entry) => entry.school_class_id !== schoolClassId)
-    return [...otherClasses, ...effectiveEntries(schoolClassId)]
-  }
-
-  function isDirty(schoolClassId: number) {
-    return dirtyClassIds.value.includes(schoolClassId)
-  }
-
-  function markDirty(schoolClassId: number) {
-    if (!dirtyClassIds.value.includes(schoolClassId)) {
-      dirtyClassIds.value = [...dirtyClassIds.value, schoolClassId]
-    }
-  }
-
-  function clearDirty(schoolClassId: number) {
-    dirtyClassIds.value = dirtyClassIds.value.filter((id) => id !== schoolClassId)
-  }
-
-  function placeDraftEntry(schoolClassId: number, input: DraftEntryInput, day: Weekday, hourSlot: HourSlot) {
-    draftFor(schoolClassId).push({
+  function placeDraftEntry(input: DraftEntryInput, day: Weekday, hourSlot: HourSlot) {
+    currentDraft().push({
       id: nextTempId--,
       assignment_id: input.assignmentId,
       day,
       hour_slot: hourSlot,
       teacher_id: input.teacherId,
-      school_class_id: schoolClassId,
+      school_class_id: input.schoolClassId,
       teacher_first_name: input.teacherFirstName,
       teacher_last_name: input.teacherLastName
     })
-    markDirty(schoolClassId)
   }
 
-  function placeDraftEntries(schoolClassId: number, input: DraftEntryInput, day: Weekday, hourSlots: HourSlot[]) {
+  function placeDraftEntries(input: DraftEntryInput, day: Weekday, hourSlots: HourSlot[]) {
     for (const hourSlot of hourSlots) {
-      placeDraftEntry(schoolClassId, input, day, hourSlot)
+      placeDraftEntry(input, day, hourSlot)
     }
   }
 
-  function removeDraftEntries(schoolClassId: number, entryIds: number[]) {
-    const draft = draftFor(schoolClassId)
-    draftsByClass.value.set(schoolClassId, draft.filter((entry) => !entryIds.includes(entry.id)))
-    markDirty(schoolClassId)
+  function removeDraftEntries(entryIds: number[]) {
+    draft.value = currentDraft().filter((entry) => !entryIds.includes(entry.id))
   }
 
-  function removeDraftBlock(schoolClassId: number, day: Weekday, assignmentId: number) {
-    const draft = draftFor(schoolClassId)
-    draftsByClass.value.set(schoolClassId, draft.filter((entry) => !(entry.day === day && entry.assignment_id === assignmentId)))
-    markDirty(schoolClassId)
+  function removeDraftBlock(day: Weekday, assignmentId: number) {
+    draft.value = currentDraft().filter((entry) => !(entry.day === day && entry.assignment_id === assignmentId))
   }
 
-  async function saveDraft(schoolClassId: number) {
-    const draft = effectiveEntries(schoolClassId).map((entry) => ({
+  async function saveDraft() {
+    const pending = effectiveEntries().map((entry) => ({
       assignmentId: entry.assignment_id,
       teacherId: entry.teacher_id,
+      schoolClassId: entry.school_class_id,
       day: entry.day,
       hourSlot: entry.hour_slot
     }))
-    const success = await replaceClassEntries(schoolClassId, draft)
+    const success = await replaceAllEntries(pending)
     if (!success) return false
-    draftsByClass.value.delete(schoolClassId)
-    clearDirty(schoolClassId)
+    draft.value = null
     notify.success(t('schedule.savedTitle'), '')
     return true
   }
 
-  function revertDraft(schoolClassId: number) {
-    draftsByClass.value.delete(schoolClassId)
-    clearDirty(schoolClassId)
+  function revertDraft() {
+    draft.value = null
     notify.success(t('schedule.revertedTitle'), '')
   }
 
   function discardAllDrafts() {
-    draftsByClass.value = new Map()
-    dirtyClassIds.value = []
+    draft.value = null
   }
 
   return {
     effectiveEntries,
-    conflictCheckEntries,
     isDirty,
-    hasUnsavedDrafts,
     placeDraftEntry,
     placeDraftEntries,
     removeDraftEntries,

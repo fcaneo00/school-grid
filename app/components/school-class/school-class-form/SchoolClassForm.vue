@@ -12,7 +12,7 @@ const { schema, state, sectionOptions, studyTrackOptions, onSubmit } = useSchool
 </script>
 
 <template>
-  <UForm :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
+  <UForm :schema="schema" :state="state" class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3" @submit="onSubmit">
     <UFormField name="year" :label="t('schoolClasses.form.year')">
       <UInputNumber v-model="state.year" :min="1" :max="5" class="w-full" />
     </UFormField>
@@ -25,7 +25,7 @@ const { schema, state, sectionOptions, studyTrackOptions, onSubmit } = useSchool
     <UFormField name="weekly_hours" :label="t('schoolClasses.form.weeklyHours')">
       <UInputNumber v-model="state.weekly_hours" :min="1" :max="36" class="w-full" />
     </UFormField>
-    <div class="flex gap-2">
+    <div class="flex gap-2 col-span-full">
       <UButton type="submit" :label="t('table.save')" />
       <UButton :label="t('general.cancel')" color="neutral" variant="outline" to="/school-classes" />
     </div>

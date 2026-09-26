@@ -15,6 +15,7 @@ export interface ScheduleEntryWithDetails extends ScheduleEntry {
 export interface ScheduleEntryDraft {
   assignmentId: number
   teacherId: number
+  schoolClassId: number
   day: Weekday
   hourSlot: HourSlot
 }
@@ -49,14 +50,14 @@ export function useSchedule() {
     }
   }
 
-  async function replaceClassEntries(schoolClassId: number, newEntries: ScheduleEntryDraft[]) {
+  async function replaceAllEntries(newEntries: ScheduleEntryDraft[]) {
     const db = await getDb()
     try {
-      await db.execute('DELETE FROM schedule_entry WHERE school_class_id = $1', [schoolClassId])
+      await db.execute('DELETE FROM schedule_entry')
       for (const entry of newEntries) {
         await db.execute(
           'INSERT INTO schedule_entry (assignment_id, day, hour_slot, teacher_id, school_class_id) VALUES ($1, $2, $3, $4, $5)',
-          [entry.assignmentId, entry.day, entry.hourSlot, entry.teacherId, schoolClassId]
+          [entry.assignmentId, entry.day, entry.hourSlot, entry.teacherId, entry.schoolClassId]
         )
       }
     } catch (e) {
@@ -76,6 +77,6 @@ export function useSchedule() {
     entries,
     loading,
     fetchEntries,
-    replaceClassEntries
+    replaceAllEntries
   }
 }

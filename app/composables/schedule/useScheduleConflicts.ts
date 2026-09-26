@@ -9,8 +9,13 @@ export function useScheduleConflicts(conflictEntries: Ref<ScheduleEntryWithDetai
     return conflictEntries.value.some((entry) => entry.day === day && entry.hour_slot === hourSlot && entry.teacher_id === teacherId)
   }
 
+  function hasClassConflict(schoolClassId: number, day: Weekday, hourSlot: HourSlot) {
+    return conflictEntries.value.some((entry) => entry.day === day && entry.hour_slot === hourSlot && entry.school_class_id === schoolClassId)
+  }
+
   return {
     isDayOff,
-    hasTeacherConflict
+    hasTeacherConflict,
+    hasClassConflict
   }
 }
