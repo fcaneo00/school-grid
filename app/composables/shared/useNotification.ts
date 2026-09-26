@@ -1,10 +1,12 @@
+type ToastOverrides = Pick<Parameters<ReturnType<typeof useToast>['add']>[0], 'duration' | 'onClick'>
+
 export function useNotification() {
   const toastDuration = 2500
 
   const toast = useToast()
 
-  function success(title: string, description?: string) {
-    toast.add({ title, description, color: 'success', icon: 'i-ph-check-circle', duration: toastDuration })
+  function success(title: string, description?: string, overrides?: ToastOverrides) {
+    toast.add({ title, description, color: 'success', icon: 'i-ph-check-circle', duration: toastDuration, ...overrides })
   }
 
   function error(title: string, description?: string) {

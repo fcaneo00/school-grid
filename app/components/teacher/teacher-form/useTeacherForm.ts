@@ -4,14 +4,17 @@ export function useTeacherForm(id: Ref<number | undefined>) {
   const { t } = useI18n()
   const { teachers, fetchTeachers, addTeacher, updateTeacher } = useTeachers()
   const { saveDayOffs } = useTeacherPreference()
+  const { settings, fetchSettings } = useAppSettings()
   const route = useRoute()
 
   const returnTo = computed(() => resolveReturnTo(route.query.returnTo, '/teachers'))
 
   const schema = createTeacherFormSchema(t)
 
+  fetchSettings()
+
   const dayOffOptions = computed(() =>
-    WEEKDAY_VALUES.map((day) => ({ label: t(`weekdays.${day}`), value: day }))
+    settings.value.activeWeekdays.map((day) => ({ label: t(`weekdays.${day}`), value: day }))
   )
 
   const state = reactive<Partial<TeacherFormSchema>>({

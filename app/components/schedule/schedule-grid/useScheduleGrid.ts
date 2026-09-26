@@ -42,7 +42,11 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
   const conflictEntries = computed(() => conflictCheckEntries(schoolClassId.value))
   const { hasTeacherConflict, isDayOff } = useScheduleConflicts(conflictEntries)
   const { draggedAssignment, draggedBlockSource } = useScheduleDrag()
+  const { settings, activeHourSlots } = useAppSettings()
   const route = useRoute()
+
+  const activeWeekdays = computed(() => settings.value.activeWeekdays)
+  const maxDailyHours = computed(() => settings.value.maxDailyHours)
 
   const classEntries = computed(() => effectiveEntries(schoolClassId.value))
 
@@ -79,14 +83,14 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
     return blocks
   }
 
-  const allBlocks = computed(() => WEEKDAY_VALUES.flatMap((day) => blocksForDay(day)))
+  const allBlocks = computed(() => activeWeekdays.value.flatMap((day) => blocksForDay(day)))
 
   function blockAt(day: Weekday, hourSlot: HourSlot) {
     return blocksForDay(day).find((block) => hourSlot >= block.startHour && hourSlot < block.startHour + block.span)
   }
 
   function canPlaceSpan(day: Weekday, startHour: HourSlot, span: number, teacherId: number, excludeEntryIds: number[]) {
-    if (startHour + span - 1 > 6) return false
+    if (startHour + span - 1 > maxDailyHours.value) return false
     for (let hour = startHour; hour < startHour + span; hour++) {
       const hourSlot = hour as HourSlot
       const block = blockAt(day, hourSlot)
@@ -113,9 +117,9 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
   }
 
   const rows = computed(() =>
-    HOUR_SLOT_VALUES.map((hourSlot) => ({
+    activeHourSlots.value.map((hourSlot) => ({
       hourSlot,
-      cells: WEEKDAY_VALUES.map((day) => ({
+      cells: activeWeekdays.value.map((day) => ({
         day,
         status: cellStatus(day, hourSlot)
       }))
@@ -134,12 +138,12 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
   }
 
   function positionStyle(day: Weekday, startHour: HourSlot, span: number) {
-    const dayIndex = WEEKDAY_VALUES.indexOf(day)
+    const dayIndex = activeWeekdays.value.indexOf(day)
     return {
       top: `${HEADER_HEIGHT_PX + (startHour - 1) * ROW_HEIGHT_PX}px`,
       height: `${span * ROW_HEIGHT_PX}px`,
-      left: `calc(${HOUR_COL_PX}px + (100% - ${HOUR_COL_PX}px) * ${dayIndex} / ${WEEKDAY_VALUES.length})`,
-      width: `calc((100% - ${HOUR_COL_PX}px) / ${WEEKDAY_VALUES.length})`
+      left: `calc(${HOUR_COL_PX}px + (100% - ${HOUR_COL_PX}px) * ${dayIndex} / ${activeWeekdays.value.length})`,
+      width: `calc((100% - ${HOUR_COL_PX}px) / ${activeWeekdays.value.length})`
     }
   }
 
@@ -300,7 +304,7 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
 
   function maxSpanFrom(day: Weekday, assignmentId: number, startHour: HourSlot, teacherId: number) {
     let span = 0
-    for (let hour = startHour; hour <= 6; hour++) {
+    for (let hour = startHour; hour <= maxDailyHours.value; hour++) {
       const hourSlot = hour as HourSlot
       const block = blockAt(day, hourSlot)
       const isOwnBlock = block !== undefined && block.assignmentId === assignmentId && block.startHour === startHour
@@ -379,6 +383,7 @@ export function useScheduleGrid(schoolClassId: Ref<number>) {
   })
 
   return {
+    activeWeekdays,
     rows,
     allBlocks,
     onDragEnter,

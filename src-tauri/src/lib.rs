@@ -172,6 +172,21 @@ fn migrations() -> Vec<Migration> {
       ALTER TABLE school_class ADD COLUMN weekly_hours INTEGER;
     ",
         },
+        Migration {
+            version: 9,
+            description: "app_settings",
+            kind: MigrationKind::Up,
+            sql: "
+      CREATE TABLE app_settings (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        max_daily_hours INTEGER NOT NULL DEFAULT 6,
+        active_weekdays TEXT NOT NULL DEFAULT 'monday,tuesday,wednesday,thursday,friday,saturday'
+      );
+
+      INSERT INTO app_settings (id, max_daily_hours, active_weekdays)
+      VALUES (1, 6, 'monday,tuesday,wednesday,thursday,friday,saturday');
+    ",
+        },
     ]
 }
 
@@ -195,6 +210,7 @@ pub fn run() {
         )
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_opener::init())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

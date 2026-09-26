@@ -29,7 +29,12 @@
     "registry": "Anagrafica",
     "schedule": "Tabella orario",
     "pdfExport": "Esporta PDF",
-    "comingSoon": "In arrivo",
+    "settings": "Impostazioni",
+    "toggleSidebar": "Apri/chiudi menu",
+    "colorMode": "Tema",
+    "colorModeLight": "Chiaro",
+    "colorModeDark": "Scuro",
+    "colorModeSystem": "Sistema",
     "teachers": "Docenti",
     "schoolClasses": "Classi",
     "studyTracks": "Corsi di studio",
@@ -38,6 +43,7 @@
   },
   "home": {
     "title": "School Grid",
+    "titleShort": "SG",
     "subtitle": "Da dove vuoi partire?",
     "registryTitle": "Anagrafica",
     "registryDescription": "Docenti, classi, sezioni, corsi di studio e cattedre: i dati su cui si costruisce tutto il resto.",
@@ -158,5 +164,16 @@
     "teacherScheduleTitle": "Orario docenti",
     "noClasses": "Nessuna classe da esportare.",
     "successTitle": "PDF salvato"
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "description": "Regola quante ore al giorno e quali giorni della settimana usa la Tabella orario. Non tocca i dati già inseriti in Anagrafica.",
+    "maxDailyHours": "Ore massime al giorno",
+    "maxDailyHoursInvalid": "Deve essere un numero intero tra 1 e 6",
+    "activeWeekdays": "Giorni attivi",
+    "activeWeekdaysInvalid": "Seleziona almeno un giorno",
+    "saveButton": "Salva",
+    "saveBlockedTitle": "Impossibile salvare le impostazioni",
+    "saveBlockedDescription": "Ci sono già ore piazzate in Tabella orario fuori dal nuovo limite: {usages}. Rimuovile prima dalla griglia."
   }
 }

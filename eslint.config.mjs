@@ -4,6 +4,13 @@ import vuejsAccessibility from 'eslint-plugin-vuejs-accessibility'
 import withNuxt from './.nuxt/eslint.config.mjs'
 
 export default withNuxt(
+  // `src-tauri/target/` non è nel `.gitignore` alla radice (solo in quello di
+  // `src-tauri/`, che ESLint non legge) - una build Rust in release genera lì
+  // dentro asset `.js` generati da tauri-codegen che ESLint provava a
+  // interpretare come sorgente, rompendo il lint dell'intero progetto appena
+  // quella cartella esiste su disco.
+  { ignores: ['src-tauri/target/**'] },
+
   sonarjsConfigs.recommended,
 
   // L'unico lint che guarda DENTRO il `<template>` Vue - le regole a11y di

@@ -9,6 +9,7 @@ const props = defineProps<ScheduleGridProps>()
 
 const { t } = useI18n()
 const {
+  activeWeekdays,
   rows,
   allBlocks,
   onDragEnter,
@@ -36,12 +37,12 @@ const {
       <table class="w-full table-fixed border-collapse text-sm">
         <colgroup>
           <col :style="{ width: `${hourColPx}px` }">
-          <col v-for="day in WEEKDAY_VALUES" :key="day">
+          <col v-for="day in activeWeekdays" :key="day">
         </colgroup>
         <thead>
           <tr>
             <th class="p-2" :style="{ height: `${headerHeightPx}px` }" />
-            <th v-for="day in WEEKDAY_VALUES" :key="day" class="p-2 text-left font-medium" :style="{ height: `${headerHeightPx}px` }">
+            <th v-for="day in activeWeekdays" :key="day" class="p-2 text-left font-medium" :style="{ height: `${headerHeightPx}px` }">
               {{ t(`weekdays.${day}`) }}
             </th>
           </tr>

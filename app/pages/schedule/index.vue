@@ -3,6 +3,7 @@ const { t } = useI18n()
 const { schoolClasses, fetchSchoolClasses } = useSchoolClasses()
 const { fetchTeachers } = useTeachers()
 const { fetchEntries } = useSchedule()
+const { fetchSettings } = useAppSettings()
 const { isDirty, saveDraft, revertDraft, hasUnsavedDrafts, discardAllDrafts, effectiveEntries } = useScheduleDraft()
 const confirmDialog = useConfirmDialog()
 const route = useRoute()
@@ -15,7 +16,7 @@ watch(selectedClassId, (value) => {
 })
 
 onMounted(async () => {
-  await Promise.all([fetchSchoolClasses(), fetchTeachers(), fetchEntries()])
+  await Promise.all([fetchSchoolClasses(), fetchTeachers(), fetchEntries(), fetchSettings()])
 })
 
 const classOptions = computed(() =>
