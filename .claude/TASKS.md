@@ -882,3 +882,31 @@ Bug segnalato dall'utente: si può impostare un monte ore su una classe e assegn
 - [x] Chiavi i18n: `schedule.assignmentsHoursMismatchTitle`/`assignmentsHoursExcessDescription`/`assignmentsHoursDeficitDescription`
 - [x] Verifica statica: `npm run typecheck`/`npm run lint` puliti
 - [ ] Verifica: `npm run tauri dev` - impostare un monte ore su una classe, assegnarle cattedre la cui somma non corrisponde: appare l'alert con il messaggio corretto (eccesso/difetto) e la differenza giusta; se la somma corrisponde, o se il monte ore della classe non è impostato, l'alert non appare; in modalità Docente non appare mai
+
+## Installer in italiano (NSIS + MSI)
+
+Richiesta: l'installer generato da `npm run tauri build` deve essere in italiano, non solo l'app.
+
+- [x] `src-tauri/tauri.conf.json` - `bundle.windows.nsis.languages: ["Italian"]` (l'installer NSIS `.exe`, quello consigliato per la distribuzione a un singolo utente) e `bundle.windows.wix.language: "it-IT"` (l'MSI, per completezza dato che `targets: "all"` genera comunque entrambi) - un solo valore ciascuno, niente selettore di lingua: l'app stessa è solo in italiano, non avrebbe senso far scegliere la lingua dell'installer
+- [x] Verifica statica: `cargo clippy` ricompila senza errori (valida `tauri.conf.json` più severamente dello schema JSON)
+- [ ] Verifica: `npm run tauri build` - l'installer NSIS generato mostra i testi in italiano (pulsanti, licenza, procedura guidata)
+
+## Impostazioni: zona pericolosa per pulire il database
+
+Richiesta: una sezione "pericolosa" per cancellare l'intero database, con un modal di avvertimento prima. Decisioni confermate (via `AskUserQuestion`):
+- Cancella solo i dati (docenti, classi, sezioni, corsi di studio, cattedre, orario) - **non** `app_settings` (ore massime/giorni attivi), che è configurazione dell'app e non dato della scuola
+- Conferma "pesante": oltre al modal di avviso, il pulsante finale resta disabilitato finché non si scrive una parola di conferma esatta in un campo di testo - stesso pattern usato da GitHub per eliminare un repository, giustificato dal fatto che qui si perdono ore di lavoro senza alcun backup nell'app
+
+- [x] `app/composables/settings/useDatabaseReset.ts` (nuovo) - `wipeDatabase()`: `DELETE` in ordine di dipendenza FK (figli prima dei genitori: `schedule_entry` → `assignment` → `preference` → `school_class` → `section` → `study_track` → `teacher`), poi `discardAllDrafts()` (la bozza globale della Tabella orario diventerebbe orfana, riferirebbe id ormai cancellati) e un refetch di tutti i composable dati condivisi (altrimenti le altre pagine mostrerebbero ancora i vecchi elenchi in cache finché non si ricarica manualmente). Nessuna transazione SQL esplicita - stesso stile già usato altrove nel progetto (`replaceAllEntries`), niente cerimonie in più per un'app mono-utente
+- [x] `app/components/settings/danger-zone/DatabaseWipeDialog.vue` (nuovo) - stesso pattern `useOverlay` di `ConfirmDialog`/`PdfHoursWarningDialog`, ma con un campo di testo: il pulsante di conferma resta disabilitato finché il testo digitato non corrisponde esattamente alla frase richiesta ("ELIMINA TUTTO")
+- [x] `app/components/settings/danger-zone/DangerZone.vue` (nuovo) - riquadro bordato in rosso con titolo, descrizione e il pulsante che apre il dialog di conferma
+- [x] `pages/settings/index.vue` - `<DangerZone />` sotto il form Impostazioni esistente, visivamente separata
+- [x] Chiavi i18n: `settings.dangerZone.*` (title/description/wipeButton/wipeDialogTitle/wipeDialogDescription/wipeDialogPrompt/wipeConfirmButton/wipeSuccessTitle)
+- [x] Verifica statica: `npm run typecheck`/`npm run lint` puliti
+- [x] Verifica: `npm run tauri dev` - con dati reali, aprire Impostazioni, cliccare "Pulisci il database", il pulsante di conferma nel dialog resta disabilitato finché non si scrive la parola esatta; confermando, tutte le tabelle (Docenti/Classi/Sezioni/Corsi di studio/Cattedre/Tabella orario) risultano vuote, le Impostazioni (ore/giorni) restano quelle di prima; annullando dal dialog non cambia nulla
+
+## Fix: pulsante Salva troppo largo in Impostazioni
+
+Segnalato con screenshot: a differenza di tutti gli altri form, il pulsante "Salva" di `SettingsForm` riempiva l'intera colonna della griglia invece di avere la sua dimensione naturale. Causa: era figlio diretto della griglia (`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3`) invece che avvolto in `<div class="flex gap-2 col-span-full">` come in ogni altro form - da figlio diretto erediva lo `justify-items: stretch` di default della griglia, che allarga i figli a riempire la propria colonna.
+
+- [x] `SettingsForm.vue` - bottone avvolto nello stesso `<div class="flex gap-2 col-span-full">` già usato altrove

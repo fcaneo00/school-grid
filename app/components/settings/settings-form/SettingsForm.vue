@@ -13,6 +13,8 @@ const { schema, state, activeWeekdayOptions, onSubmit } = useSettingsForm()
     <UFormField name="max_daily_hours" :label="t('settings.maxDailyHours')">
       <UInputNumber v-model="state.max_daily_hours" :min="1" :max="HOUR_SLOT_VALUES.length" class="w-full" />
     </UFormField>
-    <UButton type="submit" :label="t('settings.saveButton')" class="col-span-full" />
+    <div class="flex gap-2 col-span-full">
+      <UButton type="submit" :label="t('settings.saveButton')" />
+    </div>
   </UForm>
 </template>

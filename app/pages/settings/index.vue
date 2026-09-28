@@ -10,5 +10,6 @@ const { t } = useI18n()
     </div>
     <p class="text-muted">{{ t('settings.description') }}</p>
     <SettingsForm />
+    <DangerZone />
   </div>
 </template>

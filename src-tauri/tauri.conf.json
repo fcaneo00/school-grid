@@ -37,6 +37,14 @@
     ],
     "android": {
       "debugApplicationIdSuffix": ".debug"
+    },
+    "windows": {
+      "nsis": {
+        "languages": ["Italian"]
+      },
+      "wix": {
+        "language": "it-IT"
+      }
     }
   }
 }

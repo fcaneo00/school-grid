@@ -189,6 +189,16 @@
     "activeWeekdaysInvalid": "Seleziona almeno un giorno",
     "saveButton": "Salva",
     "saveBlockedTitle": "Impossibile salvare le impostazioni",
-    "saveBlockedDescription": "Ci sono già ore piazzate in Tabella orario fuori dal nuovo limite: {usages}. Rimuovile prima dalla griglia."
+    "saveBlockedDescription": "Ci sono già ore piazzate in Tabella orario fuori dal nuovo limite: {usages}. Rimuovile prima dalla griglia.",
+    "dangerZone": {
+      "title": "Zona pericolosa",
+      "description": "Cancella in modo permanente tutti i dati della scuola - docenti, classi, sezioni, corsi di studio, cattedre e l'intero orario. Le Impostazioni sopra restano invariate. L'operazione non è reversibile: non esiste un backup automatico.",
+      "wipeButton": "Pulisci il database",
+      "wipeDialogTitle": "Sei sicuro?",
+      "wipeDialogDescription": "Stai per cancellare tutti i docenti, le classi, le sezioni, i corsi di studio, le cattedre e l'intero orario. Non è possibile annullare questa operazione.",
+      "wipeDialogPrompt": "Per confermare, scrivi \"{phrase}\" nel campo qui sotto.",
+      "wipeConfirmButton": "Elimina tutto, per sempre",
+      "wipeSuccessTitle": "Database ripulito"
+    }
   }
 }
