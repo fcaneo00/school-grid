@@ -7,9 +7,11 @@ export function useDataRefresh() {
   const { fetchEntries } = useSchedule()
   const { fetchSettings } = useAppSettings()
   const { discardAllDrafts } = useScheduleDraft()
+  const { reset: resetScheduleSelection } = useScheduleSelection()
 
   async function refreshAllData() {
     discardAllDrafts()
+    resetScheduleSelection()
     await Promise.all([
       fetchTeachers(),
       fetchSchoolClasses(),
