@@ -164,7 +164,23 @@
     "saveConflictTitle": "Conflitto nel salvataggio",
     "saveConflictDescription": "Una delle ore in bozza è ora occupata da un'altra classe o dallo stesso docente altrove. Correggi e riprova.",
     "leaveConfirmTitle": "Uscire senza salvare?",
-    "leaveConfirmDescription": "Ci sono modifiche non salvate nella tabella orario. Uscendo andranno perse."
+    "leaveConfirmDescription": "Ci sono modifiche non salvate nella tabella orario. Uscendo andranno perse.",
+    "historyButton": "Cronologia",
+    "history": {
+      "title": "Cronologia",
+      "description": "Ogni volta che salvi la Tabella orario viene tenuta una copia - vengono conservate le ultime 20 versioni, le più vecchie vengono eliminate in automatico.",
+      "empty": "Nessuna versione salvata finora.",
+      "firstVersion": "Prima versione salvata.",
+      "noChanges": "Nessuna modifica rispetto alla versione precedente.",
+      "summary": "{added} ore aggiunte, {removed} rimosse, {moved} spostate",
+      "movedLine": "Spostate {count} ore di {teacher} nella classe {schoolClass}",
+      "addedLine": "Aggiunta: {teacher} - {schoolClass} - {day} ora {hour}",
+      "removedLine": "Rimossa: {teacher} - {schoolClass} - {day} ora {hour}",
+      "restoreButton": "Ripristina questa versione",
+      "restoreConfirmTitle": "Ripristinare questa versione?",
+      "restoreConfirmDescription": "L'orario attuale verrà sostituito con quello di questa versione. Lo stato attuale viene comunque salvato come nuova versione prima di procedere, ma qualunque modifica successiva a questa versione andrà persa.",
+      "restoreSuccessTitle": "Versione ripristinata"
+    }
   },
   "pdfExport": {
     "title": "Esporta PDF",

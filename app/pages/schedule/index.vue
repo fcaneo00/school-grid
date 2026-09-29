@@ -79,7 +79,8 @@ onBeforeRouteLeave(async () => {
   <div class="space-y-6">
     <div class="flex items-center gap-2">
       <UButton icon="i-ph-arrow-left" variant="ghost" color="neutral" :aria-label="t('general.back')" to="/" />
-      <h1 class="text-xl font-semibold">{{ t('schedule.title') }}</h1>
+      <h1 class="flex-1 text-xl font-semibold">{{ t('schedule.title') }}</h1>
+      <UButton icon="i-ph-clock-counter-clockwise" color="neutral" variant="outline" :label="t('schedule.historyButton')" to="/schedule/history" />
     </div>
     <div v-if="isDirty" class="flex items-center justify-between rounded border border-warning bg-warning/10 px-4 py-3">
       <span class="text-sm font-medium">{{ t('schedule.draftBanner') }}</span>

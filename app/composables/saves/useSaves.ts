@@ -72,6 +72,12 @@ export function useSaves() {
       oldPathBaseDir: BaseDirectory.AppConfig,
       newPathBaseDir: BaseDirectory.AppConfig
     })
+    if (await exists(historyDirPath(save.fileName), { baseDir: BaseDirectory.AppConfig })) {
+      await rename(historyDirPath(save.fileName), historyDirPath(newFileName), {
+        oldPathBaseDir: BaseDirectory.AppConfig,
+        newPathBaseDir: BaseDirectory.AppConfig
+      })
+    }
     if (wasActive) {
       await writeTextFile(ACTIVE_SAVE_FILE, newFileName, { baseDir: BaseDirectory.AppConfig })
       activeSaveFile.value = newFileName
@@ -87,6 +93,10 @@ export function useSaves() {
     }
     const wasActive = save.fileName === activeSaveFile.value
     await remove(saveFilePath(save.fileName), { baseDir: BaseDirectory.AppConfig })
+
+    if (await exists(historyDirPath(save.fileName), { baseDir: BaseDirectory.AppConfig })) {
+      await remove(historyDirPath(save.fileName), { baseDir: BaseDirectory.AppConfig, recursive: true })
+    }
 
     if (wasActive) {
       const fallback = saves.value.find((other) => other.fileName !== save.fileName)
