@@ -4,26 +4,9 @@ export function useDatabaseReset() {
   const { t } = useI18n()
   const notify = useNotification()
   const overlay = useOverlay()
-  const { fetchTeachers } = useTeachers()
-  const { fetchSchoolClasses } = useSchoolClasses()
-  const { fetchSections } = useSections()
-  const { fetchStudyTracks } = useStudyTracks()
-  const { fetchAssignments } = useAssignments()
-  const { fetchEntries } = useSchedule()
-  const { discardAllDrafts } = useScheduleDraft()
+  const { refreshAllData } = useDataRefresh()
 
   const loading = ref(false)
-
-  async function refetchAll() {
-    await Promise.all([
-      fetchTeachers(),
-      fetchSchoolClasses(),
-      fetchSections(),
-      fetchStudyTracks(),
-      fetchAssignments(),
-      fetchEntries()
-    ])
-  }
 
   async function wipeDatabase() {
     loading.value = true
@@ -37,8 +20,7 @@ export function useDatabaseReset() {
       await db.execute('DELETE FROM study_track')
       await db.execute('DELETE FROM teacher')
 
-      discardAllDrafts()
-      await refetchAll()
+      await refreshAllData()
 
       notify.success(t('settings.dangerZone.wipeSuccessTitle'), '')
     } catch (e) {

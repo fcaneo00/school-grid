@@ -39,11 +39,13 @@
     "schoolClasses": "Classi",
     "studyTracks": "Corsi di studio",
     "sections": "Sezioni",
-    "assignments": "Cattedre"
+    "assignments": "Cattedre",
+    "backToMenu": "Torna al menu"
   },
   "home": {
     "title": "School Grid",
     "titleShort": "SG",
+    "activeSave": "Salvataggio: {name}",
     "subtitle": "Da dove vuoi partire?",
     "registryTitle": "Anagrafica",
     "registryDescription": "Docenti, classi, sezioni, corsi di studio e cattedre: i dati su cui si costruisce tutto il resto.",
@@ -54,6 +56,9 @@
   },
   "registry": {
     "title": "Anagrafica"
+  },
+  "menu": {
+    "subtitle": "Scegli un salvataggio per continuare"
   },
   "weekdays": {
     "monday": "Lunedì",
@@ -199,6 +204,27 @@
       "wipeDialogPrompt": "Per confermare, scrivi \"{phrase}\" nel campo qui sotto.",
       "wipeConfirmButton": "Elimina tutto, per sempre",
       "wipeSuccessTitle": "Database ripulito"
+    }
+  },
+  "saves": {
+    "createButton": "Nuovo salvataggio",
+    "activeLabel": "Attivo",
+    "enterAction": "Entra",
+    "duplicateAction": "Duplica",
+    "renameAction": "Rinomina",
+    "deleteAction": "Elimina",
+    "duplicateSuggestedName": "{name} (copia)",
+    "duplicateNameTitle": "Nome già in uso",
+    "duplicateNameDescription": "Esiste già un salvataggio con questo nome.",
+    "deleteBlockedTitle": "Impossibile eliminare",
+    "deleteBlockedLastDescription": "Deve rimanere sempre almeno un salvataggio.",
+    "createDialogTitle": "Nuovo salvataggio",
+    "duplicateDialogTitle": "Duplica \"{name}\"",
+    "renameDialogTitle": "Rinomina \"{name}\"",
+    "form": {
+      "name": "Nome",
+      "nameTooLong": "Massimo 60 caratteri",
+      "nameInvalidChars": "Non può contenere i caratteri < > : \" \\ | ? *"
     }
   }
 }
