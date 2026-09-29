@@ -31,6 +31,15 @@ export function useSaves() {
     }
   }
 
+  async function closeConnection(fileName: string) {
+    try {
+      const db = await Database.load(`sqlite:${saveFilePath(fileName)}`)
+      await db.close()
+    } catch {
+      return
+    }
+  }
+
   async function nameAvailable(name: string) {
     return !(await exists(saveFilePath(saveFileName(name)), { baseDir: BaseDirectory.AppConfig }))
   }
@@ -102,6 +111,7 @@ export function useSaves() {
     }
     const newFileName = saveFileName(name)
     const wasActive = save.fileName === activeSaveFile.value
+    await closeConnection(save.fileName)
     await rename(saveFilePath(save.fileName), saveFilePath(newFileName), {
       oldPathBaseDir: BaseDirectory.AppConfig,
       newPathBaseDir: BaseDirectory.AppConfig
@@ -126,7 +136,13 @@ export function useSaves() {
       return
     }
     const wasActive = save.fileName === activeSaveFile.value
-    await remove(saveFilePath(save.fileName), { baseDir: BaseDirectory.AppConfig })
+    await closeConnection(save.fileName)
+    try {
+      await remove(saveFilePath(save.fileName), { baseDir: BaseDirectory.AppConfig })
+    } catch (e) {
+      notify.error(t('general.errorTitle'), String(e))
+      return
+    }
 
     if (await exists(historyDirPath(save.fileName), { baseDir: BaseDirectory.AppConfig })) {
       await remove(historyDirPath(save.fileName), { baseDir: BaseDirectory.AppConfig, recursive: true })

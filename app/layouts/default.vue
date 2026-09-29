@@ -43,8 +43,8 @@ async function backToMenu() {
 
 function footerNavItems(state: 'collapsed' | 'expanded'): NavigationMenuItem[] {
   const items: NavigationMenuItem[] = [
-    { label: t('nav.backToMenu'), icon: 'i-ph-list', onSelect: backToMenu },
-    { label: t('nav.settings'), icon: 'i-ph-gear', to: '/settings' }
+    { label: t('nav.settings'), icon: 'i-ph-gear', to: '/settings' },
+    { label: t('nav.backToMenu'), icon: 'i-ph-list', onSelect: backToMenu }
   ]
 
   if (state === 'collapsed') {
