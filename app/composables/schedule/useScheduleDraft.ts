@@ -10,6 +10,7 @@ export function useScheduleDraft() {
   const { t } = useI18n()
   const notify = useNotification()
   const { entries, replaceAllEntries } = useSchedule()
+  const { createVersionSnapshot } = useSaveHistory()
 
   const draft = useState<ScheduleEntryWithDetails[] | null>('schedule-draft', () => null)
 
@@ -65,6 +66,7 @@ export function useScheduleDraft() {
     }))
     const success = await replaceAllEntries(pending)
     if (!success) return false
+    await createVersionSnapshot()
     draft.value = null
     notify.success(t('schedule.savedTitle'), '')
     return true

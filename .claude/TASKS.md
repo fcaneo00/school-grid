@@ -36,7 +36,7 @@ Stesso pattern di Docenti: composable dati condiviso + componente form/lista per
 - [x] Chiavi di traduzione in `i18n/locales/it.json` (titolo, form, lista, voci nav) — stessa struttura di `teachers`
 - [x] Verifica: `npm run tauri dev`, aggiungere/eliminare una classe, navigare tra le due pagine, testi in italiano
 - [x] Fix stile: `UInput` non riempiva il container (`inline-flex` senza `w-full` sul suo slot `root`) — `class="w-full"` direttamente sul componente nei template, non un override globale in `app.config.ts` (deviava dall'approccio "classi Tailwind dove servono")
-- [ ] Spostata la nav da `app.vue` a `app/layouts/default.vue` — `app.vue` resta minimale (`UApp` + locale + `NuxtLayout`/`NuxtPage`)
+- [x] Spostata la nav da `app.vue` a `app/layouts/default.vue` — `app.vue` resta minimale (`UApp` + locale + `NuxtLayout`/`NuxtPage`)
 - [x] Fix bug: la lista non si aggiornava dopo un inserimento dal form — `useTeachers`/`useSchoolClasses` creavano un `ref([])` nuovo a ogni chiamata (form e lista non condividevano stato). Sostituito con `useState()` (chiave condivisa, persiste tra i componenti che lo richiamano)
 - [x] Fix stile: i bottoni non mostravano `cursor: pointer` (Tailwind dalla v3 l'ha tolto dal reset di default) — regola globale `button:not(:disabled) { cursor: pointer }` in `@layer base` dentro `app/assets/scss/main.scss` (è un reset di base, non uno stile per-componente da ripetere nei template)
 
@@ -624,20 +624,72 @@ In concomitanza con l'implementazione della v2 dell'esportazione PDF (formato A3
 - [x] `package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` - `0.2.0` → `0.3.0` (stessi tre file della volta scorsa, stesso motivo: solo `tauri.conf.json`/`Cargo.toml` contano davvero per i metadati dell'eseguibile, `package.json` allineato per coerenza)
 - [x] `Cargo.lock` risincronizzato da solo con `cargo clippy` (`app v0.3.0`)
 
-## Salvataggi multipli (un anno scolastico per file) - IN CODA, verso la fine
+## Salvataggi multipli (un anno scolastico per file)
 
-Bisogno: poter tenere dati separati per anno scolastico (es. AS2026/2027, poi AS2027/2028) senza perdere quelli precedenti - "salvataggi" come in un videogioco: crea, duplica, elimina, cambia.
+Bisogno: poter tenere dati separati per anno scolastico (es. AS2026/2027, poi AS2027/2028) senza perdere quelli precedenti - "salvataggi" come in un videogioco: crea, duplica, rinomina, elimina, cambia. Feature che porta alla versione 0.5.0.
 
 Decisione: **un file `.db` per salvataggio**, non un'unica tabella con colonna "anno scolastico". Verificato nel sorgente di `tauri-plugin-sql` (comando `load` in `commands.rs`) che il plugin accetta *qualsiasi* percorso a runtime via `Database.load('sqlite:...')`, non solo quello fisso registrato in `add_migrations` all'avvio - quindi cambiare file a runtime è già supportato dal plugin che usiamo, nessuna dipendenza nuova.
 
 Perché file separati e non una colonna `school_year_id` ovunque: quest'ultima richiederebbe aggiungere la colonna e filtrare per l'anno corrente in *ogni* tabella e *ogni* query esistente (teacher, school_class, section, study_track, assignment, preference, schedule_entry) - riscrittura pervasiva per un beneficio che non serve (non c'è bisogno di confrontare anni diversi nella stessa vista). Con un file per salvataggio, tutto il codice attuale resta identico: lavora sempre su "il DB correntemente caricato", qualunque esso sia.
 
-Punti da risolvere quando ci si arriva:
-- Cartella `saves/` (dentro l'app data dir) con un file `.db` per salvataggio
-- Un nuovo salvataggio vuoto si crea copiando un file "modello" già migrato (creato una volta alla prima installazione, o generato al volo) - non registrando dinamicamente `add_migrations` per ogni nome futuro, che il plugin non supporta per percorsi decisi a runtime
-- Duplica = copia file (`tauri-plugin-fs`), Elimina = cancella file, Cambia = `Database.load()` sul nuovo percorso + richiamare tutti i `fetch*()` per aggiornare le liste in pagina
-- UI di gestione salvataggi (lista/crea/duplica/elimina/cambia) - da disegnare quando ci si arriva, non ancora deciso dove viva nella navigazione
-- [ ] (non ancora iniziato - deliberatamente rimandato a dopo griglia orario + esportazione PDF)
+Decisioni confermate (via `AskUserQuestion`):
+- Voce di primo livello **"Salvataggi"** nella sidebar (tra Tabella orario/Esporta PDF e Impostazioni) - cambiare salvataggio è un'azione ricorrente, non una configurazione rara da nascondere dentro Impostazioni
+- Operazioni supportate: **crea, duplica, rinomina, elimina, cambia** (rinomina aggiunta rispetto alla nota originale - il salvataggio migrato dai dati esistenti al primo avvio nascerebbe altrimenti con un nome fisso non più modificabile)
+- Il database attuale (`school-grid.db`, dati reali già inseriti) diventa **automaticamente il primo salvataggio** al primo avvio della nuova versione, nessun dato perso - non c'è altra scelta sensata, non richiede conferma
+
+**Migrazioni: registrate su un file modello, non più sul file dati reale.** `add_migrations("sqlite:school-grid.db", ...)` in `src-tauri/src/lib.rs` diventa `add_migrations("sqlite:_template.db", ...)` - il plugin continua a creare/migrare automaticamente questo file all'avvio come già fa oggi, ma ora è un file vuoto "modello" invece del file dati vero. Ogni nuovo salvataggio (vuoto) nasce copiando `_template.db`, non registrando dinamicamente una migration per ogni nome futuro (il plugin non lo supporta per percorsi decisi a runtime).
+
+**Bootstrap al primo avvio della nuova versione** (plugin client Nuxt eseguito prima che qualunque pagina chiami `getDb()`, stesso identificatore di cartella `saves/` e puntatore usati poi da `useSaves`):
+1. Se la cartella `saves/` (dentro l'app data dir, via `BaseDirectory.AppConfig` di `tauri-plugin-fs` - lo stesso `app_config_dir` che usa `tauri-plugin-sql` internamente, verificato nel sorgente, non `AppData` che su Windows coincide ma altrove no) non esiste, crearla
+2. Se `saves/` è vuota: se esiste ancora `school-grid.db` alla radice (utente con dati pre-esistenti) spostarlo dentro come `saves/Salvataggio principale.db`; altrimenti (installazione nuova) copiare `_template.db` come primo salvataggio vuoto con lo stesso nome
+3. File puntatore `active-save.txt` (radice app data dir, fuori da `saves/` per non comparire nella lista) col nome del salvataggio attivo - se manca o punta a un file non più esistente, ripiegare sul primo trovato in `saves/`
+
+**Layer dati:**
+- `app/utils/db.ts` - `getDb()` diventa async: legge `active-save.txt`, poi `Database.load('sqlite:saves/<nome>.db')` invece del percorso fisso
+- `app/composables/saves/useSaves.ts` (nuovo) - `saves` (lista, `readDir` su `saves/`), `activeSaveFile`, `fetchSaves`, `createSave(name)` (copia `_template.db`, blocca se il nome è già in uso), `duplicateSave(save, newName)` (copia file, stesso blocco), `renameSave(save, newName)` (rename file, aggiorna il puntatore se era quello attivo), `deleteSave(save)` (rimuove file, blocca se è l'unico salvataggio rimasto, se era quello attivo passa a un altro + refresh dati), `switchSave(save)` (scrive `active-save.txt`, poi refresh dati) - **nessun controllo di conferma dentro il composable stesso**, resta nel layer UI (`useSaveList`), stesso schema del resto del progetto (es. `useSectionTable.handleDelete`)
+- `app/composables/shared/useDataRefresh.ts` (nuovo) - `refreshAllData()` estrae la lista di `fetch*()` + `discardAllDrafts()` già scritta in `useDatabaseReset`, riusata identica da `useSaves` per cambio/eliminazione salvataggio (incluso `fetchSettings`, che `useDatabaseReset` non richiamava perché lì le impostazioni non cambiano mai - qui invece sì, ogni salvataggio ha le sue)
+- Permessi `tauri-plugin-fs` in `src-tauri/capabilities/default.json` - aggiungere gli identificatori specifici mancanti oltre a `fs:allow-write-file` (mkdir, copy-file, rename, remove, read-dir, exists, read-text-file, write-text-file - `fs:scope` già permette `**`, quindi solo l'elenco comandi da estendere)
+
+**UI:**
+- `app/pages/saves/index.vue` + voce `nav.saves` in `mainNavItems` (`app/layouts/default.vue`)
+- `SaveList.vue` + `useSaveList.ts` - elenco salvataggi con badge "Attivo", azioni cambia/duplica/rinomina/elimina per riga (menu a tendina, prima volta che si usa in questo progetto - finora solo menu contestuale col tasto destro sulla griglia orario)
+- `SaveNameDialog.vue` (nuovo, pattern `useOverlay` già usato per `DatabaseWipeDialog`/`PdfHoursWarningDialog`) - un solo dialog riusato per le tre azioni che chiedono un nome (crea/duplica/rinomina), `mode` come prop cambia titolo e nome pre-compilato
+- Validazione nome: caratteri non ammessi nei filename Windows (`< > : " / \ | ? *`) bloccati via zod (`app/utils/saveFormHelper.ts`), non solo lunghezza/vuoto
+- Conferma eliminazione: `ConfirmDialog` esistente (non il pattern "scrivi la frase" della Zona pericolosa - qui si perde un solo salvataggio, gli altri restano intatti, severità diversa da "cancella tutto senza backup")
+- Se si cambia salvataggio con una bozza non salvata in Tabella orario (`useScheduleDraft().isDirty`), avviso prima di procedere (la bozza appartiene ai dati del salvataggio che si sta per lasciare, andrebbe persa) - stesso spirito del leave-confirm già presente sulla pagina Tabella orario
+
+- [x] `src-tauri/src/lib.rs` - `add_migrations` su `sqlite:_template.db`
+- [x] `src-tauri/capabilities/default.json` - permessi fs mancanti (mkdir/copy-file/rename/remove/read-dir/exists/read-text-file/write-text-file)
+- [x] `app/utils/saves.ts` (nuovo) - costanti condivise (`SAVES_DIR`/`TEMPLATE_DB`/`LEGACY_DB`/`ACTIVE_SAVE_FILE`/`DEFAULT_SAVE_NAME`) e helper nome file ↔ nome visualizzato
+- [x] Bootstrap primo avvio (nuovo plugin client `app/plugins/saves-bootstrap.client.ts`) - crea `saves/`, migra `school-grid.db` esistente o copia il modello, garantisce `active-save.txt`
+- [x] `app/utils/db.ts` - `getDb()` async, legge il salvataggio attivo
+- [x] `app/composables/shared/useDataRefresh.ts` (nuovo) - `refreshAllData()` condiviso, `useDatabaseReset` aggiornato per usarlo
+- [x] `app/composables/saves/useSaves.ts` (nuovo) - lista/crea/duplica/rinomina/elimina/cambia
+- [x] `app/utils/saveFormHelper.ts` (nuovo) - schema zod nome salvataggio
+- [x] `app/pages/saves/index.vue`, `SaveList.vue`/`useSaveList.ts`, `SaveNameDialog.vue`, voce nav `Salvataggi`
+- [x] Chiavi i18n: `nav.saves`, namespace `saves.*`
+- [x] Versionamento 0.4.1 → 0.5.0 (`package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`)
+- [x] Verifica statica: `npm run typecheck`/`npm run lint`/`npm run lint:rust` puliti
+- [ ] Verifica: `npm run tauri dev` - con dati reali già presenti da prima di questa modifica, al primo avvio compaiono intatti sotto un salvataggio "Salvataggio principale"; creare un nuovo salvataggio vuoto e verificare che Anagrafica/Tabella orario partano vuoti; duplicare un salvataggio e verificare che i dati siano identici ma indipendenti (modificarne uno non tocca l'altro); rinominare; eliminare un salvataggio non attivo; provare a eliminare l'unico salvataggio rimasto (bloccato); cambiare salvataggio con una bozza pendente in Tabella orario (avviso) e senza (cambio diretto); chiudere e riaprire l'app, verificare che il salvataggio attivo sia ancora quello scelto
+
+### Schermata Menu principale (sostituisce `/saves`)
+
+Richiesta successiva dell'utente: la scelta del salvataggio non è più una pagina raggiungibile da dentro l'app, ma una schermata iniziale obbligatoria - "come in un videogioco", prima ancora della Home attuale. Da dentro l'app, un pulsante riporta al menu o permette di passare direttamente a un altro salvataggio; se ci sono bozze non salvate in Tabella orario, avviso prima di uscire (stesso meccanismo già usato per il cambio salvataggio diretto).
+
+Decisione confermata (via `AskUserQuestion`): il menu **sostituisce** del tutto `/saves` - un solo posto per gestire i salvataggi. `SaveList.vue`/`useSaveList.ts` vengono riusati as-is (stessi crea/duplica/rinomina/elimina), non riscritti da zero, spostando solo dove vivono (dal componente della pagina `/saves`, ora eliminata, al contenuto del menu) e aggiungendo un'azione "Entra" per riga come azione primaria (non più dentro il menu a tendina - lì restano solo duplica/rinomina/elimina).
+
+Meccanismo: uno stato in memoria `hasEnteredSave` (non persistito, sempre `false` a un nuovo avvio dell'app) - un middleware globale reindirizza a `/menu` ogni volta che è `false` e la rotta di destinazione non è già `/menu`; entrando in un salvataggio (anche lo stesso già attivo, per "Continua") lo stato passa a `true` e si naviga a `/`. Il pulsante "Torna al menu" nella sidebar lo riporta a `false`.
+
+- [x] `app/composables/saves/useAppEntry.ts` (nuovo) - `hasEnteredSave` (`useState` condiviso)
+- [x] `app/middleware/require-save.global.ts` (nuovo) - redirect a `/menu` se `hasEnteredSave` è `false` e la rotta non è già `/menu`
+- [x] `app/layouts/menu.vue` (nuovo) - layout minimale senza sidebar, solo contenuto centrato
+- [x] `app/pages/menu/index.vue` (nuovo, `definePageMeta({ layout: 'menu' })`) - titolo + `SaveList`
+- [x] Rimuovere `app/pages/saves/index.vue` e la voce `Salvataggi` da `mainNavItems` in `app/layouts/default.vue`
+- [x] `SaveList.vue`/`useSaveList.ts` - aggiunto pulsante "Entra" per riga (chiama `switchSave` se diverso dall'attivo, poi `hasEnteredSave = true` + `navigateTo('/')`); tolta l'azione "Passa a questo salvataggio" dal menu a tendina (ridondante col pulsante "Entra")
+- [x] `app/layouts/default.vue` - pulsante "Torna al menu" nel footer sidebar (al posto della voce nav rimossa) - se `useScheduleDraft().isDirty`, stesso avviso già usato per il cambio salvataggio diretto prima di procedere; poi `hasEnteredSave = false` + `navigateTo('/menu')`
+- [x] Chiavi i18n: `nav.backToMenu` (al posto di `nav.saves`, rimossa), namespace `menu.*`, `saves.enterAction`, tolta `saves.switchAction`
+- [x] Verifica statica: `npm run typecheck`/`npm run lint` puliti
+- [ ] Verifica: `npm run tauri dev` - all'avvio si apre sempre il menu (mai direttamente la Home); "Entra" su un salvataggio diverso dall'attivo cambia davvero i dati mostrati; "Torna al menu" dalla sidebar funziona e con una bozza pendente in Tabella orario mostra l'avviso prima di uscire; da menu, gestione (crea/duplica/rinomina/elimina) funziona come prima su `/saves`
 
 ## Esportazione PDF
 
@@ -881,7 +933,7 @@ Bug segnalato dall'utente: si può impostare un monte ore su una classe e assegn
 - [x] `pages/schedule/index.vue` - `assignmentsHoursTotal` (somma di `weekly_hours` delle cattedre della classe selezionata) confrontato con `targetHours` (`school_class.weekly_hours`); se diversi (ed è impostato un monte ore) mostra un alert distinto dal banner bozza/dal badge ore-piazzate già esistenti, con testo diverso per eccesso/difetto e la differenza in ore. Nessun alert se il monte ore della classe non è impostato (niente da confrontare) o in modalità Docente (il monte ore è un concetto della classe, non del docente)
 - [x] Chiavi i18n: `schedule.assignmentsHoursMismatchTitle`/`assignmentsHoursExcessDescription`/`assignmentsHoursDeficitDescription`
 - [x] Verifica statica: `npm run typecheck`/`npm run lint` puliti
-- [ ] Verifica: `npm run tauri dev` - impostare un monte ore su una classe, assegnarle cattedre la cui somma non corrisponde: appare l'alert con il messaggio corretto (eccesso/difetto) e la differenza giusta; se la somma corrisponde, o se il monte ore della classe non è impostato, l'alert non appare; in modalità Docente non appare mai
+- [x] Verifica: `npm run tauri dev` - impostare un monte ore su una classe, assegnarle cattedre la cui somma non corrisponde: appare l'alert con il messaggio corretto (eccesso/difetto) e la differenza giusta; se la somma corrisponde, o se il monte ore della classe non è impostato, l'alert non appare; in modalità Docente non appare mai
 
 ## Installer in italiano (NSIS + MSI)
 
@@ -889,7 +941,7 @@ Richiesta: l'installer generato da `npm run tauri build` deve essere in italiano
 
 - [x] `src-tauri/tauri.conf.json` - `bundle.windows.nsis.languages: ["Italian"]` (l'installer NSIS `.exe`, quello consigliato per la distribuzione a un singolo utente) e `bundle.windows.wix.language: "it-IT"` (l'MSI, per completezza dato che `targets: "all"` genera comunque entrambi) - un solo valore ciascuno, niente selettore di lingua: l'app stessa è solo in italiano, non avrebbe senso far scegliere la lingua dell'installer
 - [x] Verifica statica: `cargo clippy` ricompila senza errori (valida `tauri.conf.json` più severamente dello schema JSON)
-- [ ] Verifica: `npm run tauri build` - l'installer NSIS generato mostra i testi in italiano (pulsanti, licenza, procedura guidata)
+- [x] Verifica: `npm run tauri build` - l'installer NSIS generato mostra i testi in italiano (pulsanti, licenza, procedura guidata)
 
 ## Impostazioni: zona pericolosa per pulire il database
 
@@ -910,3 +962,66 @@ Richiesta: una sezione "pericolosa" per cancellare l'intero database, con un mod
 Segnalato con screenshot: a differenza di tutti gli altri form, il pulsante "Salva" di `SettingsForm` riempiva l'intera colonna della griglia invece di avere la sua dimensione naturale. Causa: era figlio diretto della griglia (`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3`) invece che avvolto in `<div class="flex gap-2 col-span-full">` come in ogni altro form - da figlio diretto erediva lo `justify-items: stretch` di default della griglia, che allarga i figli a riempire la propria colonna.
 
 - [x] `SettingsForm.vue` - bottone avvolto nello stesso `<div class="flex gap-2 col-span-full">` già usato altrove
+
+## Motore euristico di suggerimento per la Tabella orario (esplorazione - branch separato)
+
+Idea nata da un brainstorming in chat: un motore di suggerimento per completare le cattedre nella Tabella orario - **deterministico, non un LLM/assistente AI**, per restare dentro la linea guida del progetto ("costruzione assistita, non generazione automatica").
+
+Come funzionerebbe (bozza concettuale, dettagli non ancora decisi):
+- Scoring sulle celle libere di una cattedra incompleta: filtro rigido sui conflitti già esistenti (`hasTeacherConflict`/`hasClassConflict`, gli stessi usati oggi durante il drag), poi un punteggio che premia ore consecutive alla stessa cattedra sullo stesso giorno (concatenazione) e penalizza ore isolate ("buche") nell'orario del docente
+- Piazzamento greedy sulla bozza (mai diretto su DB) - resta sempre annullabile con Ripristina prima di Salva, stesso meccanismo di sicurezza già esistente
+- Non deciso: il pulsante suggerisce una cella per volta (l'utente trascina comunque lui) o piazza direttamente tutte le ore rimanenti nella bozza (più comodo, ma più vicino a un mini-generatore, anche se resta reversibile) - da scegliere quando si riprende in mano l'idea
+- Richiede di estendere `preference` oltre al solo `day_off` esistente, con nuovi tipi di vincolo morbido della stessa famiglia: fascia oraria (non prima/dopo una certa ora, in un giorno specifico) e ore libere consecutive minime (per chi insegna anche in un'altra scuola e deve spostarsi) - il motore li tratterebbe come pesi aggiuntivi nello scoring, stessa logica del giorno libero
+- Discusso e scartato per ora: tradurre con un LLM le richieste dei colleghi scritte in linguaggio libero verso questi vincoli strutturati - romperebbe la filosofia "single-user, locale, offline" del progetto (richiede un servizio esterno) per un guadagno minimo, dato che chi gestisce l'orario legge comunque la richiesta a mano prima di trascriverla; resta un'idea bolt-on da riconsiderare solo se il form strutturato risultasse davvero scomodo
+
+- [ ] (non ancora iniziato - da esplorare su un branch dedicato, non su `main`: vedi nota sotto sul workflow)
+
+## Fix: build i18n rotta da `saves.form.nameInvalidChars`
+
+Segnalato dall'utente con l'errore di build di `unplugin-vue-i18n`: il messaggio che elenca i caratteri illegali nel nome di un salvataggio (`< > : " / \ | ? *`) contiene `< >`, che il compilatore dei messaggi legge come un tag HTML - `compilation.strictMessage` di `@nuxtjs/i18n` (default `true`) blocca la build dell'intero file locale quando lo trova, non solo quel messaggio. Spiega perché sono apparse chiavi grezze (`home.title`, `table.actions`, ecc.) anche per stringhe non toccate da questa sessione - l'intero `it.json` falliva a compilare.
+
+- [x] `nuxt.config.ts` - `i18n.compilation.strictMessage: false` (il messaggio elenca caratteri illegali per filename Windows, non contiene davvero HTML - il controllo stretto è un falso positivo qui)
+- [x] Corretto il salvataggio migrato dai dati demo, finito rinominato in modo errato (`2627.db`) durante la build rotta - rinominato a mano su disco in `Salvataggio principale.db`, puntatore `active-save.txt` allineato
+- [x] Verifica: `npm run tauri dev` (a app completamente chiusa e riavviata) - le label mostrano il testo italiano corretto ovunque, non le chiavi grezze; il salvataggio con i dati demo si chiama "Salvataggio principale"
+
+## Nomi salvataggio con "/" (es. anno scolastico "2026/2027")
+
+Richiesta: il nome naturale di un salvataggio è l'anno scolastico ("2026/2027"), ma `/` è il separatore di percorso - non può comparire letteralmente nel nome del file su disco.
+
+Soluzione: `saveFileName`/`saveDisplayName` (`app/utils/saves.ts`) convertono in modo trasparente e reversibile lo slash normale digitato dall'utente (`/`, U+002F) nello slash a larghezza intera (`／`, U+FF0F) per il nome del file - carattere visivamente identico ma legale in un filename Windows, e viceversa quando si mostra il nome in UI. Nessuna tabella di metadati separata (nome visualizzato ↔ nome file): il file resta l'unica fonte di verità, coerente con la decisione già presa "un file .db per salvataggio". Rischio di collisione trascurabile (nessuno digiterebbe lo slash a larghezza intera per sbaglio).
+
+- [x] `app/utils/saves.ts` - sostituzione `/` ↔ `／` in `saveFileName`/`saveDisplayName`
+- [x] `app/utils/saveFormHelper.ts` - tolto `/` dai caratteri bloccati (`< > : " \ | ? *` restano illegali)
+- [x] Chiave i18n `saves.form.nameInvalidChars` aggiornata, tolto `/` dall'elenco mostrato
+- [ ] Verifica: `npm run tauri dev` - creare un salvataggio chiamato "2026/2027", verificare che compaia correttamente in elenco e che duplicare/rinominare funzionino ancora con lo slash
+
+## Fix: `_template.db` non veniva mai creato
+
+Bug scoperto creando un salvataggio demo a mano: `_template.db` (registrato in `add_migrations` su `src-tauri/src/lib.rs`) viene creato e migrato dal plugin `tauri-plugin-sql` solo alla prima chiamata di `Database.load('sqlite:_template.db')` - non succede automaticamente all'avvio di Tauri. Nel flusso attuale nessun punto del codice chiamava mai `Database.load` su quel percorso (`createSave`/`duplicateSave` copiano il file via `tauri-plugin-fs`, non passano dal plugin SQL) - quindi `_template.db` non esisteva mai su disco, e il pulsante "Nuovo salvataggio" nel menu avrebbe fallito copiando un file inesistente.
+
+- [x] `app/plugins/saves-bootstrap.client.ts` - aggiunta `await Database.load('sqlite:_template.db')` in testa al plugin, prima di qualunque controllo su `saves/` - garantisce che il modello esista e sia migrato ad ogni avvio, prima che serva a `createSave`/`duplicateSave`
+- [ ] Verifica: `npm run tauri dev` - `_template.db` compare nella cartella dati dell'app dopo l'avvio; "Nuovo salvataggio" dal menu funziona
+
+## Fix: i file sidecar SQLite (`.db-shm`/`.db-wal`) comparivano come salvataggi
+
+Segnalato dall'utente con screenshot: in modalità WAL, SQLite crea accanto a un `.db` aperto due file di appoggio (`<nome>.db-shm` indice condiviso, `<nome>.db-wal` log delle scritture non ancora applicate al file principale) - il filtro dell'elenco salvataggi controllava solo `entry.isFile`, non l'estensione, quindi questi comparivano in lista come se fossero salvataggi a sé.
+
+- [x] `app/utils/saves.ts` - nuovo helper `isSaveFile()` (controlla l'estensione `.db`)
+- [x] `useSaves.fetchSaves()` e `saves-bootstrap.client.ts` (entrambi i punti che leggono `saves/`) - filtro aggiornato per usare `isSaveFile()` oltre a `entry.isFile`
+- [ ] Verifica: `npm run tauri dev` - con l'app aperta (quindi con `.db-shm`/`.db-wal` presenti su disco per il salvataggio attivo), il menu mostra solo i salvataggi veri
+
+## Home: nome del salvataggio attivo al posto del toast di cambio
+
+Richiesta: il toast "Salvataggio cambiato" non serve - meglio mostrare quale salvataggio è attivo direttamente sulla Home.
+
+- [x] `useSaves.switchSave()` - tolto `notify.success` e la chiave i18n `saves.switchedTitle`, ormai inutilizzata
+- [x] `app/pages/index.vue` - l'`h1` mostra `t('home.activeSave', { name })` col nome del salvataggio attivo (letto da `useSaves()`, già popolato dal passaggio obbligato per `/menu`) invece del titolo statico "School Grid" - già presente come branding fisso nell'header della sidebar, non serve ripeterlo
+- [ ] Verifica: `npm run tauri dev` - la Home mostra "Salvataggio: Demo" (o il nome corrente), nessun toast al cambio salvataggio dal menu
+
+## Transizione tra menu principale e app
+
+Richiesta: dissolvenza sull'intera pagina passando da `/menu` al resto dell'app e viceversa - le due rotte usano layout diversi (`menu.vue` senza sidebar, `default.vue` con sidebar), quindi serve sia `pageTransition` (il contenuto della pagina) sia `layoutTransition` (il layout stesso, altrimenti la sidebar comparirebbe di scatto) - stesso nome per entrambi così partono/finiscono insieme invece che sfalsati.
+
+- [x] `nuxt.config.ts` - `app.pageTransition`/`app.layoutTransition` entrambi `{ name: 'page', mode: 'out-in' }`
+- [x] `app/assets/css/main.css` - classi `.page-enter-active`/`.page-leave-active`/`.page-enter-from`/`.page-leave-to` (dissolvenza, 0.2s)
+- [ ] Verifica: `npm run tauri dev` - passando da "Entra" nel menu alla Home, e da "Torna al menu" viceversa, l'intera pagina (sidebar compresa) dissolve invece di comparire/sparire di scatto

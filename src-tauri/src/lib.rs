@@ -205,7 +205,7 @@ pub fn run() {
         })
         .plugin(
             tauri_plugin_sql::Builder::default()
-                .add_migrations("sqlite:school-grid.db", migrations())
+                .add_migrations("sqlite:_template.db", migrations())
                 .build(),
         )
         .plugin(tauri_plugin_dialog::init())

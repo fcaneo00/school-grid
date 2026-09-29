@@ -1,12 +1,13 @@
 {
   "name": "school-grid",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "author": "Filippo Caneo <filippo.caneo@gmail.com>",
   "type": "module",
   "private": true,
   "scripts": {
     "build": "nuxt build",
     "build:tauri": "tauri build",
+    "build:tauri:demo": "tauri build --config src-tauri/tauri.demo.conf.json",
     "dev": "nuxt dev",
     "dev:tauri": "tauri dev",
     "generate": "nuxt generate",

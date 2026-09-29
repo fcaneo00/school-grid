@@ -8,20 +8,39 @@ const { assignments, fetchAssignments } = useAssignments()
 const { isDirty, saveDraft, revertDraft, discardAllDrafts, effectiveEntries } = useScheduleDraft()
 const confirmDialog = useConfirmDialog()
 const route = useRoute()
+const selectionMemory = useScheduleSelection()
 
 const modeItems = computed(() => [
   { label: t('schedule.modeClass'), value: 'class' as const, icon: 'i-ph-door-open' },
   { label: t('schedule.modeTeacher'), value: 'teacher' as const, icon: 'i-ph-user' }
 ])
 
-const mode = ref<'class' | 'teacher'>(route.query.mode === 'teacher' ? 'teacher' : 'class')
+function parseQueryMode(value: unknown): 'class' | 'teacher' | undefined {
+  if (value === 'teacher') return 'teacher'
+  if (value === 'class') return 'class'
+  return undefined
+}
 
-const initialEntityId = Number(route.query.entityId)
-const selectedEntityId = ref<number | undefined>(Number.isFinite(initialEntityId) && initialEntityId > 0 ? initialEntityId : undefined)
+const queryMode = parseQueryMode(route.query.mode)
+const mode = ref<'class' | 'teacher'>(queryMode ?? selectionMemory.mode.value)
+
+function resolveInitialEntityId() {
+  const queryEntityId = Number(route.query.entityId)
+  if (Number.isFinite(queryEntityId) && queryEntityId > 0) return queryEntityId
+  if (queryMode === undefined) return selectionMemory.entityId.value
+  return undefined
+}
+
+const selectedEntityId = ref<number | undefined>(resolveInitialEntityId())
 
 watch(mode, () => {
   selectedEntityId.value = undefined
 })
+
+watch([mode, selectedEntityId], ([modeValue, entityId]) => {
+  selectionMemory.mode.value = modeValue
+  selectionMemory.entityId.value = entityId
+}, { immediate: true })
 
 watch([mode, selectedEntityId], ([modeValue, entityId]) => {
   navigateTo({ query: { ...route.query, mode: modeValue, entityId } }, { replace: true })
@@ -79,7 +98,8 @@ onBeforeRouteLeave(async () => {
   <div class="space-y-6">
     <div class="flex items-center gap-2">
       <UButton icon="i-ph-arrow-left" variant="ghost" color="neutral" :aria-label="t('general.back')" to="/" />
-      <h1 class="text-xl font-semibold">{{ t('schedule.title') }}</h1>
+      <h1 class="flex-1 text-xl font-semibold">{{ t('schedule.title') }}</h1>
+      <UButton icon="i-ph-clock-counter-clockwise" color="neutral" variant="outline" :label="t('schedule.historyButton')" to="/schedule/history" />
     </div>
     <div v-if="isDirty" class="flex items-center justify-between rounded border border-warning bg-warning/10 px-4 py-3">
       <span class="text-sm font-medium">{{ t('schedule.draftBanner') }}</span>

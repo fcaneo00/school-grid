@@ -1,11 +1,14 @@
 <script setup lang="ts">
 const { t } = useI18n()
+const { saves, activeSaveFile } = useSaves()
+
+const activeSaveName = computed(() => saves.value.find((save) => save.fileName === activeSaveFile.value)?.displayName)
 </script>
 
 <template>
   <div class="space-y-6">
     <div>
-      <h1 class="text-xl font-semibold">{{ t('home.title') }}</h1>
+      <h1 class="text-xl font-semibold">{{ activeSaveName ? t('home.activeSave', { name: activeSaveName }) : t('home.title') }}</h1>
       <p class="text-muted">{{ t('home.subtitle') }}</p>
     </div>
     <UPageGrid>

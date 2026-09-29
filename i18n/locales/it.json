@@ -39,11 +39,14 @@
     "schoolClasses": "Classi",
     "studyTracks": "Corsi di studio",
     "sections": "Sezioni",
-    "assignments": "Cattedre"
+    "assignments": "Cattedre",
+    "backToMenu": "Torna al menu",
+    "saveExport": "Esporta database"
   },
   "home": {
     "title": "School Grid",
     "titleShort": "SG",
+    "activeSave": "Database: {name}",
     "subtitle": "Da dove vuoi partire?",
     "registryTitle": "Anagrafica",
     "registryDescription": "Docenti, classi, sezioni, corsi di studio e cattedre: i dati su cui si costruisce tutto il resto.",
@@ -54,6 +57,9 @@
   },
   "registry": {
     "title": "Anagrafica"
+  },
+  "menu": {
+    "subtitle": "Scegli un database per continuare"
   },
   "weekdays": {
     "monday": "Lunedì",
@@ -159,7 +165,23 @@
     "saveConflictTitle": "Conflitto nel salvataggio",
     "saveConflictDescription": "Una delle ore in bozza è ora occupata da un'altra classe o dallo stesso docente altrove. Correggi e riprova.",
     "leaveConfirmTitle": "Uscire senza salvare?",
-    "leaveConfirmDescription": "Ci sono modifiche non salvate nella tabella orario. Uscendo andranno perse."
+    "leaveConfirmDescription": "Ci sono modifiche non salvate nella tabella orario. Uscendo andranno perse.",
+    "historyButton": "Cronologia",
+    "history": {
+      "title": "Cronologia",
+      "description": "Ogni volta che salvi la Tabella orario viene tenuta una copia - vengono conservate le ultime 20 versioni, le più vecchie vengono eliminate in automatico.",
+      "empty": "Nessuna versione salvata finora.",
+      "firstVersion": "Prima versione salvata.",
+      "noChanges": "Nessuna modifica rispetto alla versione precedente.",
+      "summary": "{added} ore aggiunte, {removed} rimosse, {moved} spostate",
+      "movedLine": "Spostate {count} ore di {teacher} nella classe {schoolClass}",
+      "addedLine": "Aggiunta: {teacher} - {schoolClass} - {day} ora {hour}",
+      "removedLine": "Rimossa: {teacher} - {schoolClass} - {day} ora {hour}",
+      "restoreButton": "Ripristina questa versione",
+      "restoreConfirmTitle": "Ripristinare questa versione?",
+      "restoreConfirmDescription": "L'orario attuale verrà sostituito con quello di questa versione. Lo stato attuale viene comunque salvato come nuova versione prima di procedere, ma qualunque modifica successiva a questa versione andrà persa.",
+      "restoreSuccessTitle": "Versione ripristinata"
+    }
   },
   "pdfExport": {
     "title": "Esporta PDF",
@@ -180,6 +202,11 @@
     "noClasses": "Nessuna classe da esportare.",
     "successTitle": "PDF salvato - Clicca per aprire"
   },
+  "saveExport": {
+    "title": "Esporta database",
+    "description": "Salva una copia del file del database attivo, da tenere come backup o importare su un altro computer.",
+    "button": "Esporta database"
+  },
   "settings": {
     "title": "Impostazioni",
     "description": "Regola quante ore al giorno e quali giorni della settimana usa la Tabella orario. Non tocca i dati già inseriti in Anagrafica.",
@@ -199,6 +226,32 @@
       "wipeDialogPrompt": "Per confermare, scrivi \"{phrase}\" nel campo qui sotto.",
       "wipeConfirmButton": "Elimina tutto, per sempre",
       "wipeSuccessTitle": "Database ripulito"
+    }
+  },
+  "saves": {
+    "createButton": "Nuovo database",
+    "importButton": "Importa",
+    "activeLabel": "Attivo",
+    "enterAction": "Entra",
+    "duplicateAction": "Duplica",
+    "renameAction": "Rinomina",
+    "deleteAction": "Elimina",
+    "duplicateSuggestedName": "{name} (copia)",
+    "duplicateNameTitle": "Nome già in uso",
+    "duplicateNameDescription": "Esiste già un database con questo nome.",
+    "deleteBlockedTitle": "Impossibile eliminare",
+    "deleteBlockedLastDescription": "Deve rimanere sempre almeno un database.",
+    "importInvalidTitle": "File non valido",
+    "importInvalidDescription": "Il file scelto non è un database di School Grid.",
+    "exportSuccessTitle": "Database esportato",
+    "createDialogTitle": "Nuovo database",
+    "importDialogTitle": "Importa \"{name}\"",
+    "duplicateDialogTitle": "Duplica \"{name}\"",
+    "renameDialogTitle": "Rinomina \"{name}\"",
+    "form": {
+      "name": "Nome",
+      "nameTooLong": "Massimo 60 caratteri",
+      "nameInvalidChars": "Non può contenere i caratteri < > : \" \\ | ? *"
     }
   }
 }

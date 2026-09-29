@@ -3,6 +3,9 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 
 const { t } = useI18n()
 const colorMode = useColorMode()
+const confirmDialog = useConfirmDialog()
+const { isDirty } = useScheduleDraft()
+const { hasEnteredSave } = useAppEntry()
 
 const sidebarOpen = ref(true)
 const colorModeIcon = computed(() => colorMode.value === 'dark' ? 'i-ph-moon' : 'i-ph-sun')
@@ -22,12 +25,26 @@ const mainNavItems = computed<NavigationMenuItem[]>(() => [
     ]
   },
   { label: t('nav.schedule'), icon: 'i-ph-calendar', to: '/schedule' },
-  { label: t('nav.pdfExport'), icon: 'i-ph-file-arrow-down', to: '/pdf-export' }
+  { label: t('nav.pdfExport'), icon: 'i-ph-file-arrow-down', to: '/pdf-export' },
+  { label: t('nav.saveExport'), icon: 'i-ph-upload-simple', to: '/save-export' }
 ])
+
+async function backToMenu() {
+  if (isDirty.value) {
+    const confirmed = await confirmDialog({
+      title: t('schedule.leaveConfirmTitle'),
+      description: t('schedule.leaveConfirmDescription')
+    })
+    if (!confirmed) return
+  }
+  hasEnteredSave.value = false
+  await navigateTo('/menu')
+}
 
 function footerNavItems(state: 'collapsed' | 'expanded'): NavigationMenuItem[] {
   const items: NavigationMenuItem[] = [
-    { label: t('nav.settings'), icon: 'i-ph-gear', to: '/settings' }
+    { label: t('nav.settings'), icon: 'i-ph-gear', to: '/settings' },
+    { label: t('nav.backToMenu'), icon: 'i-ph-list', onSelect: backToMenu }
   ]
 
   if (state === 'collapsed') {
