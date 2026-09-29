@@ -100,13 +100,15 @@ Regole:
 
 Per un progetto di queste dimensioni non serve separare specs/docs/backlog in cartelle diverse: **tutto vive in questo `CLAUDE.md`**, aggiornato ad ogni decisione architetturale - è quello che abbiamo fatto finora in chat. Se il progetto crescesse davvero, si scorporerà in una cartella `docs/` quando (e solo quando) diventerà scomodo tenerlo qui dentro.
 
-La checklist di lavoro in corso vive invece in [`.claude/TASKS.md`](.claude/TASKS.md), per non far lievitare questo file con lo stato di avanzamento. Di norma si lavora diretti su `main`; una feature abbastanza corposa o rischiosa da isolare (es. il multi-salvataggio) va invece su un branch dedicato (`feature/nome-feature`), con una PR verso `main` una volta pronta.
+La checklist di lavoro in corso vive invece in [`.claude/TASKS.md`](.claude/TASKS.md), per non far lievitare questo file con lo stato di avanzamento - questo resta il flusso per le modifiche che procedono dirette su `main`.
+
+Per una feature abbastanza corposa o rischiosa da isolare (es. il multi-salvataggio), il flusso è invece: **prima una issue GitHub** con la descrizione del lavoro e una checklist di verifica pronta, poi un branch dedicato (`feature/nome-feature`), poi la PR verso `main` - la cui descrizione si limita a referenziare la issue che risolve (es. "Closes #N"), senza ripetere la checklist anche lì. La checklist vive quindi nella issue, non in `.claude/TASKS.md`, per queste feature.
 
 **Tag di versione**: `v` seguito dal numero di versione allineato a `package.json`/`tauri.conf.json`/`Cargo.toml` (es. `v0.4.1`). Finché una versione non è considerata stabile/pronta per la distribuzione, il tag porta il suffisso `-beta` (es. `v0.4.1-beta`).
 
 ## Planning Workflow
 
-Per modifiche piccole si implementa direttamente. Per una feature corposa (es. la UI della griglia trascinabile, l'esportazione PDF) si scrive prima una checklist breve in `.claude/TASKS.md`, poi si implementa spuntando via via.
+Per modifiche piccole si implementa direttamente. Per una feature corposa che resta diretta su `main` (es. la UI della griglia trascinabile, l'esportazione PDF) si scrive prima una checklist breve in `.claude/TASKS.md`, poi si implementa spuntando via via. Per una feature isolata su branch dedicato, la checklist va invece nella issue GitHub aperta per l'occasione (vedi "Le case dei fatti").
 
 ## Regole di ingaggio operative
 
