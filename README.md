@@ -12,7 +12,7 @@
 
 **School Grid** è un'app desktop pensata per chi costruisce davvero l'orario di una scuola: un dirigente scolastico, o chi ne fa le veci (un docente delegato, di solito quello con più pazienza). Gestisce classi, docenti e cattedre, mette tutto in griglia trascinando - per classe o per docente, a scelta - e lo esporta in un PDF pronto da stampare e affiggere.
 
-Gira in locale, dati su SQLite sul tuo computer: nessun account, nessun cloud, nessun abbonamento. Un solo utilizzatore, un solo file `.db`, punto.
+Gira in locale, dati su SQLite sul tuo computer: nessun account, nessun cloud, nessun abbonamento. Un solo utilizzatore, ma più salvataggi se servono - un file `.db` per anno scolastico, scelto da un menu all'avvio.
 
 ## Non è un generatore automatico
 
@@ -30,16 +30,24 @@ La parte anagrafica è pronta e sensata, non solo funzionante:
 | **Classi** | Anno (1-5) + Sezione + Corso di studio - così una 1A Scientifico non si confonde mai con una 1A Linguistico |
 | **Sezioni** | "A", "B", "C"... come entità propria, non testo libero - niente più "a" vs "A" a spezzare i raggruppamenti |
 | **Corsi di studio** | Scientifico, Linguistico, Classico... stessa logica delle Sezioni |
-| **Materie** | Il minimo indispensabile: un nome |
-| **Cattedre** | Chi insegna cosa, a quale classe, per quante ore a settimana |
+| **Cattedre** | Docente + classe + ore settimanali - niente materia: si sa già quante ore un docente fa in una classe, non serve altro |
 
-Ogni cancellazione controlla se il record è ancora agganciato a qualcos'altro (una materia usata in una cattedra non si cancella per sbaglio) e te lo dice per nome, non con un codice errore SQL. Tabelle filtrabili, form validati, tutto in italiano e pronto per altre lingue il giorno in cui servissero.
+Ogni cancellazione controlla se il record è ancora agganciato a qualcos'altro (una sezione usata in una classe non si cancella per sbaglio) e te lo dice per nome, non con un codice errore SQL. Tabelle filtrabili, form validati, tutto in italiano e pronto per altre lingue il giorno in cui servissero.
+
+## Più salvataggi, uno per anno scolastico
+
+All'avvio scegli con quale salvataggio lavorare - "2026/2027", "2027/2028", quanti ne servono - da un menu dedicato, prima ancora della schermata principale. Crea, duplica, rinomina o elimina un salvataggio quando vuoi; ognuno è un file `.db` indipendente, così i dati di un anno non si mescolano mai con quelli di un altro. Un pulsante in barra laterale riporta al menu in qualsiasi momento, avvisando prima se ci sono modifiche non salvate in Tabella orario.
 
 ## Il flusso, in breve
 
 ```mermaid
 flowchart TD
-    Home["Home"] --> Anagrafica["Anagrafica"]
+    Menu["Menu - scegli un salvataggio"]
+    Menu -.->|crea/duplica/rinomina/elimina| Menu
+    Menu -->|Entra| Home["Home - salvataggio attivo"]
+    Home -->|Torna al menu| Menu
+
+    Home --> Anagrafica["Anagrafica"]
     Home --> Orario["Tabella orario"]
     Home --> PDF["Esporta PDF"]
     Home --> Impostazioni["Impostazioni"]
@@ -51,6 +59,7 @@ flowchart TD
     Anagrafica --> Cattedre["Cattedre"]
 
     Impostazioni -.->|regola ore/giorni attivi| Orario
+    Impostazioni -.->|zona pericolosa: pulisce il salvataggio attivo| Home
 
     Orario --> Modalita{"Classe o Docente?"}
     Modalita -->|Classe| GrigliaClasse["Trascina le cattedre della classe negli slot"]
@@ -65,11 +74,11 @@ flowchart TD
     Anteprima --> Genera["Genera PDF"]
 ```
 
-Le due modalità della Tabella orario (per classe o per docente) guardano gli stessi dati da due lenti diverse - una modifica fatta nell'una compare subito nell'altra. L'Anteprima PDF segnala anche le cattedre con ore in difetto o in eccesso rispetto al monte ore: da lì si torna con un clic direttamente alla classe da correggere.
+Il menu è il punto di ingresso ad ogni avvio, come la scelta del salvataggio in un videogioco - non si passa alla Home senza aver scelto (o confermato) un salvataggio. Le due modalità della Tabella orario (per classe o per docente) guardano gli stessi dati da due lenti diverse - una modifica fatta nell'una compare subito nell'altra. L'Anteprima PDF segnala anche le cattedre con ore in difetto o in eccesso rispetto al monte ore: da lì si torna con un clic direttamente alla classe da correggere.
 
 ## Cosa manca
 
-Il grosso - griglia orario trascinabile, doppia modalità, validazione dei conflitti in tempo reale, esportazione PDF - è già costruito ed è la ragione per cui il progetto esiste. Quello che resta in coda: la possibilità di tenere più orari separati (un "salvataggio" per anno scolastico) invece di un unico database sempre attivo.
+Il grosso - griglia orario trascinabile, doppia modalità, validazione dei conflitti in tempo reale, esportazione PDF, più salvataggi indipendenti - è già costruito ed è la ragione per cui il progetto esiste. In esplorazione, non ancora deciso nei dettagli: un motore di suggerimento deterministico (non un assistente AI/LLM) per completare una cattedra privilegiando ore consecutive ed evitando buche nell'orario di un docente.
 
 ## Lo stack, in breve
 
