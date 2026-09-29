@@ -2,7 +2,7 @@
 import type { FormSubmitEvent } from '@nuxt/ui'
 
 interface SaveNameDialogProps {
-  mode: 'create' | 'duplicate' | 'rename'
+  mode: 'create' | 'import' | 'duplicate' | 'rename'
   sourceName?: string
   initialName?: string
 }
@@ -21,6 +21,7 @@ watch(() => props.initialName, (initialName) => {
 }, { immediate: true })
 
 const title = computed(() => {
+  if (props.mode === 'import') return t('saves.importDialogTitle', { name: props.sourceName ?? '' })
   if (props.mode === 'duplicate') return t('saves.duplicateDialogTitle', { name: props.sourceName ?? '' })
   if (props.mode === 'rename') return t('saves.renameDialogTitle', { name: props.sourceName ?? '' })
   return t('saves.createDialogTitle')

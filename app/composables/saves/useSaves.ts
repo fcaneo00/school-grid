@@ -1,3 +1,4 @@
+import Database from '@tauri-apps/plugin-sql'
 import { BaseDirectory, copyFile, exists, readDir, remove, rename, writeTextFile } from '@tauri-apps/plugin-fs'
 
 export interface Save {
@@ -45,6 +46,39 @@ export function useSaves() {
     })
     await fetchSaves()
     notify.success(t('general.added'), name)
+  }
+
+  async function isValidSaveFile(path: string) {
+    try {
+      const db = await Database.load(`sqlite:${path}`)
+      const rows = await db.select<unknown[]>('SELECT id FROM app_settings WHERE id = 1')
+      return rows.length > 0
+    } catch {
+      return false
+    }
+  }
+
+  async function importSave(sourcePath: string, name: string) {
+    if (!(await nameAvailable(name))) {
+      notify.error(t('saves.duplicateNameTitle'), t('saves.duplicateNameDescription'))
+      return
+    }
+    const destination = saveFilePath(saveFileName(name))
+    await copyFile(sourcePath, destination, { toPathBaseDir: BaseDirectory.AppConfig })
+    if (!(await isValidSaveFile(destination))) {
+      await remove(destination, { baseDir: BaseDirectory.AppConfig })
+      notify.error(t('saves.importInvalidTitle'), t('saves.importInvalidDescription'))
+      return
+    }
+    await fetchSaves()
+    notify.success(t('general.added'), name)
+  }
+
+  async function exportSave(save: Save, destinationPath: string) {
+    await copyFile(saveFilePath(save.fileName), destinationPath, {
+      fromPathBaseDir: BaseDirectory.AppConfig
+    })
+    notify.success(t('saves.exportSuccessTitle'), '')
   }
 
   async function duplicateSave(save: Save, name: string) {
@@ -126,6 +160,8 @@ export function useSaves() {
     loading,
     fetchSaves,
     createSave,
+    importSave,
+    exportSave,
     duplicateSave,
     renameSave,
     deleteSave,

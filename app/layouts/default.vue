@@ -25,7 +25,8 @@ const mainNavItems = computed<NavigationMenuItem[]>(() => [
     ]
   },
   { label: t('nav.schedule'), icon: 'i-ph-calendar', to: '/schedule' },
-  { label: t('nav.pdfExport'), icon: 'i-ph-file-arrow-down', to: '/pdf-export' }
+  { label: t('nav.pdfExport'), icon: 'i-ph-file-arrow-down', to: '/pdf-export' },
+  { label: t('nav.saveExport'), icon: 'i-ph-upload-simple', to: '/save-export' }
 ])
 
 async function backToMenu() {

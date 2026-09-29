@@ -40,12 +40,13 @@
     "studyTracks": "Corsi di studio",
     "sections": "Sezioni",
     "assignments": "Cattedre",
-    "backToMenu": "Torna al menu"
+    "backToMenu": "Torna al menu",
+    "saveExport": "Esporta database"
   },
   "home": {
     "title": "School Grid",
     "titleShort": "SG",
-    "activeSave": "Salvataggio: {name}",
+    "activeSave": "Database: {name}",
     "subtitle": "Da dove vuoi partire?",
     "registryTitle": "Anagrafica",
     "registryDescription": "Docenti, classi, sezioni, corsi di studio e cattedre: i dati su cui si costruisce tutto il resto.",
@@ -58,7 +59,7 @@
     "title": "Anagrafica"
   },
   "menu": {
-    "subtitle": "Scegli un salvataggio per continuare"
+    "subtitle": "Scegli un database per continuare"
   },
   "weekdays": {
     "monday": "Lunedì",
@@ -201,6 +202,11 @@
     "noClasses": "Nessuna classe da esportare.",
     "successTitle": "PDF salvato - Clicca per aprire"
   },
+  "saveExport": {
+    "title": "Esporta database",
+    "description": "Salva una copia del file del database attivo, da tenere come backup o importare su un altro computer.",
+    "button": "Esporta database"
+  },
   "settings": {
     "title": "Impostazioni",
     "description": "Regola quante ore al giorno e quali giorni della settimana usa la Tabella orario. Non tocca i dati già inseriti in Anagrafica.",
@@ -223,7 +229,8 @@
     }
   },
   "saves": {
-    "createButton": "Nuovo salvataggio",
+    "createButton": "Nuovo database",
+    "importButton": "Importa",
     "activeLabel": "Attivo",
     "enterAction": "Entra",
     "duplicateAction": "Duplica",
@@ -231,10 +238,14 @@
     "deleteAction": "Elimina",
     "duplicateSuggestedName": "{name} (copia)",
     "duplicateNameTitle": "Nome già in uso",
-    "duplicateNameDescription": "Esiste già un salvataggio con questo nome.",
+    "duplicateNameDescription": "Esiste già un database con questo nome.",
     "deleteBlockedTitle": "Impossibile eliminare",
-    "deleteBlockedLastDescription": "Deve rimanere sempre almeno un salvataggio.",
-    "createDialogTitle": "Nuovo salvataggio",
+    "deleteBlockedLastDescription": "Deve rimanere sempre almeno un database.",
+    "importInvalidTitle": "File non valido",
+    "importInvalidDescription": "Il file scelto non è un database di School Grid.",
+    "exportSuccessTitle": "Database esportato",
+    "createDialogTitle": "Nuovo database",
+    "importDialogTitle": "Importa \"{name}\"",
     "duplicateDialogTitle": "Duplica \"{name}\"",
     "renameDialogTitle": "Rinomina \"{name}\"",
     "form": {

@@ -4,7 +4,7 @@ import type { Save } from '~/composables/saves/useSaves'
 import { useSaveList } from './useSaveList'
 
 const { t } = useI18n()
-const { saves, activeSaveFile, loading, handleCreate, handleDuplicate, handleRename, handleDelete, handleEnter } = useSaveList()
+const { saves, activeSaveFile, loading, handleCreate, handleImport, handleDuplicate, handleRename, handleDelete, handleEnter } = useSaveList()
 
 function actionItems(save: Save): DropdownMenuItem[] {
   return [
@@ -22,7 +22,8 @@ const columns: TableColumn<Save>[] = [
 
 <template>
   <div class="space-y-4">
-    <div class="flex justify-end">
+    <div class="flex justify-end gap-2">
+      <UButton icon="i-ph-download-simple" color="neutral" variant="outline" :label="t('saves.importButton')" @click="handleImport" />
       <UButton icon="i-ph-plus" :label="t('saves.createButton')" @click="handleCreate" />
     </div>
     <UTable :data="saves" :columns="columns" :loading="loading">
