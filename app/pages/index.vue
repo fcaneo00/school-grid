@@ -21,7 +21,7 @@ const activeSaveName = computed(() => saves.value.find((save) => save.fileName =
       <UPageCard
         :title="t('home.scheduleTitle')"
         :description="t('home.scheduleDescription')"
-        icon="i-ph-calendar"
+        icon="i-ph-calendar-dots"
         to="/schedule"
       />
       <UPageCard
