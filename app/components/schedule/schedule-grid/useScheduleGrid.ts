@@ -38,6 +38,7 @@ export function useScheduleGrid(subject: Ref<ScheduleSubject>) {
   const { draggedAssignment, draggedBlockSource } = useScheduleDrag()
   const { settings, activeHourSlots } = useAppSettings()
   const { schoolClasses } = useSchoolClasses()
+  const { isSuggested } = useScheduleHeuristic()
   const route = useRoute()
 
   const activeWeekdays = computed(() => settings.value.activeWeekdays)
@@ -127,7 +128,8 @@ export function useScheduleGrid(subject: Ref<ScheduleSubject>) {
       hourSlot,
       cells: activeWeekdays.value.map((day) => ({
         day,
-        status: cellStatus(day, hourSlot)
+        status: cellStatus(day, hourSlot),
+        suggested: isSuggested(day, hourSlot)
       }))
     }))
   )

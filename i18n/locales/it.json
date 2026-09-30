@@ -11,6 +11,7 @@
     "deleteBlockedDescription": "È ancora usato in: {usages}",
     "deleteBlockedGeneric": "È ancora collegato ad altri elementi dell'orario",
     "cancel": "Annulla",
+    "clear": "Azzera",
     "confirm": "Conferma",
     "confirmDeleteTitle": "Confermi l'eliminazione?",
     "confirmDeleteDescription": "Stai per eliminare \"{name}\". L'operazione non è reversibile."
@@ -78,7 +79,17 @@
       "lastName": "Cognome",
       "dayOff": "Giorno libero",
       "noDayOff": "Nessuno",
-      "allDayOff": "Tutti"
+      "allDayOff": "Tutti",
+      "maxConsecutiveHours": "Non più di X ore consecutive",
+      "maxConsecutiveHoursDescription": "Per un docente che non dovrebbe avere troppe ore di fila senza pausa. Il motore di suggerimento nella Tabella orario ne tiene conto; non blocca però il trascinamento manuale.",
+      "timeConstraints": "Fasce orarie",
+      "timeConstraintsDescription": "Per un docente che non può essere presente prima o dopo una certa ora in un giorno specifico (es. deve spostarsi in un'altra scuola). Il motore di suggerimento nella Tabella orario ne tiene conto; non blocca però il trascinamento manuale.",
+      "timeConstraintDay": "Giorno",
+      "notBefore": "Non prima della",
+      "notAfter": "Non dopo la",
+      "noLimit": "Nessun limite",
+      "hourLabel": "{hour}° ora",
+      "timeConstraintOrderInvalid": "\"Non dopo la\" deve essere successiva a \"Non prima della\""
     }
   },
   "schoolClasses": {
@@ -181,6 +192,11 @@
       "restoreConfirmTitle": "Ripristinare questa versione?",
       "restoreConfirmDescription": "L'orario attuale verrà sostituito con quello di questa versione. Lo stato attuale viene comunque salvato come nuova versione prima di procedere, ma qualunque modifica successiva a questa versione andrà persa.",
       "restoreSuccessTitle": "Versione ripristinata"
+    },
+    "heuristic": {
+      "suggestButton": "Suggerisci la prossima ora libera",
+      "noCellTitle": "Nessuna cella disponibile",
+      "noCellDescription": "Non c'è nessuno slot libero senza conflitti per questa cattedra."
     }
   },
   "pdfExport": {

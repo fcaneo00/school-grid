@@ -2,10 +2,12 @@ export interface Teacher {
   id: number
   first_name: string
   last_name: string
+  max_consecutive_hours?: number
 }
 
 export interface TeacherWithDetails extends Teacher {
   day_off: Weekday[]
+  time_constraints: TeacherTimeConstraint[]
 }
 
 export function useTeachers() {
@@ -13,6 +15,7 @@ export function useTeachers() {
   const notify = useNotification()
   const { byTeacher } = useAssignmentUsages()
   const { deleteDayOff } = useTeacherPreference()
+  const { deleteTimeConstraints } = useTeacherTimeConstraint()
   const teachers = useState<TeacherWithDetails[]>('teachers', () => [])
   const loading = useState('teachers-loading', () => false)
 
@@ -24,13 +27,22 @@ export function useTeachers() {
     loading.value = true
     try {
       const db = await getDb()
-      const [rawTeachers, preferences] = await Promise.all([
-        db.select<Teacher[]>('SELECT * FROM teacher ORDER BY last_name, first_name'),
-        db.select<{ teacher_id: number, day_off: Weekday }[]>('SELECT teacher_id, day_off FROM preference')
+      const [rawTeachers, preferences, timeConstraints] = await Promise.all([
+        db.select<(Omit<Teacher, 'max_consecutive_hours'> & { max_consecutive_hours: number | null })[]>(
+          'SELECT * FROM teacher ORDER BY last_name, first_name'
+        ),
+        db.select<{ teacher_id: number, day_off: Weekday }[]>('SELECT teacher_id, day_off FROM preference'),
+        db.select<{ teacher_id: number, day: Weekday, not_before: number | null, not_after: number | null }[]>(
+          'SELECT teacher_id, day, CAST(not_before AS INTEGER) AS not_before, CAST(not_after AS INTEGER) AS not_after FROM teacher_time_constraint'
+        )
       ])
       teachers.value = rawTeachers.map((teacher) => ({
         ...teacher,
-        day_off: preferences.filter((p) => p.teacher_id === teacher.id).map((p) => p.day_off)
+        max_consecutive_hours: teacher.max_consecutive_hours ?? undefined,
+        day_off: preferences.filter((p) => p.teacher_id === teacher.id).map((p) => p.day_off),
+        time_constraints: timeConstraints
+          .filter((c) => c.teacher_id === teacher.id)
+          .map((c) => ({ day: c.day, not_before: c.not_before ?? undefined, not_after: c.not_after ?? undefined }))
       }))
     } catch (e) {
       notify.error(t('general.errorTitle'), String(e))
@@ -42,8 +54,8 @@ export function useTeachers() {
   async function addTeacher(teacher: Omit<Teacher, 'id'>) {
     const db = await getDb()
     const result = await db.execute(
-      'INSERT INTO teacher (first_name, last_name) VALUES ($1, $2)',
-      [teacher.first_name, teacher.last_name]
+      'INSERT INTO teacher (first_name, last_name, max_consecutive_hours) VALUES ($1, $2, $3)',
+      [teacher.first_name, teacher.last_name, teacher.max_consecutive_hours ?? null]
     )
     await fetchTeachers()
     notify.success(t('general.added'), displayName(teacher))
@@ -53,8 +65,8 @@ export function useTeachers() {
   async function updateTeacher(id: number, teacher: Omit<Teacher, 'id'>) {
     const db = await getDb()
     await db.execute(
-      'UPDATE teacher SET first_name = $1, last_name = $2 WHERE id = $3',
-      [teacher.first_name, teacher.last_name, id]
+      'UPDATE teacher SET first_name = $1, last_name = $2, max_consecutive_hours = $3 WHERE id = $4',
+      [teacher.first_name, teacher.last_name, teacher.max_consecutive_hours ?? null, id]
     )
     await fetchTeachers()
     notify.success(t('general.updated'), displayName(teacher))
@@ -66,6 +78,7 @@ export function useTeachers() {
     try {
       const db = await getDb()
       await deleteDayOff(id)
+      await deleteTimeConstraints(id)
       await db.execute('DELETE FROM teacher WHERE id = $1', [id])
       await fetchTeachers()
       notify.success(t('general.deleted'), name)

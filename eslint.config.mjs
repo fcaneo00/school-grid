@@ -27,9 +27,8 @@ export default withNuxt(
       '@typescript-eslint/no-explicit-any': 'error',
 
       // Destrutturare le props perde la reattività appena il valore esce dallo
-      // scope del setup - la stessa classe di bug già incontrata in questo
-      // progetto (vedi TASKS.md, griglia orario: props non reattive nei
-      // composable).
+      // scope del setup - già incontrato nella griglia orario (props non
+      // reattive nei composable).
       'vue/no-setup-props-reactivity-loss': 'error',
 
       // Niente logica nei template.

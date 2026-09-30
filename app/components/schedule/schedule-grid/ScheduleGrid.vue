@@ -63,7 +63,8 @@ const {
                 :class="{
                   'bg-error/10': cell.status === 'blocked',
                   'bg-warning/10': cell.status === 'warning',
-                  'bg-success/10': cell.status === 'available'
+                  'bg-success/10': cell.status === 'available',
+                  'ring-2 ring-inset ring-info animate-pulse': cell.suggested
                 }"
                 @dragenter="onDragEnter($event, cell.day, row.hourSlot)"
                 @dragover="onDragOver($event, cell.day, row.hourSlot)"

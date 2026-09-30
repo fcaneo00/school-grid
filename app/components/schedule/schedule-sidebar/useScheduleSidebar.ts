@@ -6,6 +6,7 @@ export function useScheduleSidebar(subject: Ref<ScheduleSubject>) {
   const { assignments, fetchAssignments, deleteAssignment } = useAssignments()
   const { effectiveEntries } = useScheduleDraft()
   const { draggedAssignment } = useScheduleDrag()
+  const { suggestNextCell } = useScheduleHeuristic()
   const confirmDialog = useConfirmDialog()
   const route = useRoute()
 
@@ -45,6 +46,14 @@ export function useScheduleSidebar(subject: Ref<ScheduleSubject>) {
     draggedAssignment.value = null
   }
 
+  function handleSuggest(assignment: AssignmentWithDetails) {
+    suggestNextCell({
+      id: assignment.id,
+      teacherId: assignment.teacher_id,
+      schoolClassId: assignment.school_class_id
+    })
+  }
+
   async function handleDeleteAssignment(assignment: AssignmentWithDetails) {
     const name = assignmentLabel(assignment)
     const confirmed = await confirmDialog({
@@ -82,6 +91,7 @@ export function useScheduleSidebar(subject: Ref<ScheduleSubject>) {
     assignmentLabel,
     onDragStart,
     onDragEnd,
+    handleSuggest,
     contextMenuItems
   }
 }
