@@ -327,6 +327,11 @@ export function usePdfExport() {
   }
 
   async function exportPdfFromPreview() {
+    if (hoursReport.value.issues.length > 0) {
+      const choice = await confirmGenerateWithIssues()
+      if (choice !== 'generate') return
+    }
+
     const success = await performExport()
     if (success) closePreview()
   }
