@@ -1,3 +1,5 @@
+import { createSchoolClassFormSchema, type SchoolClassFormSchema } from './schoolClassFormHelper'
+
 export function useSchoolClassBatchForm() {
   const { t } = useI18n()
   const { addSchoolClasses } = useSchoolClasses()

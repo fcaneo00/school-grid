@@ -1,4 +1,5 @@
 import type { FormSubmitEvent } from '@nuxt/ui'
+import { createSettingsFormSchema, type SettingsFormSchema } from './settingsFormHelper'
 
 export function useSettingsForm() {
   const { t } = useI18n()

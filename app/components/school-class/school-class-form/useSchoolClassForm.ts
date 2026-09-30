@@ -1,4 +1,5 @@
 import type { FormSubmitEvent } from '@nuxt/ui'
+import { createSchoolClassFormSchema, type SchoolClassFormSchema } from './schoolClassFormHelper'
 
 export function useSchoolClassForm(id: Ref<number>) {
   const { t } = useI18n()

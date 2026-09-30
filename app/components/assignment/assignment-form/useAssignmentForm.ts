@@ -1,4 +1,5 @@
 import type { FormSubmitEvent } from '@nuxt/ui'
+import { createAssignmentFormSchema, type AssignmentFormSchema } from './assignmentFormHelper'
 
 export function useAssignmentForm(id: Ref<number>) {
   const { t } = useI18n()

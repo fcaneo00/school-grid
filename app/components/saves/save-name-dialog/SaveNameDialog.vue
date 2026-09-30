@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui'
+import { createSaveFormSchema, type SaveFormSchema } from './saveFormHelper'
 
 interface SaveNameDialogProps {
   mode: 'create' | 'import' | 'duplicate' | 'rename'
