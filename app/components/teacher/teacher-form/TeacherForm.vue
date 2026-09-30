@@ -66,6 +66,14 @@ const {
       <UButton :label="t('form.addRow')" icon="i-ph-plus" color="neutral" variant="outline" size="sm" @click="addTimeConstraintRow" />
     </div>
 
+    <div class="col-span-full space-y-2">
+      <p class="text-sm font-medium">{{ t('teachers.form.maxConsecutiveHours') }}</p>
+      <p class="text-sm text-muted">{{ t('teachers.form.maxConsecutiveHoursDescription') }}</p>
+      <UFormField name="max_consecutive_hours" class="max-w-xs">
+        <ClearableInputNumber v-model="state.max_consecutive_hours" :min="1" :max="HOUR_SLOT_VALUES.length" />
+      </UFormField>
+    </div>
+
     <div class="flex gap-2 col-span-full">
       <UButton type="submit" :label="t('table.save')" />
       <UButton :label="t('general.cancel')" color="neutral" variant="outline" :to="returnTo" />

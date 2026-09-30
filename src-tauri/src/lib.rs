@@ -204,6 +204,14 @@ fn migrations() -> Vec<Migration> {
       CREATE INDEX idx_teacher_time_constraint_teacher ON teacher_time_constraint(teacher_id);
     ",
         },
+        Migration {
+            version: 11,
+            description: "teacher_max_consecutive_hours",
+            kind: MigrationKind::Up,
+            sql: "
+      ALTER TABLE teacher ADD COLUMN max_consecutive_hours INTEGER;
+    ",
+        },
     ]
 }
 

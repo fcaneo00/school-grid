@@ -28,6 +28,7 @@ export function useTeacherForm(id: Ref<number | undefined>) {
     first_name: '',
     last_name: '',
     day_off: [],
+    max_consecutive_hours: undefined,
     time_constraints: []
   })
 
@@ -39,6 +40,7 @@ export function useTeacherForm(id: Ref<number | undefined>) {
     state.first_name = teacher.first_name
     state.last_name = teacher.last_name
     state.day_off = teacher.day_off
+    state.max_consecutive_hours = teacher.max_consecutive_hours
     state.time_constraints = teacher.time_constraints
   }, { immediate: true })
 

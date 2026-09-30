@@ -11,6 +11,7 @@
     "deleteBlockedDescription": "È ancora usato in: {usages}",
     "deleteBlockedGeneric": "È ancora collegato ad altri elementi dell'orario",
     "cancel": "Annulla",
+    "clear": "Azzera",
     "confirm": "Conferma",
     "confirmDeleteTitle": "Confermi l'eliminazione?",
     "confirmDeleteDescription": "Stai per eliminare \"{name}\". L'operazione non è reversibile."
@@ -79,6 +80,8 @@
       "dayOff": "Giorno libero",
       "noDayOff": "Nessuno",
       "allDayOff": "Tutti",
+      "maxConsecutiveHours": "Non più di X ore consecutive",
+      "maxConsecutiveHoursDescription": "Per un docente che non dovrebbe avere troppe ore di fila senza pausa. Il motore di suggerimento nella Tabella orario ne tiene conto; non blocca però il trascinamento manuale.",
       "timeConstraints": "Fasce orarie",
       "timeConstraintsDescription": "Per un docente che non può essere presente prima o dopo una certa ora in un giorno specifico (es. deve spostarsi in un'altra scuola). Il motore di suggerimento nella Tabella orario ne tiene conto; non blocca però il trascinamento manuale.",
       "timeConstraintDay": "Giorno",

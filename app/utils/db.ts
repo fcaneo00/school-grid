@@ -23,13 +23,28 @@ const ADDITIVE_SCHEMA_STATEMENTS = [
   'CREATE INDEX IF NOT EXISTS idx_teacher_time_constraint_teacher ON teacher_time_constraint(teacher_id)'
 ]
 
+// SQLite non supporta "ALTER TABLE ... ADD COLUMN IF NOT EXISTS" (solo CREATE TABLE/INDEX lo
+// supportano) - per le colonne serve controllare prima via PRAGMA table_info se esiste già.
+const ADDITIVE_COLUMNS = [
+  { table: 'teacher', column: 'max_consecutive_hours', definition: 'INTEGER' }
+]
+
 const schemaEnsuredForSave = new Set<string>()
+
+async function ensureAdditiveColumns(db: Database) {
+  for (const { table, column, definition } of ADDITIVE_COLUMNS) {
+    const columns = await db.select<{ name: string }[]>(`PRAGMA table_info(${table})`)
+    if (columns.some((existing) => existing.name === column)) continue
+    await db.execute(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`)
+  }
+}
 
 async function ensureAdditiveSchema(db: Database, activeSave: string) {
   if (schemaEnsuredForSave.has(activeSave)) return
   for (const statement of ADDITIVE_SCHEMA_STATEMENTS) {
     await db.execute(statement)
   }
+  await ensureAdditiveColumns(db)
   schemaEnsuredForSave.add(activeSave)
 }
 

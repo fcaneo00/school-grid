@@ -26,6 +26,7 @@ export function createTeacherFormSchema(t: (key: string) => string) {
     first_name: z.string().min(1, t('form.required')),
     last_name: z.string().min(1, t('form.required')),
     day_off: z.array(z.enum(WEEKDAY_VALUES)),
+    max_consecutive_hours: z.number().int().min(1).max(HOUR_SLOT_VALUES.length).optional(),
     time_constraints: z.array(createTimeConstraintSchema(t))
   })
 }
