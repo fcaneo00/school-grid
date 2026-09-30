@@ -187,6 +187,23 @@ fn migrations() -> Vec<Migration> {
       VALUES (1, 6, 'monday,tuesday,wednesday,thursday,friday,saturday');
     ",
         },
+        Migration {
+            version: 10,
+            description: "teacher_time_constraint",
+            kind: MigrationKind::Up,
+            sql: "
+      CREATE TABLE teacher_time_constraint (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        teacher_id INTEGER NOT NULL REFERENCES teacher(id),
+        day TEXT NOT NULL,
+        not_before INTEGER,
+        not_after INTEGER,
+        CHECK (not_before IS NOT NULL OR not_after IS NOT NULL)
+      );
+
+      CREATE INDEX idx_teacher_time_constraint_teacher ON teacher_time_constraint(teacher_id);
+    ",
+        },
     ]
 }
 
