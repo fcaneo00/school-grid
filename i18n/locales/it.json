@@ -78,18 +78,16 @@
       "firstName": "Nome",
       "lastName": "Cognome",
       "dayOff": "Giorno libero",
+      "dayOffDescription": "Il giorno in cui il docente non lavora. Il motore di suggerimento nella Tabella orario lo penalizza nel punteggio ma non lo esclude; non blocca comunque il trascinamento manuale.",
       "noDayOff": "Nessuno",
-      "allDayOff": "Tutti",
       "maxConsecutiveHours": "Non più di X ore consecutive",
       "maxConsecutiveHoursDescription": "Per un docente che non dovrebbe avere troppe ore di fila senza pausa. Il motore di suggerimento nella Tabella orario ne tiene conto; non blocca però il trascinamento manuale.",
-      "timeConstraints": "Fasce orarie",
-      "timeConstraintsDescription": "Per un docente che non può essere presente prima o dopo una certa ora in un giorno specifico (es. deve spostarsi in un'altra scuola). Il motore di suggerimento nella Tabella orario ne tiene conto; non blocca però il trascinamento manuale.",
-      "timeConstraintDay": "Giorno",
-      "notBefore": "Non prima della",
-      "notAfter": "Non dopo la",
-      "noLimit": "Nessun limite",
-      "hourLabel": "{hour}° ora",
-      "timeConstraintOrderInvalid": "\"Non dopo la\" deve essere successiva a \"Non prima della\""
+      "unavailableHours": "Ore non disponibili",
+      "unavailableHoursDescription": "Per un docente che non può essere presente in ore specifiche di un giorno (es. deve spostarsi in un'altra scuola). Il motore di suggerimento nella Tabella orario ne tiene conto; non blocca però il trascinamento manuale.",
+      "unavailableHoursDay": "Giorno",
+      "unavailableHoursSelect": "Ore",
+      "noUnavailableHours": "Nessuna",
+      "hourLabel": "{hour}° ora"
     }
   },
   "schoolClasses": {
@@ -118,6 +116,8 @@
     "title": "Corsi di studio",
     "addButton": "Aggiungi corso di studio",
     "editTitle": "Modifica corso di studio",
+    "duplicateTitle": "Corso di studio già esistente",
+    "duplicateDescription": "Esiste già un corso di studio con questo nome.",
     "form": {
       "name": "Nome"
     }
@@ -126,6 +126,8 @@
     "title": "Sezioni",
     "addButton": "Aggiungi sezione",
     "editTitle": "Modifica sezione",
+    "duplicateTitle": "Sezione già esistente",
+    "duplicateDescription": "Esiste già una sezione con questo nome.",
     "form": {
       "name": "Nome"
     }

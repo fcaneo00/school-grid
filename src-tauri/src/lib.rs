@@ -212,6 +212,24 @@ fn migrations() -> Vec<Migration> {
       ALTER TABLE teacher ADD COLUMN max_consecutive_hours INTEGER;
     ",
         },
+        Migration {
+            version: 12,
+            description: "teacher_unavailable_hour",
+            kind: MigrationKind::Up,
+            sql: "
+      DROP TABLE teacher_time_constraint;
+
+      CREATE TABLE teacher_unavailable_hour (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        teacher_id INTEGER NOT NULL REFERENCES teacher(id),
+        day TEXT NOT NULL,
+        hour_slot INTEGER NOT NULL,
+        UNIQUE(teacher_id, day, hour_slot)
+      );
+
+      CREATE INDEX idx_teacher_unavailable_hour_teacher ON teacher_unavailable_hour(teacher_id);
+    ",
+        },
     ]
 }
 

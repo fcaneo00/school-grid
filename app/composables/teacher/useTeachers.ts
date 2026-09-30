@@ -7,7 +7,7 @@ export interface Teacher {
 
 export interface TeacherWithDetails extends Teacher {
   day_off: Weekday[]
-  time_constraints: TeacherTimeConstraint[]
+  unavailable_hours: TeacherUnavailableHours[]
 }
 
 export function useTeachers() {
@@ -15,7 +15,7 @@ export function useTeachers() {
   const notify = useNotification()
   const { byTeacher } = useAssignmentUsages()
   const { deleteDayOff } = useTeacherPreference()
-  const { deleteTimeConstraints } = useTeacherTimeConstraint()
+  const { deleteUnavailableHours } = useTeacherUnavailableHours()
   const teachers = useState<TeacherWithDetails[]>('teachers', () => [])
   const loading = useState('teachers-loading', () => false)
 
@@ -23,26 +23,33 @@ export function useTeachers() {
     return `${teacher.last_name} ${teacher.first_name}`
   }
 
+  function groupUnavailableHours(rows: { teacher_id: number, day: Weekday, hour_slot: HourSlot }[], teacherId: number): TeacherUnavailableHours[] {
+    const hoursByDay = new Map<Weekday, HourSlot[]>()
+    for (const row of rows) {
+      if (row.teacher_id !== teacherId) continue
+      const hours = hoursByDay.get(row.day) ?? []
+      hours.push(row.hour_slot)
+      hoursByDay.set(row.day, hours)
+    }
+    return Array.from(hoursByDay, ([day, hours]) => ({ day, hours }))
+  }
+
   async function fetchTeachers() {
     loading.value = true
     try {
       const db = await getDb()
-      const [rawTeachers, preferences, timeConstraints] = await Promise.all([
+      const [rawTeachers, preferences, unavailableHours] = await Promise.all([
         db.select<(Omit<Teacher, 'max_consecutive_hours'> & { max_consecutive_hours: number | null })[]>(
           'SELECT * FROM teacher ORDER BY last_name, first_name'
         ),
         db.select<{ teacher_id: number, day_off: Weekday }[]>('SELECT teacher_id, day_off FROM preference'),
-        db.select<{ teacher_id: number, day: Weekday, not_before: number | null, not_after: number | null }[]>(
-          'SELECT teacher_id, day, CAST(not_before AS INTEGER) AS not_before, CAST(not_after AS INTEGER) AS not_after FROM teacher_time_constraint'
-        )
+        db.select<{ teacher_id: number, day: Weekday, hour_slot: HourSlot }[]>('SELECT teacher_id, day, hour_slot FROM teacher_unavailable_hour')
       ])
       teachers.value = rawTeachers.map((teacher) => ({
         ...teacher,
         max_consecutive_hours: teacher.max_consecutive_hours ?? undefined,
         day_off: preferences.filter((p) => p.teacher_id === teacher.id).map((p) => p.day_off),
-        time_constraints: timeConstraints
-          .filter((c) => c.teacher_id === teacher.id)
-          .map((c) => ({ day: c.day, not_before: c.not_before ?? undefined, not_after: c.not_after ?? undefined }))
+        unavailable_hours: groupUnavailableHours(unavailableHours, teacher.id)
       }))
     } catch (e) {
       notify.error(t('general.errorTitle'), String(e))
@@ -78,7 +85,7 @@ export function useTeachers() {
     try {
       const db = await getDb()
       await deleteDayOff(id)
-      await deleteTimeConstraints(id)
+      await deleteUnavailableHours(id)
       await db.execute('DELETE FROM teacher WHERE id = $1', [id])
       await fetchTeachers()
       notify.success(t('general.deleted'), name)

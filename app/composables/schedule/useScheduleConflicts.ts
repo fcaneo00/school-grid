@@ -6,14 +6,9 @@ export function useScheduleConflicts(conflictEntries: Ref<ScheduleEntryWithDetai
     return teachers.value.find((teacher) => teacher.id === teacherId)?.day_off.includes(day) ?? false
   }
 
-  function violatesTimeConstraint(teacherId: number, day: Weekday, hourSlot: HourSlot) {
-    const timeConstraints = teachers.value.find((teacher) => teacher.id === teacherId)?.time_constraints ?? []
-    return timeConstraints
-      .filter((constraint) => constraint.day === day)
-      .some((constraint) =>
-        (constraint.not_before !== undefined && hourSlot < constraint.not_before)
-        || (constraint.not_after !== undefined && hourSlot > constraint.not_after)
-      )
+  function isUnavailable(teacherId: number, day: Weekday, hourSlot: HourSlot) {
+    const unavailableHours = teachers.value.find((teacher) => teacher.id === teacherId)?.unavailable_hours ?? []
+    return unavailableHours.some((entry) => entry.day === day && entry.hours.includes(hourSlot))
   }
 
   function violatesMaxConsecutiveHours(teacherId: number, day: Weekday, hourSlot: HourSlot) {
@@ -45,7 +40,7 @@ export function useScheduleConflicts(conflictEntries: Ref<ScheduleEntryWithDetai
 
   return {
     isDayOff,
-    violatesTimeConstraint,
+    isUnavailable,
     violatesMaxConsecutiveHours,
     hasTeacherConflict,
     hasClassConflict

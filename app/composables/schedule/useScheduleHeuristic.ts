@@ -21,7 +21,7 @@ export function useScheduleHeuristic() {
   const { settings, activeHourSlots } = useAppSettings()
 
   const conflictEntries = computed(() => effectiveEntries())
-  const { hasTeacherConflict, hasClassConflict, isDayOff, violatesTimeConstraint, violatesMaxConsecutiveHours } = useScheduleConflicts(conflictEntries)
+  const { hasTeacherConflict, hasClassConflict, isDayOff, isUnavailable, violatesMaxConsecutiveHours } = useScheduleConflicts(conflictEntries)
 
   const suggestedCell = useState<SuggestedCell | null>('schedule-heuristic-suggestion', () => null)
 
@@ -61,7 +61,7 @@ export function useScheduleHeuristic() {
   function isCellAvailable(assignment: HeuristicAssignment, day: Weekday, hourSlot: HourSlot) {
     if (hasTeacherConflict(assignment.teacherId, day, hourSlot)) return false
     if (hasClassConflict(assignment.schoolClassId, day, hourSlot)) return false
-    if (violatesTimeConstraint(assignment.teacherId, day, hourSlot)) return false
+    if (isUnavailable(assignment.teacherId, day, hourSlot)) return false
     if (violatesMaxConsecutiveHours(assignment.teacherId, day, hourSlot)) return false
     return true
   }

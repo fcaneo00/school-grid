@@ -1,17 +1,23 @@
 import type { FormSubmitEvent } from '@nuxt/ui'
+import {
+  createTeacherFormSchema,
+  createUnavailableHoursSchema,
+  isEmptyUnavailableHours,
+  type TeacherFormSchema
+} from './teacherFormHelper'
 
 export function useTeacherForm(id: Ref<number | undefined>) {
   const { t } = useI18n()
   const { teachers, fetchTeachers, addTeacher, updateTeacher } = useTeachers()
   const { saveDayOffs } = useTeacherPreference()
-  const { saveTimeConstraints } = useTeacherTimeConstraint()
-  const { settings, fetchSettings } = useAppSettings()
+  const { saveUnavailableHours } = useTeacherUnavailableHours()
+  const { settings, activeHourSlots, fetchSettings } = useAppSettings()
   const route = useRoute()
 
   const returnTo = computed(() => resolveReturnTo(route.query.returnTo, '/teachers'))
 
   const schema = createTeacherFormSchema(t)
-  const timeConstraintSchema = createTimeConstraintSchema(t)
+  const unavailableHoursSchema = createUnavailableHoursSchema()
 
   fetchSettings()
 
@@ -19,17 +25,30 @@ export function useTeacherForm(id: Ref<number | undefined>) {
     settings.value.activeWeekdays.map((day) => ({ label: t(`weekdays.${day}`), value: day }))
   )
 
-  const hourOptions = computed(() => [
-    { label: t('teachers.form.noLimit'), value: undefined },
-    ...HOUR_SLOT_VALUES.map((hour) => ({ label: t('teachers.form.hourLabel', { 'hour': hour }), value: hour as number | undefined }))
-  ])
+  const hourOptions = computed(() =>
+    activeHourSlots.value.map((hour) => ({ label: t('teachers.form.hourLabel', { 'hour': hour }), value: hour as number }))
+  )
 
   const state = reactive<Partial<TeacherFormSchema>>({
     first_name: '',
     last_name: '',
     day_off: [],
     max_consecutive_hours: undefined,
-    time_constraints: []
+    unavailable_hours: []
+  })
+
+  const firstNameModel = computed({
+    get: () => state.first_name ?? '',
+    set: (value: string) => {
+      state.first_name = capitalizeFirstLetter(value)
+    }
+  })
+
+  const lastNameModel = computed({
+    get: () => state.last_name ?? '',
+    set: (value: string) => {
+      state.last_name = capitalizeFirstLetter(value)
+    }
   })
 
   watch(id, async (currentId) => {
@@ -41,19 +60,19 @@ export function useTeacherForm(id: Ref<number | undefined>) {
     state.last_name = teacher.last_name
     state.day_off = teacher.day_off
     state.max_consecutive_hours = teacher.max_consecutive_hours
-    state.time_constraints = teacher.time_constraints
+    state.unavailable_hours = teacher.unavailable_hours
   }, { immediate: true })
 
-  function addTimeConstraintRow() {
-    state.time_constraints = [...(state.time_constraints ?? []), { day: 'monday', not_before: undefined, not_after: undefined }]
+  function addUnavailableHoursRow() {
+    state.unavailable_hours = [...(state.unavailable_hours ?? []), { day: 'monday', hours: [] }]
   }
 
-  function removeTimeConstraintRow(index: number) {
-    state.time_constraints = (state.time_constraints ?? []).filter((_, rowIndex) => rowIndex !== index)
+  function removeUnavailableHoursRow(index: number) {
+    state.unavailable_hours = (state.unavailable_hours ?? []).filter((_, rowIndex) => rowIndex !== index)
   }
 
   async function onSubmit(event: FormSubmitEvent<TeacherFormSchema>) {
-    const { day_off, time_constraints, ...teacher } = event.data
+    const { day_off, unavailable_hours, ...teacher } = event.data
     let teacherId = id.value
     if (teacherId === undefined) {
       teacherId = await addTeacher(teacher)
@@ -62,20 +81,23 @@ export function useTeacherForm(id: Ref<number | undefined>) {
     }
     if (teacherId !== undefined) {
       await saveDayOffs(teacherId, day_off)
-      await saveTimeConstraints(teacherId, time_constraints.filter((constraint) => !isEmptyTimeConstraint(constraint)))
+      await saveUnavailableHours(teacherId, unavailable_hours.filter((entry) => !isEmptyUnavailableHours(entry)))
     }
     await navigateTo(returnTo.value)
   }
 
   return {
     schema,
-    timeConstraintSchema,
+    unavailableHoursSchema,
     state,
+    firstNameModel,
+    lastNameModel,
     dayOffOptions,
     hourOptions,
+    activeHourSlots,
     returnTo,
-    addTimeConstraintRow,
-    removeTimeConstraintRow,
+    addUnavailableHoursRow,
+    removeUnavailableHoursRow,
     onSubmit
   }
 }
