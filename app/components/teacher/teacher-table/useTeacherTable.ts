@@ -24,19 +24,13 @@ export function useTeacherTable() {
   const filteredTeachers = computed(() =>
     teachers.value.filter((teacher) =>
       teacher.first_name.toLowerCase().includes(filters.value.first_name.toLowerCase()) &&
-      teacher.last_name.toLowerCase().includes(filters.value.last_name.toLowerCase()) &&
-      (filters.value.day_off === null || teacher.day_off.includes(filters.value.day_off))
+      teacher.last_name.toLowerCase().includes(filters.value.last_name.toLowerCase())
     )
   )
 
   const columns: TableColumn<TeacherWithDetails>[] = [
     { accessorKey: 'last_name', header: t('teachers.form.lastName'), enableSorting: true },
     { accessorKey: 'first_name', header: t('teachers.form.firstName'), enableSorting: true },
-    {
-      id: 'day_off',
-      header: t('teachers.form.dayOff'),
-      cell: ({ row }) => row.original.day_off.map((day) => t(`weekdays.${day}`)).join(', ')
-    },
     { id: 'actions', header: t('table.actions') }
   ]
 

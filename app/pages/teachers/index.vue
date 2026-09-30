@@ -1,11 +1,6 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const { filters } = useTeacherFilters()
-
-const dayOffFilterOptions = computed(() => [
-  { label: t('teachers.form.allDayOff'), value: null },
-  ...WEEKDAY_VALUES.map((day) => ({ label: t(`weekdays.${day}`), value: day }))
-])
 </script>
 
 <template>
@@ -22,7 +17,6 @@ const dayOffFilterOptions = computed(() => [
             <div class="p-4 space-y-2 w-64">
               <ClearableInput v-model="filters.last_name" :placeholder="t('teachers.form.lastName')" />
               <ClearableInput v-model="filters.first_name" :placeholder="t('teachers.form.firstName')" />
-              <USelect v-model="filters.day_off" :items="dayOffFilterOptions" :placeholder="t('teachers.form.dayOff')" class="w-full" />
             </div>
           </template>
         </UPopover>
