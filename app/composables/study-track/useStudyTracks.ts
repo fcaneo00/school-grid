@@ -24,16 +24,36 @@ export function useStudyTracks() {
 
   async function addStudyTrack(studyTrack: Omit<StudyTrack, 'id'>) {
     const db = await getDb()
-    await db.execute('INSERT INTO study_track (name) VALUES ($1)', [studyTrack.name])
+    try {
+      await db.execute('INSERT INTO study_track (name) VALUES ($1)', [studyTrack.name])
+    } catch (e) {
+      if (isUniqueConstraintError(e)) {
+        notify.error(t('studyTracks.duplicateTitle'), t('studyTracks.duplicateDescription'))
+      } else {
+        notify.error(t('general.errorTitle'), String(e))
+      }
+      return false
+    }
     await fetchStudyTracks()
     notify.success(t('general.added'), studyTrack.name)
+    return true
   }
 
   async function updateStudyTrack(id: number, studyTrack: Omit<StudyTrack, 'id'>) {
     const db = await getDb()
-    await db.execute('UPDATE study_track SET name = $1 WHERE id = $2', [studyTrack.name, id])
+    try {
+      await db.execute('UPDATE study_track SET name = $1 WHERE id = $2', [studyTrack.name, id])
+    } catch (e) {
+      if (isUniqueConstraintError(e)) {
+        notify.error(t('studyTracks.duplicateTitle'), t('studyTracks.duplicateDescription'))
+      } else {
+        notify.error(t('general.errorTitle'), String(e))
+      }
+      return false
+    }
     await fetchStudyTracks()
     notify.success(t('general.updated'), studyTrack.name)
+    return true
   }
 
   async function deleteStudyTrack(id: number) {

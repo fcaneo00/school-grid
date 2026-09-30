@@ -24,16 +24,36 @@ export function useSections() {
 
   async function addSection(section: Omit<Section, 'id'>) {
     const db = await getDb()
-    await db.execute('INSERT INTO section (name) VALUES ($1)', [section.name])
+    try {
+      await db.execute('INSERT INTO section (name) VALUES ($1)', [section.name])
+    } catch (e) {
+      if (isUniqueConstraintError(e)) {
+        notify.error(t('sections.duplicateTitle'), t('sections.duplicateDescription'))
+      } else {
+        notify.error(t('general.errorTitle'), String(e))
+      }
+      return false
+    }
     await fetchSections()
     notify.success(t('general.added'), section.name)
+    return true
   }
 
   async function updateSection(id: number, section: Omit<Section, 'id'>) {
     const db = await getDb()
-    await db.execute('UPDATE section SET name = $1 WHERE id = $2', [section.name, id])
+    try {
+      await db.execute('UPDATE section SET name = $1 WHERE id = $2', [section.name, id])
+    } catch (e) {
+      if (isUniqueConstraintError(e)) {
+        notify.error(t('sections.duplicateTitle'), t('sections.duplicateDescription'))
+      } else {
+        notify.error(t('general.errorTitle'), String(e))
+      }
+      return false
+    }
     await fetchSections()
     notify.success(t('general.updated'), section.name)
+    return true
   }
 
   async function deleteSection(id: number) {

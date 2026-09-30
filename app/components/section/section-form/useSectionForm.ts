@@ -1,4 +1,5 @@
 import type { FormSubmitEvent } from '@nuxt/ui'
+import { createSectionFormSchema, normalizeSectionName, type SectionFormSchema } from './sectionFormHelper'
 
 export function useSectionForm(id: Ref<number | undefined>) {
   const { t } = useI18n()
@@ -10,6 +11,13 @@ export function useSectionForm(id: Ref<number | undefined>) {
     name: ''
   })
 
+  const nameModel = computed({
+    get: () => state.name ?? '',
+    set: (value: string) => {
+      state.name = normalizeSectionName(value)
+    }
+  })
+
   watch(id, async (currentId) => {
     if (currentId === undefined) return
     await fetchSections()
@@ -19,17 +27,18 @@ export function useSectionForm(id: Ref<number | undefined>) {
   }, { immediate: true })
 
   async function onSubmit(event: FormSubmitEvent<SectionFormSchema>) {
-    if (id.value === undefined) {
-      await addSection(event.data)
-    } else {
-      await updateSection(id.value, event.data)
+    const success = id.value === undefined
+      ? await addSection(event.data)
+      : await updateSection(id.value, event.data)
+    if (success) {
+      await navigateTo('/sections')
     }
-    await navigateTo('/sections')
   }
 
   return {
     schema,
     state,
+    nameModel,
     onSubmit
   }
 }

@@ -1,4 +1,5 @@
 import type { FormSubmitEvent } from '@nuxt/ui'
+import { createStudyTrackFormSchema, type StudyTrackFormSchema } from './studyTrackFormHelper'
 
 export function useStudyTrackForm(id: Ref<number | undefined>) {
   const { t } = useI18n()
@@ -10,6 +11,13 @@ export function useStudyTrackForm(id: Ref<number | undefined>) {
     name: ''
   })
 
+  const nameModel = computed({
+    get: () => state.name ?? '',
+    set: (value: string) => {
+      state.name = capitalizeFirstLetter(value)
+    }
+  })
+
   watch(id, async (currentId) => {
     if (currentId === undefined) return
     await fetchStudyTracks()
@@ -19,17 +27,18 @@ export function useStudyTrackForm(id: Ref<number | undefined>) {
   }, { immediate: true })
 
   async function onSubmit(event: FormSubmitEvent<StudyTrackFormSchema>) {
-    if (id.value === undefined) {
-      await addStudyTrack(event.data)
-    } else {
-      await updateStudyTrack(id.value, event.data)
+    const success = id.value === undefined
+      ? await addStudyTrack(event.data)
+      : await updateStudyTrack(id.value, event.data)
+    if (success) {
+      await navigateTo('/study-tracks')
     }
-    await navigateTo('/study-tracks')
   }
 
   return {
     schema,
     state,
+    nameModel,
     onSubmit
   }
 }

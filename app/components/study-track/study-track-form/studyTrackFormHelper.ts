@@ -2,7 +2,7 @@ import * as z from 'zod'
 
 export function createStudyTrackFormSchema(t: (key: string) => string) {
   return z.object({
-    name: z.string().min(1, t('form.required'))
+    name: z.string().min(1, t('form.required')).transform(capitalizeFirstLetter)
   })
 }
 
