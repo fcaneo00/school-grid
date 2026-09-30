@@ -100,19 +100,21 @@ Regole:
 
 Per un progetto di queste dimensioni non serve separare specs/docs/backlog in cartelle diverse: **tutto vive in questo `CLAUDE.md`**, aggiornato ad ogni decisione architetturale - è quello che abbiamo fatto finora in chat. Se il progetto crescesse davvero, si scorporerà in una cartella `docs/` quando (e solo quando) diventerà scomodo tenerlo qui dentro.
 
-La checklist di lavoro in corso vive invece in [`.claude/TASKS.md`](.claude/TASKS.md), per non far lievitare questo file con lo stato di avanzamento - questo resta il flusso per le modifiche che procedono dirette su `main`.
-
-Per una feature abbastanza corposa o rischiosa da isolare (es. il multi-salvataggio), il flusso è invece: **prima una issue GitHub**, poi un branch dedicato (`feature/nome-feature`), poi la PR verso `main`. Formato fissato dall'esempio della issue #2/PR #1:
-- Titolo issue: `Feature / <nome descrittivo>` - stesso titolo sulla PR corrispondente
-- Corpo issue: sezione `## Resoconto` (cosa fa la feature, elenco puntato) + `## Test plan` (checklist di verifica, `- [ ]`) - è la issue a portare la checklist, non `.claude/TASKS.md`
+La checklist di lavoro in corso vive nella issue GitHub aperta per l'occasione, non in un file del progetto (fino alla v0.5.0-beta viveva in `.claude/TASKS.md`, rimosso quando il flusso a issue è diventato lo standard). Formato fissato dall'esempio della issue #2/PR #1:
+- Titolo issue: `Feature / <nome descrittivo>` - stesso titolo sulla PR corrispondente, se la feature ne ha una
+- Corpo issue: sezione `## Resoconto` (cosa fa la feature, elenco puntato) + `## Test` (checklist di verifica, `- [ ]`) - è la issue a portare la checklist
 - Label `enhancement` sulla issue
 - Corpo PR ridotto al riferimento che chiude la issue (es. `Resolve Issue #2`), nessuna checklist ripetuta lì
 
-**Tag di versione**: `v` seguito dal numero di versione allineato a `package.json`/`tauri.conf.json`/`Cargo.toml` (es. `v0.4.1`). Finché una versione non è considerata stabile/pronta per la distribuzione, il tag porta il suffisso `-beta` (es. `v0.4.1-beta`).
+Per una feature abbastanza corposa o rischiosa da isolare (es. il multi-salvataggio), il flusso è: issue GitHub, poi un branch dedicato (`feature/nome-feature`), poi la PR verso `develop`. Per una feature che resta diretta (senza branch/PR proprio), i commit vanno comunque su `develop`, mai su `main` - la issue GitHub porta comunque la checklist.
+
+**Rami**: `main` ospita solo l'ultima release stabile - non ci si lavora mai sopra direttamente, ci si mergia solo in fase di rilascio. `develop` è il ramo di integrazione, quasi sempre più avanti di `main`: è dove finiscono le PR delle feature e dove si testa tutto prima del rilascio vero e proprio. Quando `develop` è considerato stabile, si rilascia: merge di `develop` in `main` e tag lì (vedi sotto).
+
+**Tag di versione**: `v` seguito dal numero di versione allineato a `package.json`/`tauri.conf.json`/`Cargo.toml` (es. `v0.4.1`), creato su `main` al momento del rilascio. Finché una versione non è considerata stabile/pronta per la distribuzione, il tag porta il suffisso `-beta` (es. `v0.4.1-beta`).
 
 ## Planning Workflow
 
-Per modifiche piccole si implementa direttamente. Per una feature corposa che resta diretta su `main` (es. la UI della griglia trascinabile, l'esportazione PDF) si scrive prima una checklist breve in `.claude/TASKS.md`, poi si implementa spuntando via via. Per una feature isolata su branch dedicato, la checklist va invece nella issue GitHub aperta per l'occasione (vedi "Le case dei fatti").
+Per modifiche piccole si implementa direttamente su `develop`. Per una feature abbastanza corposa da avere bisogno di una checklist, resti diretta su `develop` o su un branch dedicato, si apre prima una issue GitHub con la checklist (vedi "Le case dei fatti"), poi si implementa spuntando via via.
 
 ## Regole di ingaggio operative
 
